@@ -23,8 +23,26 @@ git clone /로컬/저장소/경로
 ```
 git clone 사용자명@호스트:/원격/저장소/경로
 ```
+## 원격 저장소 주소. 변경
+
+```
+$ git remote set-url origin https://github.com/user/repo2.git
+# Change the 'origin' remote's URL
+```
+
+## 원격 저장소 현재 주소 조회
+
+```
+git remote -v
+```
+
+
+
 ------
+
+
 # git 의 구성
+
 ------
 
 -작업디렉토리

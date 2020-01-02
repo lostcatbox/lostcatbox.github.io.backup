@@ -1,5 +1,5 @@
 ---
-title: front-end-prac2
+title: 프론트엔드 기본편 2
 date: 2019-12-15 15:35:09
 categories: Frontend
 tags: [Frontend, Django, Ajax]
