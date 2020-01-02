@@ -2,7 +2,7 @@
 title: WhereU
 date: 2019-10-21 16:40:16
 categories: Project
-tags: 프로젝트
+tags: Project
 ---
 
 # 만든 이유?

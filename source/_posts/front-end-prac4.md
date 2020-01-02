@@ -175,24 +175,25 @@ comment_list = CommentListView.as_view()
 ### 로그인 로그아웃. next인자를 넣어준다면 그전 url로 자동으로 돌아감
 
 ```
-                     <div id="navbar" class="collapse navbar-collapse">
-                         <ul class="nav navbar-nav">
-                             <li class="active"><a href="{% url "blog:index" %}">Home</a></li>
-                         </ul>
-                         <ul class="nav navbar-nav navbar-right">
-                             {% if not user.is_authenticated %}
-                                 <li><a href="{% url "login" %}"?next={{ request.path }}>로그인</a></li>
-                                 <li><a href="{% url "signup" %}">회원가입</a></li>
-                             {% else %}
+<div id="navbar" class="collapse navbar-collapse">
+    <ul class="nav navbar-nav">
+  		  <li class="active"><a href="{% url "blog:index" %}">Home</a></li>
+    </ul>
+    <ul class="nav navbar-nav navbar-right">
+    
+        {% if not user.is_authenticated %}
+        <li><a href="{% url "login" %}"?next={{ request.path }}>로그인</a></li>
+        <li><a href="{% url "signup" %}">회원가입</a></li>
+        {% else %}
 
-                                 <li><a href="{% url "profile" %}">프로필</a></li>
-                                 <li><a href="{% url "logout" %}?next={{ request.path }}" class="disabled">로그아웃</a></li>
-                             {% endif %}
+        <li><a href="{% url "profile" %}">프로필</a></li>
+        <li><a href="{% url "logout" %}?next={{ request.path }}" class="disabled">로그아웃</a></li>
+        {% endif %}
 
-                             <li><a href="#about">About</a></li>
-                             <li><a href="#contact">Contact</a></li>
-                         </ul>
-                     </div>
+        <li><a href="#about">About</a></li>
+        <li><a href="#contact">Contact</a></li>
+    </ul>
+</div>
 
 ```
 
@@ -420,10 +421,10 @@ Tip: 참고: [장고 기본편] StaticFiles - CSS/JavaScript 파일을 어떻게
 </head>
 <body>
 
-<canvas id="canvas"></canvas>
+<canvas id="canvas"></canvas>  //웹에서의 그림판임!! 여기에다가 chart.js가 그림
 
 <script>
-var chartData = {
+var chartData = {  // 현재 chartData 객체에 들어있는 지금값들은 chart.js가 요구하는 스펙으로 구성함 (label과 data만 넣어도 작동은함)
      labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July'],
      datasets: [{
          label: 'Dataset 1',
@@ -438,14 +439,20 @@ var chartData = {
      }]
 };
 
-window.onload = function() {
-     var ctx = document.getElementById('canvas').getContext('2d');
+window.onload = function() { //현재 jquery를 안썻으므로 이방식으로 함수지정해서쓰면 페이지로딩다되면 함수호출됨
+
+     var ctx = document.getElementById('canvas').getContext('2d'); //2d context가져옴
+     
+     // chart.js에서 지원해주는 Chart로 ctx넘겨주고, 필수 객체넘겨주면 인자만들어줌
      window.chart = new Chart(ctx, {
+     
          type: 'line',
          data: chartData
      });
 };
 </script>
+</body>
+</html>
 ```
 
 ## 백엔드에서 데이터 넘겨주기 (1) 템플릿 렌더링 시에 데이터 넘겨주기
