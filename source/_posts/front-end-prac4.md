@@ -522,6 +522,14 @@ def index(request):
 ## 뷰 render에서 넘겨진 comic 사전 활용 템플릿
 
 ```
+{{ comic }}
+```
+
+위에 호출은 django단에서 처리되고 script태그 안에있는것은 django한테는 그냥 문자열이지
+
+django문법 {% %}를 써서 javascript문자열들을 만들어줌
+
+```
 <!doctype html>
 <html>
 <head>
@@ -537,7 +545,7 @@ var chartData = {
      labels: [
          {% for ep in comic.ep_list %}
              '{{ ep.title }}'
-             {% if not forloop.last %},{% endif %}
+             {% if not forloop.last %},{% endif %}  //마지막 loop의 마지막이 아닐경우 ,를 붙인다
          {% endfor %}
      ],
      datasets: [{
@@ -549,7 +557,7 @@ var chartData = {
          data: [
              {% for ep in comic.ep_list %}
                  {{ ep.rating }}
-                 {% if not forloop.last %},{% endif %}
+                 {% if not forloop.last %},{% endif %}  //마지막 loop의 마지막이 아닐경우 ,를 붙인다
              {% endfor %}
          ]
      }]
@@ -596,8 +604,9 @@ def index(request):
 def data_json(request):
  comic = get_comic_info(20853, '마음의 소리')
  
+ #아래는 리스트컴프레션 코드
  data = {
-     'labels': [ep['title'] for ep in comic['ep_list']],
+     'labels': [ep['title'] for ep in comic['ep_list']], 
      'datasets': [{
          'label': '평점',
          'backgroundColor': 'rgb(255, 99, 132)',
@@ -605,7 +614,7 @@ def data_json(request):
          'borderColor': 'rgba(255, 99, 132, 1)',
          'pointBackgroundColor': 'rgba(255, 99, 132, 1)',
          'pointBorderColor': '#fff',
-         'data': [ep['rating'] for ep in comic['ep_list']],
+         'data': [ep['rating'] for ep in comic['ep_list']], 
      }],
  }
  
@@ -646,7 +655,7 @@ window.onload = function(){
 </html>
 ```
 
-## 백엔드에서 데이터 넘겨주기 (3) django-chartjs 활용
+## 백엔드에서 데이터 넘겨주기 (3) django-chartjs 활용(추천안함)
 
 ### django-chartjs 활용 뷰코드 
 
