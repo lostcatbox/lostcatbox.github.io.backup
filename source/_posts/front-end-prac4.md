@@ -527,7 +527,13 @@ def index(request):
 
 위에 호출은 django단에서 처리되고 script태그 안에있는것은 django한테는 그냥 문자열이지
 
-django문법 {% %}를 써서 javascript문자열들을 만들어줌
+django문법 
+
+```
+{% %}
+```
+
+를 써서 javascript문자열들을 만들어줌
 
 ```
 <!doctype html>
@@ -563,6 +569,7 @@ var chartData = {
      }]
 };
 </script>
+
 ```
 
 ```
@@ -653,6 +660,7 @@ window.onload = function(){
 </script>
 </body>
 </html>
+
 ```
 
 ## 백엔드에서 데이터 넘겨주기 (3) django-chartjs 활용(추천안함)
