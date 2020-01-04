@@ -464,43 +464,48 @@ import requests
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin
 
+
 def get_comic_info(comic_id, comic_title):
-		 ep_list = []
-		 
-     for page in range(1, 6): # 최대 5페이지
-         params = {
-             'titleId': comic_id,
-             'page': page,
-         }
-         resp = requests.get('http://comic.naver.com/webtoon/list.nhn', params=params)
-         html = resp.text
-         soup = BeautifulSoup(html, 'html.parser')
-         
-         for tr in soup.select('#content table tr'):
-             try:
-                 link = tr.select('.title a[href*=detail]')[0]
-                 rating = tr.select('.rating_type strong')[0].text
-                 date = tr.select('.num')[0].text
-             except IndexError:
-             			continue
-             			
-             title = link.text
-             url = urljoin(resp.request.url, link['href'])
-             ep = {
-                 'title': title,
-                 'url': url,
-                 'rating': rating,
-                 'date': date,
-             }
-             if ep in ep_list:
-             		return ep_list
-             		
-             ep_list.append(ep)
-             
-     return {
-         'title': comic_title,
-         'ep_list': ep_list,
-     };
+    ep_list = []
+
+
+    for page in range(1, 3):  # 최대 5페이지
+        params = {
+            'titleId': comic_id,
+            'page': page,
+        }
+        resp = requests.get('http://comic.naver.com/webtoon/list.nhn', params=params)
+        html = resp.text
+        soup = BeautifulSoup(html, 'html.parser')
+
+
+
+        for tr in soup.select('#content table tr'):  # 아래 크롤링 하는목록 죄회하
+            try:
+                link = tr.select('.title a[href*=detail]')[0]  #.title이 class 이름이고 a에 href가 포함된것을 긁어옴
+                rating = tr.select('.rating_type strong')[0].text
+                date = tr.select('.num')[0].text
+            except IndexError:
+                continue
+
+            title = link.text
+            url = urljoin(resp.request.url, link['href'])
+            ep = {
+                'title': title,
+                'url': url,
+                'rating': rating,
+                'date': date,
+            }
+            if ep in ep_list: #같은게 나와버리면 지금 함수 끝냄
+                return ep_list
+
+            ep_list.append(ep)
+
+    return {
+            'title': comic_title,
+            'ep_list': ep_list,
+            'soup': soup,
+     }
 ```
 
 ### 뷰 코드
@@ -601,69 +606,80 @@ urlpatterns = [
 ### 뷰 코드
 
 ```
-from django.http import JsonResponse
 from django.shortcuts import render
 from .utils import get_comic_info
+from django.http import JsonResponse
 
 def index(request):
-		 return render(request, 'mychart/index.html')
-		 
+
+    comic = get_comic_info(20853, '마음의 소리')
+
+    return render(request, 'mychart/index.html', {'soup': comic})
+
+
 def data_json(request):
- comic = get_comic_info(20853, '마음의 소리')
- 
- #아래는 리스트컴프레션 코드
- data = {
-     'labels': [ep['title'] for ep in comic['ep_list']], 
-     'datasets': [{
-         'label': '평점',
-         'backgroundColor': 'rgb(255, 99, 132)',
-         'backgroundColor': 'rgba(255, 99, 132, 0.5)',
-         'borderColor': 'rgba(255, 99, 132, 1)',
-         'pointBackgroundColor': 'rgba(255, 99, 132, 1)',
-         'pointBorderColor': '#fff',
-         'data': [ep['rating'] for ep in comic['ep_list']], 
-     }],
- }
- 
- return JsonResponse(data)
+    comic = get_comic_info(20853, '마음의 소리')
+
+    return JsonResponse({
+        'labels': [ep['title'] for ep in comic['ep_list']],
+        'datasets': [{
+            'label': '평점',
+            'backgroundColor': "rgba(255, 99, 132, 0.5)",
+            'borderColor': "rgba(255, 99, 132, 1)",
+            'pointBackgroundColor': "rgba(255, 99, 132, 1)",
+            'pointBorderColor': "#fff",
+            'data': [ep['rating'] for ep in comic['ep_list']]
+        }],
+
+    })
+
 ```
 
 ### 템플릿 코드
 
 ```
-<!doctype html> <html> <head>
+{% load static %}
+<!doctype html>
 
-<meta charset="utf-8" />
+<html>
+<head>
+     <meta charset="utf-8" />
+     <script src="http://www.chartjs.org/dist/2.7.0/Chart.bundle.js"></script>
+     <script src="{% static 'jquery/dist/jquery.min.js' %}"></script>
 
-<script src="//www.chartjs.org/dist/2.7.0/Chart.bundle.js"></script>
-
-<script src="//code.jquery.com/jquery-2.2.4.min.js"></script>
 </head>
 <body>
 
-<canvas id="canvas"></canvas>
+        <canvas id="canvas"></canvas>
 
-<script>
-window.onload = function(){
-     $.get('{% url "data_json" %}')
-         .done(function(data){
-         var ctx = document.getElementById('canvas').getContext('2d');
-         var chart = new Chart(ctx, {
-             type: 'line',
-             data: data
-		     });
-     })
-     .fail(function(xhr, textStatus, error){
-    		 alert('failed : ' + error);
-     });;
-};
-</script>
+<ul>
+{#    {{ soup }}#}  //로우데이터보고싶을때 활용
+</ul>
+
+
+        <script>
+            $(function() {
+
+                $.get('{% url "mychart:data_json" %}')
+                    .done(function(chartData) {
+                        console.log(chartData)
+                         var ctx = document.getElementById('canvas').getContext('2d');
+                         window.chart = new Chart(ctx, {
+                             type: 'line',
+                             data: chartData
+                         });
+                    })
+                    .fail(function (xhr, textStatus, error) {
+                        alert('failed:'+ error);
+
+                    });
+            });
+        </script>
 </body>
 </html>
-
 ```
 
-## 백엔드에서 데이터 넘겨주기 (3) django-chartjs 활용(추천안함)
+## ~~백엔드에서 데이터 넘겨주기 (3) django-chartjs 활용(추천안함)~~
 
 ### django-chartjs 활용 뷰코드 
 
@@ -701,3 +717,12 @@ javascript chart를 장고와 연동하기 전에, html/css/javascript만으로 
 그래야만 자유자재로 chart를 활용하실 수 있습니다. 
 
 그 후에, django chart 앱을 활용하시며, 소스코드도 까보세요.
+
+
+
+### 크롤링 로우 데이터
+
+```
+{'title': '마음의 소리', 'ep_list': [{'title': '1203. 그 동상', 'url': 'https://comic.naver.com/webtoon/detail.nhn?titleId=20853&no=1207&weekday=tue', 'rating': '9.73', 'date': '2019.12.30'}, {'title': '1202. 당숙 어르신', 'url': 'https://comic.naver.com/webtoon/detail.nhn?titleId=20853&no=1206&weekday=tue', 'rating': '9.77', 'date': '2019.12.23'}, {'title': '1201. 겨울 옷차림', 'url': 'https://comic.naver.com/webtoon/detail.nhn?titleId=20853&no=1205&weekday=tue', 'rating': '9.85', 'date': '2019.12.16'}, {'title': '1200. 양심의소리', 'url': 'https://comic.naver.com/webtoon/detail.nhn?titleId=20853&no=1204&weekday=tue', 'rating': '9.95', 'date': '2019.12.09'}, {'title': '1199. 백야', 'url': 'https://comic.naver.com/webtoon/detail.nhn?titleId=20853&no=1203&weekday=tue', 'rating': '9.81', 'date': '2019.12.02'}, {'title': '1198. 성함이…?', 'url': 'https://comic.naver.com/webtoon/detail.nhn?titleId=20853&no=1202&weekday=tue', 'rating': '9.93', 'date': '2019.11.25'}, {'title': '1197. 학예회', 'url': 'https://comic.naver.com/webtoon/detail.nhn?titleId=20853&no=1201&weekday=tue', 'rating': '9.85', 'date': '2019.11.18'}, {'title': '1196. 키아누 X브스', 'url': 'https://comic.naver.com/webtoon/detail.nhn?titleId=20853&no=1200&weekday=tue', 'rating': '9.80', 'date': '2019.11.11'}, {'title': '1195. 상의', 'url': 'https://comic.naver.com/webtoon/detail.nhn?titleId=20853&no=1199&weekday=tue', 'rating': '9.73', 'date': '2019.11.04'}, {'title': '1194. 불법스캔', 'url': 'https://comic.naver.com/webtoon/detail.nhn?titleId=20853&no=1198&weekday=tue', 'rating': '9.54', 'date': '2019.10.28'}]
+```
+
