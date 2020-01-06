@@ -50,9 +50,7 @@ Db와 model이 이어진것처럼
 
 frontend와 form이 이어짐
 
-### form의 특징 (딱 3가지만 기억하자)
-
-
+### form의 특징 (딱 3가지만 기억하자)!
 
 - 입력폼을 생성: .as_table(), .as_p(), .as_ul() 기본제공
 - 입력폼 값 검증(validation) 및 값 변환 (프론트엔드) 
