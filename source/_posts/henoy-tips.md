@@ -5,8 +5,20 @@ categories: Terminal
 tags: [Terminal, Basic]
 ---
 
+
+
+# 정리가 필요한 것
+
 ------
+
+Rest api
+
+
+
+
+
 # 터미널에서
+
 ------
 
 ```
@@ -23,13 +35,24 @@ mv requirements.txt ../cbv #이동 기능 상위폴더에 cbv폴더안에
 
 ```
 
+## 파일 내용을 보고싶을때
+
+------
+
+```
+vi <파일이름>
+```
+
+i를 누르면 edit mode 
+다 수정후 :wq  로 나간다 (저장후 끄기)
+
+
+
 # Git
 
-./gitignore 에 넣으면 안올라가
+[자세히](https://lostcatbox.github.io/2019/10/19/git-memo/)
 
-```
 
-```
 
 # 파이참에서
 
@@ -210,6 +233,3 @@ settings.INSTALLED_APPS 에 "bootstrap3"
 9, 18, 27, 36, 45, 54, 63, 72, 81]
 지금껏 우리는 프로그램 흐름을 제어하는 if문, while문, for문에 대해 알아보았다. 아마도 여러분은 while문과 for문을 보면서 2가지가 아주 비슷하다는 느낌을 받았을 것이다. 실제로 for문을 사용한 부분을 while문으로 바꿀 수 있는 경우도 많고, while문을 for문으로 바꾸어서 사용할 수 있는 경우도 많다.
 ```
-
-
-
