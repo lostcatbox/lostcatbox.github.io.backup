@@ -23,7 +23,7 @@ mv requirements.txt ../cbv #이동 기능 상위폴더에 cbv폴더안에
 
 ```
 
-# git
+# Git
 
 ./gitignore 에 넣으면 안올라가
 
