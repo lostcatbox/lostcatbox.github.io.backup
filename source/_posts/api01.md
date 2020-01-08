@@ -1,4 +1,5 @@
 ---
+
 title: api 기본편 1
 date: 2020-01-07 12:13:37
 categories: API
@@ -7,7 +8,7 @@ tags: [API, DRF]
 
 # API 기초
 
-## API 서버 만들기
+API 서버 만들기
 
 ### API 서버란?
 
@@ -19,7 +20,7 @@ tags: [API, DRF]
 
 REST API라고 부르는 것들은 단순히 HTTP프로토콜을 통한 API, 즉 HTTP API라고 부르는게 맞음
 
-대부부능의 REST API라는 API들은 ~~REST 아키텍처 스타일~~
+대부분의 REST API라는 API들은 ~~REST 아키텍처 스타일~~
 
 ### 우리는 이번 코스를 통해...
 
@@ -363,9 +364,7 @@ Django에서 기본제공해주는 Model/ModelForm/View를 통해 다음 5가지
 
 장고 프로젝트를 먼저 생성하고, myapp 앱을 먼저 생성/등록해주세요.
 
-```
-구현해봅시다. :D
-```
+__구현해봅시다.__
 
 ### 소스 구현
 
