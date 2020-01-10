@@ -155,6 +155,8 @@ urls = []
 
 os.environ['DJANGO_SETTINGS_MODULE'] = '__main__'  #현재 노트북 파일 참고하도록 지정
 
+os.environ["DJANGO_ALLOW_ASYNC_UNSAFE"] = "true"
+
 django.setup()
 
 #Form 클래스를 정의하고 써봅시다
@@ -179,9 +181,15 @@ form.errors
 
 ```
 
+__참고로 request.POST도 querydic형태로 사전형태와 유사한 데이터를 제공__
+
+
+
 ### 모델 정의(지금 파일이아닌 메모리에 DB가 있을뿐, migration은 해줘야함)
 
 Tip: python manage.py sqlmigrate <앱이름> <migrate번호>로 migration spq내역확인가능
+
+아래는 jupyter notebook 에서 Post모델을 통해 DB퀴리가 가능해짐
 
 ```
 
@@ -216,6 +224,12 @@ CREATE TABLE "{}"
      "updated_at" datetime NOT NULL);
 '''.format(table_name))
 
+#생성된 테이블을 확인하기
+with connection.cursor() as cursor:
+    cursor.execute("select name from sqlite_master where type = 'table';")
+    for row in cursor.fetchall():
+        print(row)
+
 
 # 데이터 추가
 Post.objects.create(
@@ -229,6 +243,17 @@ Post.objects.create(
 Post.objects.create(
     title='저녁 줄였는데 누구는 살 빠지고, 난 안 빠지고…이유는',
     content='늦은 시간에 야식 먹으면 다 살로 간다고 하죠? 그래서 야식 증후군이란 말까지 생겼습니다. 또 아침은 많이 먹고 저녁은 되도록 적게 먹는 것이 다이어트의 지름길이라고 생각하기도 합니다. 이게 다 얼마나 맞는 말일까요?')
+    
+# ModelForm
+	class PostForm(forms.ModelForm):
+	     class Meta:
+	         medel = Post
+	         fields = '__all__'
+	         
+	         
+form = PostForm({'title': 'hello'})
+form.is_valid()
+form.errors 실행해보기
 ```
 
 Out[1]:
@@ -256,6 +281,8 @@ In [5]:
 ```
 for post in Post.objects.filter():
     print(post.id, post.title, ':', len(post.content), '글자')
+    
+    
 1 횡단보도 보행자 없으면 우회전 가능?…혼란 빚은 까닭 : 90 글자
 2 '디지털세대, 아날로그에 빠지다'…아날로그 인기 이유는? : 42 글자
 3 저녁 줄였는데 누구는 살 빠지고, 난 안 빠지고…이유는 : 121 글자
@@ -263,9 +290,11 @@ for post in Post.objects.filter():
 
 ## 장고의 JSON 직렬화
 
+현재는 그냥 import json하면 파이썬 표준 라이브러리 사용됨
+
 장고에서는 파이썬 표준 라이브러리 json 모듈을 그대로 쓰지 않고, `django/core/serizliers/json.py`의 `DjangoJSONEncoder 클래스`를 통한 직렬화를 수행합니다.
 
-`DjangoJSONEncoder`는 `json.JSONEncoder`를 상속받았으며, 다음 타입에 대한 직렬화를 추가로 지원합니다.
+`DjangoJSONEncoder`는 `json.JSONEncoder`를 상속받았으며, 다음 타입에 대한 직렬화를 추가로 지원합니다.(주로 date 쪽)
 
 - `datetime.datetime`
 - `datetime.date`
@@ -273,7 +302,7 @@ for post in Post.objects.filter():
 - `datetime.timedelta`
 - `decimal.Decimal`, `uuid.UUID`
 
-그런데, 이는 파이썬 기본 데이터 타입에 대한 직렬화가 추가되었을 뿐, 장고 데이터타입인 **QuerySet과 Model 인스턴스에 대한 직렬화는 지원하지 않습니다**. 장고는 웹 애플리케이션을 만들기 위한 웹프레임워크이고 웹 애플리케이션 개발에서는 JSON직렬화할 일이 적긴 합니다. 그렇지만 기본에서 제공해주면 좋았을 텐데요 ... 아쉽습니다. 이 가려운 부분을 `djangorestframework`가 긁어줍니다. :D 이는 뒤에서 살펴보구요.
+그런데, 이는 파이썬 기본 데이터 타입에 대한 직렬화가 추가되었을 뿐, 장고 데이터타입인 **QuerySet과 Model 인스턴스에 대한 직렬화는 지원하지 않습니다**. 장고는 웹 애플리케이션을 만들기 위한 웹프레임워크이고 웹 애플리케이션 개발에서는 JSON직렬화할 일이 적긴 합니다. 그렇지만 기본에서 제공해주면 좋았을 텐데요 ... 아쉽습니다__. 이 가려운 부분을 `djangorestframework`가 긁어줍니다. :D__ 이는 뒤에서 살펴보구요.
 
 우선 장고 기본에서 제공해주는 `DjangoJSONEncoder`를 실행해봅시다.
 
@@ -299,9 +328,11 @@ Out[6]:
 
 이렇게 직렬화할 데이터를 QuerySet으로 준비합니다. 그리고 직렬화를 수행해봅니다.
 
+json.dumps(data)를 하면 파이썬 표준 json이 써지므로 QuerySet에 대해서 직렬화 로직없음 따라서
+
 `TypeError: Object of type 'QuerySet' is not JSON serializable` 예외가 발생할 거예요. :(
 
-In [11]:
+In [11]:  # cls라는 이름으로 해당 클래스를 넘겨준다면 커스텀 인코더 사용가능
 
 ```
 json.dumps(data, cls=DjangoJSONEncoder)
@@ -346,7 +377,7 @@ TypeError                                 Traceback (most recent call last)
 TypeError: Object of type 'QuerySet' is not JSON serializable
 ```
 
-왜죠? 왜일까요? **DjangoJSONEncoder**는 **QuerySet**의 직렬화/비직렬화방법을 모르고 있기 때문에, **not JSON serializable** 오류가 발생한 겁니다. 그렇다면, 어떻게 해야할까요?
+또 오류가 발생. 왜죠? 왜일까요? **DjangoJSONEncoder**는 **QuerySet**의 직렬화/비직렬화방법을 모르고 있기 때문에, **not JSON serializable** 오류가 발생한 겁니다. 그렇다면, 어떻게 해야할까요?
 
 `QuerySet`을 파이썬 표준 데이터타입의 값으로 한땀 한땀 직접 변환을 할 수 있겠습니다. 이는 json모듈이 하던 일을 직접 하는 것이죠.
 
@@ -357,7 +388,7 @@ data = [
     {'id': post.id, 'title': post.title, 'content': post.content}
     for post in Post.objects.all()]
 
-json.dumps(data, cls=DjangoJSONEncoder, ensure_ascii=False)
+json.dumps(data, ensure_ascii=False) # 이렇게 해도 작동함 왜냐면 data는 이제 queryset형태가 아니라 리스트안에 dic형태안에 숫자, 문자열로 구성되었있으므로 가능, ensuer_ascii=false의 이유는 유니코드 코드 값을 표현되므로 보기어렵고, utf표현방식으로 표현되서 사람이 보기도좋음 json은 보통 다 지원하긴함,
 ```
 
 Out[14]:
@@ -398,7 +429,7 @@ Out[7]:
 - QuerySet 타입 : tuple 타입으로 변환
 - Post 타입 : dict 타입으로 변환
 
-In [15]:
+In [15]: #커스텀으로
 
 ```
 from django.core.serializers.json import DjangoJSONEncoder
@@ -406,12 +437,12 @@ from django.db.models.query import QuerySet
 
 # 커스텀 JSON Encoder를 정의
 class MyJSONEncoder(DjangoJSONEncoder):
-    def default(self, obj):
-        if isinstance(obj, QuerySet):
+    def default(self, obj):  # obj 객체 받음
+        if isinstance(obj, QuerySet): #객체가 QuerySet타입이면
             return tuple(obj)
-        elif isinstance(obj, Post):
-            return {'id': obj.id, 'title': obj.title, 'content': obj.content}
-        return super().default(obj)
+        elif isinstance(obj, Post): # Post인자라면(Model객체)
+            return {'id': obj.id, 'title': obj.title, 'content': obj.content}  # 사전으로 변환
+        return super().default(obj)  #부모에게 나머지는 넘김
 
 data = Post.objects.all()
 
@@ -431,7 +462,7 @@ Out[15]:
 
 `rest_framework/utils/encoders.py` 의 `JSONEncoder 클래스`를 통한 직렬화를 수행합니다.
 
-`JSONEncoder`는 장고의 `DjangoJSONEncoder`를 상속받지는 않고, `json.JSONEncoder`를 직접 상속받아 다음 타입에 대한 직렬화를 추가로 지원합니다.
+`JSONEncoder`는 장고의 `DjangoJSONEncoder`를 상속받지는 않고, `json.JSONEncoder`를 직접 상속받아 다음 타입에 대한 직렬화를 추가로 지원합니다.( 까보면알수있다.)
 
 - 파이썬 표준 데이터 타입
   - datetime.datetime 타입
@@ -447,9 +478,9 @@ Out[15]:
   - QuerySet 타입일 경우, `tuple(obj)`의 리턴값을 취함.
   - .tolist 함수를 가질 경우, `obj.tolist()`의 리턴값을 취함.
 
-`QuerySet`에 대한 직렬화를 지원해줍니다만, `Model` 타입에 대한 직렬화는 없습니다. 이는 `ModelSerializer`의 도움을 받습니다.
+__`QuerySet`에 대한 직렬화를 지원해줍니다만,`Model` 타입에 대한 직렬화는 없습니다.__ 이는 `ModelSerializer`의 도움을 받습니다. (까보면 없다)
 
-`rest_framework/renderer.py`내 `JSONRenderer`는 `json.dumps` 함수에 대한 래핑 클래스입니다. 보다 편리한 JSON 직렬화를 도와줍니다. 다음 코드로 직렬화를 수행하실 수 있어요. utf8 인코딩도 추가로 수행해줍니다.
+`rest_framework/renderer.py`내 `JSONRenderer`는 `json.dumps` 함수에 대한 래핑 클래스입니다. 보다 편리한 JSON 직렬화를 도와줍니다. 다음 코드로 직렬화를 수행하실 수 있어요. utf8 인코딩도 추가로 수행해줍니다. (즉 래핑하고있어서 클래스내에 render()함수호출하면 json.dumps일어나게되어있다)
 
 In [21]:
 
@@ -457,7 +488,7 @@ In [21]:
 from rest_framework.renderers import JSONRenderer
 
 data = {'이름': 'AskDjango'}
-json_utf8_string = JSONRenderer().render(data)
+json_utf8_string = JSONRenderer().render(data) #이렇게 편리함
 
 json_utf8_string.decode('utf8')  # 출력포맷 조정을 위한 목적일 뿐, 실제 서비스에서는 decode하지 않습니다.
 ```
@@ -475,7 +506,7 @@ In [18]:
 ```
 from rest_framework.renderers import JSONRenderer
 
-data = Post.objects.all()
+data = Post.objects.all() #QuerySet타입안에 개별 Model인스턴스가 존재하므로 불가능
 ```
 
 In [19]:
@@ -552,7 +583,7 @@ Out[20]:
 
 이 역시, `django-rest-framework`에서 사용하는 `JSONEncoder`를 확장해 볼수도 있겠지만 ...
 
-In [22]:
+In [22]: #확장.
 
 ```
 from rest_framework.renderers import JSONRenderer
@@ -560,14 +591,14 @@ from rest_framework.utils.encoders import JSONEncoder
 
 class MyJSONEncoder(JSONEncoder):
     def default(self, obj):
-        if isinstance(obj, Post):
+        if isinstance(obj, Post): #Post일경우
             return {'id': obj.id, 'title': obj.title, 'content': obj.content}
         return super().default(obj)
 
 data = Post.objects.all()
 
 renderer = JSONRenderer()
-renderer.encoder_class = MyJSONEncoder
+renderer.encoder_class = MyJSONEncoder  #기존의 것 대체시킴
 json_utf8_string = renderer.render(data)
 
 json_utf8_string.decode('utf8')
@@ -579,7 +610,7 @@ Out[22]:
 '[{"id":1,"title":"횡단보도 보행자 없으면 우회전 가능?…혼란 빚은 까닭","content":"교차로에서 우회전할 때 횡단 보도를 건너는 사람이 없다면 보행자 신호가 녹색이더라도 진입할 수 있을까요? 이 문제를 놓고 대법원과 경찰의 판단이 다른 상황입니다."},{"id":2,"title":"\'디지털세대, 아날로그에 빠지다\'…아날로그 인기 이유는?","content":"옛 방식을 고집하는 아날로그 공간들이 젊은 층을 중심으로 주목받고 있습니다."},{"id":3,"title":"저녁 줄였는데 누구는 살 빠지고, 난 안 빠지고…이유는","content":"늦은 시간에 야식 먹으면 다 살로 간다고 하죠? 그래서 야식 증후군이란 말까지 생겼습니다. 또 아침은 많이 먹고 저녁은 되도록 적게 먹는 것이 다이어트의 지름길이라고 생각하기도 합니다. 이게 다 얼마나 맞는 말일까요?"}]'
 ```
 
-## ModelSerializer를 통한 JSON 직렬화
+## ModelSerializer를 통한 JSON 직렬화(중요)
 
 `django-rest-framework`에서는 일반적으로 `ModelSerializer`를 통해 `JSONRenderer`에서 변환가능한 형태로 먼저 데이터를 변환합니다.
 
@@ -587,11 +618,9 @@ Out[22]:
 
 | Django Form/ModelForm                    | Django Serializer/ModelSerializer |
 | :--------------------------------------- | :-------------------------------- |
-| 폼 필드 지정 혹은 모델로부터 읽어오기    | 좌동                              |
-| Form HTML을 생성                         | JSON 문자열을 생성                |
-| 입력된 데이터에 대한 유효성 검사 및 획득 | 좌동                              |
-
-Tip: `Form/ModelForm`이 가물가물하신 분은 [장고 기본편 VOD](https://nomade.kr/vod/django/)의 해당 에피소드를 다시 복습해보세요. :)
+| 폼 필드 지정 혹은 모델로부터 읽어오기    | 동일                              |
+| Form HTML을 생성                         | __JSON 문자열을 생성__            |
+| 입력된 데이터에 대한 유효성 검사 및 획득 | 동일                              |
 
 다음과 같이 `ModelSerializer`를 정의합니다. `ModelForm`과 거의 판박이입니다. :D
 
@@ -622,7 +651,7 @@ Out[31]:
 <Post: 횡단보도 보행자 없으면 우회전 가능?…혼란 빚은 까닭>
 ```
 
-In [32]:
+In [32]: 사전을 바로 만들어줌
 
 ```
 serializer = PostModelSerializer(post)
@@ -640,7 +669,7 @@ ReturnDict([('id', 1),
             ('updated_at', '2017-10-16T14:15:12.102093')])
 ```
 
-Tip: 위 `serializer.data`는 `ReturnDict`타입입니다. `OrderedDict`을 상속받았으며, 생성자를 통해 `serializer`필드를 추가로 받습니다.
+Tip: 위 `serializer.data`는 `ReturnDict`타입입니다. `OrderedDict`을 상속받았으며, 생성자를 통해 `serializer`필드를 추가로 받습니다. (약간 몇가지 필드가 추가된 사전)
 
 ```python
 class ReturnDict(OrderedDict):
@@ -650,14 +679,38 @@ class ReturnDict(OrderedDict):
         # 생략
 ```
 
+Tip: 
+
+- 기존 dic은 {'a':1, 'b':2,} 여기에다가 추가하면 순서가 뒤죽박죽 바뀔수있다(내가넣은순 유지못함)
+- orderedDic은 넣은 순서를 가지게됨 
+
+```
+d2 = OrderedDict()
+d2['z'] = 10
+d2['a'] = 1
+d2['b'] = 2
+d2
+>>> OrderedDict([('z', 10), ('a', 1), ('b', 2)])
+for key in d2:
+    pirnt(key)
+    
+z
+a
+b
+# 순서가 보장됨
+
+```
+
+(???) QuerySet타입이고 Post는 타입??
+
 ### QuerySet 변환 지원
 
-`ModelSerializer`는 `QuerySet`에 대해서도 변환을 지원해줍니다. `ModelSerializer`의 `many` 인자는 디폴트 `False`입니다. `many=True` 인자를 지정해줘야만 `QuerySet`을 처리합니다.
+__`ModelSerializer`는 `QuerySet`에 대해서도 변환을 지원해줍니다. `ModelSerializer`의 `many` 인자는 디폴트 `False`입니다. `many=True` 인자를 지정해줘야만 `QuerySet`을 처리합니다.__
 
 In [33]:
 
 ```
-serializer = PostModelSerializer(Post.objects.all(), many=True)  # QuerySet을 지정할 경우, 필히 many=True 지정
+serializer = PostModelSerializer(Post.objects.all(), many=True)  # QuerySet을 지정할 경우, 필히 many=True 지정  , 모델인스턴스만 넘길때는 필요없음
 
 # 지정된 Model Instance 필드를 통해 list/OrderedDict 획득
 serializer.data
@@ -674,7 +727,7 @@ In [35]:
 ```
 import json
 
-json.dumps(serializer.data, ensure_ascii=False)
+json.dumps(serializer.data, ensure_ascii=False) #이미 다 변환됬으므로 잘됨
 ```
 
 Out[35]:
@@ -735,8 +788,8 @@ In [40]:
 
 ```
 encoder = MyJSONEncoder
-safe = False  # True: data가 dict일 경우, False: dict이 아닐 경우
-json_dumps_params = {'ensure_ascii': False}
+safe = False  # True: data가 dict일 경우, False: dict이 아닐 경우  #QuerySet은 리스트 타입이므로
+json_dumps_params = {'ensure_ascii': False} # 넘겨줄 인자
 kwargs = {} # HttpResponse에 전해지는 Keyword 인자
 ```
 
@@ -809,7 +862,7 @@ In [63]:
 
 ```
 from rest_framework.response import Response
-
+ 
 response = Response(serializer.data)
 response
 ```
@@ -821,6 +874,8 @@ Out[63]:
 ```
 
 `Response` 객체에 변환에 필요한 속성을 지정해줘야합니다. 실제 요청을 처리하는 코드에서는 `APIView` 클래스에 의해서 디폴트 지정이 되므로, 대개 수동으로 지정할 일은 없습니다.
+
+아래 코드들은 위에서의 class PostViewSet(viewers.ModelViewSet): 에서 ModelViewSet에서 이미 APIView를 상속중
 
 In [64]:
 
@@ -849,7 +904,7 @@ Out[67]:
 
 `response` 객체는 아직 변환할 준비만 하고 있을 뿐, 아직 `JSON 직렬화` 변환은 수행하지 않았습니다. `.rendered_content` 속성에 접근할 때, 변환이 이뤄집니다.
 
-In [68]:
+In [68]: #이 시점에 직렬화 수행함
 
 ```
 response.rendered_content.decode('utf8')
@@ -865,7 +920,7 @@ Out[68]:
 
 위에서는 디테일하게 `django-rest-framework` 뷰에서의 `JSON 직렬화` 순서에 대해서 살펴봤는데요. 실제로는 다음과 같이 간결하게 사용합니다.
 
-In [84]:
+In [84]: # ListAPIView도 뜯어보면 ModelViewSet중에 몇개만 구성되어있음. 비슷하게 모두구성됨
 
 ```
 from rest_framework import generics
@@ -877,7 +932,17 @@ class PostListAPIView(generics.ListAPIView):
 
 이렇게 간결하게 정의한 뷰 만으로 다음과 같이 JSON 응답을 만들어낼 수 있습니다.
 
-In [86]:
+Tip: ModelViewSet은 urls.py에서도 여러가지 url들을 활용해야하므로 urlpatterns= [ ]앞에 아래코드가 꼭 필요하다
+
+```
+router = DefaultRouter()
+router.register(r'posts', views.PostViewSet) # 이렇게 posts는 url프리픽스로 지정하면 posts/하면 목록나오고 posts/{pk}하면 특정 글에대해 열림
+
+```
+
+
+
+In [86]: (???)
 
 ```
 from django.http import HttpRequest
