@@ -113,11 +113,12 @@ json/pickle 라이브러리는 파이썬 표준 라이브러리로서 파이썬 
 >>> json.dumps(User.objects.first())
 
 TypeError: Object of type 'User' is not JSON serializable
+
 ```
 
-----------------
+Error: django에 데이터타입인 User에 대해 직렬화 비직렬화로직은 파이썬 표준json라이브러리가 알수없기때문에 하지못하는것(알려주면 가능해짐)
 
-
+--------
 
 __이제 장고의 데이터타입에 대해 JSON 직렬화를 수행하는 방법에 대해서 살펴보겠습니다.__
 
@@ -125,12 +126,19 @@ __이제 장고의 데이터타입에 대해 JSON 직렬화를 수행하는 방�
 
 본 에피소드를 시작하기에 앞서, Jupyter Notebook을 통해 직렬화 연습을 해보기 위해, [Jupyter Notebook에서 Django 프로젝트 세팅해서 모델 돌려보기](https://nomade.kr/doc/django/jupyter-notebook에서-django-프로젝트-세팅해서-모델-돌려보기/) 내역을 먼저 수행해주세요. 해당 내역을 잘 수행하셨다면, 다음 코드처럼 `Post`모델을 통해 DB 쿼리하실 수 있어요.
 
-설명은 해당 포스팅에 잘 나와있구요. 코드만 모아서 한 번에 실행해보겠습니다. :)
+### 모델 돌려보기 해당 내용
 
-In [1]:
+django로 간단한 장고 코드 검증을 위해 jupyter notebook밖에서 장고 프로젝트를 생성/세팅하는것은 번거로운일. Jupyter notebook밖으로 나가고싶지않다. >> 가능함
+
+#### 최소한의 settings
+
+model을 쓸려면 데이터베이스가 필요하다, 이 역시 별도 DB세팅을 하는 것은 사치이므로, SQLite3를 메모리 베이스로 세팅함.
+
+Tip: 실제 장고 프로젝트에서 프로젝트와 연동되는 jupyter notebook을 쓰고자 한다면 django-extensions의 shell_plus 명령을 써서 가능
+
+Jupiter notebook python파일 만들고 시작
 
 ```
-# 최소한의 settings 설정
 import django
 import os
 
@@ -141,16 +149,42 @@ DATABASES = {
         'NAME': ':memory:',
     }
 }
-ROOT_URLCONF = '__main__'
+ROOT_URLCONF = '__main__'  #현재 노트북 파일을 지징하도록 지정
 
 urls = []
 
-os.environ['DJANGO_SETTINGS_MODULE'] = '__main__'
+os.environ['DJANGO_SETTINGS_MODULE'] = '__main__'  #현재 노트북 파일 참고하도록 지정
 
 django.setup()
 
+#Form 클래스를 정의하고 써봅시다
+from django import forms
 
-# 모델 정의
+def odd_validator(value):
+    if value % 2 == 0:
+        raise forms.ValidationError('내가 짝수라니 !!!')
+        
+class QuizForm(forms.Form):
+    answer = forms.IntegerField(validators=[odd_validator]) #숫자만 받고, 짝수검사
+    
+data = {'answer': 10}
+```
+
+```
+form = QuizForm(data)
+form.is_valid()
+>>>False
+form.errors
+>>> 에러내용 확인가능
+
+```
+
+### 모델 정의(지금 파일이아닌 메모리에 DB가 있을뿐, migration은 해줘야함)
+
+Tip: python manage.py sqlmigrate <앱이름> <migrate번호>로 migration spq내역확인가능
+
+```
+
 from django.db import models
 
 class Post(models.Model):
@@ -165,6 +199,7 @@ class Post(models.Model):
     def __str__(self):
         return self.title
 
+# Jupyter Notebook내에서만 장고 프로젝트를 운영하다보니 마이그레이션을 할 여건이 안되어서, 모델 클래스 내역대로 DB에 반영못해., 따라서 모델 클래스 내역대로 Raw SQL로 DB테이블을 생성해보겠습니다.
 
 # DB TABLE 생성
 from django.db import connection
