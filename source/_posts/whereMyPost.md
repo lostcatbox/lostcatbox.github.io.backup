@@ -177,5 +177,112 @@ print(post_list)
 
 
 
+home.html에서 조회
+
+```
+<body>
+
+<form action = '{% url 'post:index' %}' accept-charset="utf-8" name = "post_infor" method = "get">
+<fieldset style = "width:150">
+<legend>택배 조회</legend>
+회사 : <select name="post_company">
+<option value="CJ대한통운"> CJ대한통운 </option>
+
+</select>
+
+운송장번호 : <input type = "text" name = "post_number"/><br><br>
+<input type = "submit" value = "조회"/>
+
+</form>
+</body>
+```
+
+
+
+index.html에서 결과 표시
+
+```
+<form action = '{% url 'post:home' %}' accept-charset="utf-8" name = "post_backtohome" method = "get">
+   <input type = "submit" value = "돌아가기"/>
+
+</form>
+```
+
+뷰에서 쓸 크롤링 함수를 따로 utils.py로 뺏다
+
+```
+from selenium import webdriver
+from bs4 import BeautifulSoup
+
+
+def postview(post_company='CJ대한통운', post_number='349159576510'):
+
+    if post_company == 'CJ대한통운':
+
+        driver = webdriver.Chrome('/Users/lostcatbox/myproject/whereMyPost/chromedriver')
+        driver.implicitly_wait(15)
+        driver.get('https://www.cjlogistics.com/ko/tool/parcel/tracking')
+
+
+        driver.find_element_by_id('paramInvcNo').send_keys(post_number)
+
+        driver.find_element_by_xpath('//*[@id="btnSubmit"]').click()
+
+        html = driver.page_source
+        soup = BeautifulSoup(html, 'html.parser')
+        post_detail = soup.select('#statusDetail > tr')
+
+
+        post_list = []
+
+        for x in post_detail:
+            post_list.append(x.text.strip())
+
+        driver.close()
+
+        print(post_list)
+        return post_list
+
+```
+
+Views.py 구성을 단순하게(앞에 함수를 호출만함으로 간단해짐)
+
+```
+from django.shortcuts import render
+from .utils import postview
+
+def index(request):
+    post_company = request.GET['post_company']
+    post_number = request.GET['post_number']
+    data = postview(post_company, post_number)
+
+
+    return render(request, 'post/index.html', {'post':'고양이', 'post_list':data})
+# Create your views here.
+
+def homepage(request):
+
+    return render(request, 'post/home.html')
+
+```
+
+
+
+urls.py 생김새
+
+```
+from django.urls import path, include
+from . import views
+from . import utils
+
+app_name='post'
+urlpatterns = [
+    path('result/', views.index, name='index'),
+    path('', views.homepage, name='home'),
+]
+```
+
+
+
 
 
