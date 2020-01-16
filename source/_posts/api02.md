@@ -480,6 +480,8 @@ Out[15]:
 
 __`QuerySet`에 대한 직렬화를 지원해줍니다만,`Model` 타입에 대한 직렬화는 없습니다.__ 이는 `ModelSerializer`의 도움을 받습니다. (까보면 없다)
 
+Tip: QuerySet타입은 SQL로 해석 CRUD 구현된다.
+
 `rest_framework/renderer.py`내 `JSONRenderer`는 `json.dumps` 함수에 대한 래핑 클래스입니다. 보다 편리한 JSON 직렬화를 도와줍니다. 다음 코드로 직렬화를 수행하실 수 있어요. utf8 인코딩도 추가로 수행해줍니다. (즉 래핑하고있어서 클래스내에 render()함수호출하면 json.dumps일어나게되어있다)
 
 In [21]:
@@ -930,9 +932,9 @@ class PostListAPIView(generics.ListAPIView):
     serializer_class = PostModelSerializer
 ```
 
-이렇게 간결하게 정의한 뷰 만으로 다음과 같이 JSON 응답을 만들어낼 수 있습니다.
+이렇게 간결하게 정의한 뷰 만으로 다음과 같이 JSON 응답을 만들어낼 수 있습니다.(router불필요)
 
-Tip: ModelViewSet은 urls.py에서도 여러가지 url들을 활용해야하므로 urlpatterns= [ ]앞에 아래코드가 꼭 필요하다
+Tip: ModelViewSet은 urls.py에서도 여러가지 url들을 활용해야하므로 urlpatterns= [ ]앞에 아래코드가 꼭 필요하다 (ViewSet은 뷰자체가 4개임)
 
 ```
 router = DefaultRouter()
@@ -954,6 +956,7 @@ request = HttpRequest()
 request.user = DummyUser()
 request.method = 'GET'
 
+#뷰함수호출후 (request) 필요하잖아!
 response = PostListAPIView.as_view()(request)
 response.rendered_content.decode('utf8')
 ```
