@@ -7,7 +7,7 @@ tags: [API, DRF]
 
 # EP 03 - JSON 응답뷰 만들기 (부제 - APIView부터 ViewSet까지)
 
-Tip: render=직렬화, parser=비직렬화
+Tip: render= parser=>구조화된 객체로 만들어줌
 
 장고에서는 뷰를 통해 HTTP요청을 처리합니다.
 
@@ -164,8 +164,6 @@ APIView클래스와 api_view 장식자는 뷰에 여러 기본 설정을 부여�
 
 - `APIView` : CBV
 - `api_view` : FBV >>파이썬 장식자
-
-Slide Type-SlideSub-SlideFragmentSkipNotes
 
 ### APIView [#tutorial](http://www.django-rest-framework.org/tutorial/3-class-based-views/) 샘플
 
@@ -395,8 +393,6 @@ class PostListAPIView(mixins.ListModelMixin, mixins.CreateModelMixin,
         return self.create(request, *args, **kwargs)
 ```
 
-Slide Type-SlideSub-SlideFragmentSkipNotes
-
 `PostDetailAPIView`를 다음과 같이 구현해봅시다. :D
 
 ```python
@@ -417,8 +413,6 @@ class PostDetailAPIView(mixins.RetrieveModelMixin, mixins.UpdateModelMixin,
     def delete(self, request, *args, **kwargs):
         return self.destroy(request, *args, **kwargs)
 ```
-
-Slide Type-SlideSub-SlideFragmentSkipNotes
 
 자. 어떤가요? 코드가 훨씬 간결해졌죠?
 
@@ -484,8 +478,6 @@ class PostDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Post.objects.all()
     serializer_class = PostSerializer
 ```
-
-Slide Type-SlideSub-SlideFragmentSkipNotes
 
 위에서 살펴본 generics 외에도, 다음 generics가 추가로 지원됩니다. 모두 `GenericsAPIView`를 상속받으므로 추가로 상속받으실 필요가 없습니다.
 
@@ -566,5 +558,3 @@ urlpatterns = [
     url(r'', include(router.urls)),
 ]
 ```
-
-차암~ 쉽죠? :D
