@@ -1,5 +1,5 @@
 ---
-title:  api 기본편 5 + 6
+title:  api 기본편 5 + 6 + 7
 date: 2020-01-18 14:31:37
 categories: API
 tags: [API, DRF]
@@ -236,8 +236,6 @@ class PostViewSet(ModelViewSet):
 
 ```
 
-
-
 ## Search 구현(브라우저에서접속하는 api환경에서 ui생성)
 
 [Django Admin의 Search기능](https://docs.djangoproject.com/en/dev/ref/contrib/admin/#django.contrib.admin.ModelAdmin.search_fields)(즉, 장고 admin.py에서 search_fields = ('title', 'content')추가하면 admin환경에서 검색기능 활성화되는것처럼..)과 유사하게 제공합니다. 이는 별도의 검색엔진을 사용하는 것이 아니라, __DBMS의 LIKE/ILIKE 조건절을 활용합니다.__ (순수 DB에 query한다)
@@ -293,5 +291,85 @@ Out[6]: b'\xec\xb2\xab\xeb\xb2\x88\xec\xa7\xb8'
 
         return qs
 
+```
+
+# EP 07. Pagination 처리(ep03앱을 이용)
+
+레코드 갯수가 많은 경우 목록을 하나의 API 요청만으로 받는 것은 피해야할 것입니다. 이럴 때 여러 페이지에 나눠서 요청을 처리할 수 있겠는 데요. 이에 대해 `rest_framework`에서는 여러 페이징 기법을 지원해주고 있습니다.
+
+- ```PageNumberPagination```:```page```인자를 통해 페이징 처리 (page는 페이지수, page_size는 page당 post수)
+  - `http://api.example.org/accounts/?page=4`
+  - `http://api.example.org/accounts/?page=4&page_size=100`
+- ```LimitOffsetPagination```:```limit```인자를 통한 페이징 처리(offset은 레코드정렬순서기준 400번째부터~, limit 까지, limit만 지정시 처음부터 limit까지)
+  - `http://api.example.org/accounts/?limit=100`
+  - `http://api.example.org/accounts/?offset=400&limit=100`
+
+`rest_framework/generics.py` 내 `GenericAPIView`에는 이미 `pagination_class = PageNumberPagination` 설정이었습니다. 하지만, `3.7.0`버전부터는 `디폴트 None`으로 지정으로 변경되었습니다. 현재 (2017년 11월) 최신 버전은 `3.7.3`버전입니다.
+
+
+
+```
+# 버전확인
+pip3 freeze | grep djangorestframework
+```
+
+```
+#models.py 에서 순서 꼭 지정해주기 ordering
+
+class Post(models.Model):
+    title = models.CharField(max_length=100)
+    content = models.TextField()ㄴ
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ('-id',)  #,가 튜플이라는 증거
+
+```
+
+
+
+__Tip: `3.7.0`버전부터 디폴트 페이징 클래스 설정이 `None`으로 [디폴트 설정이 변경](https://github.com/encode/django-rest-framework/commit/107e8b3d23a933b8cdc1f14045d7d42742be53a9#diff-f9716c39348a77db61afdaa2ed35cd87R54)되기에, 낮은 버전을 쓰고 계시더라도 다음과 같이 전역설정을 해두시는 것이 좋습니다. ;) 기본 페이징사이즈도 넣어주는게 좋음__
+
+```python
+# settings.py
+
+REST_FRAMEWORK = {
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 3,
+}
+```
+
+
+
+## 커스텀으로 pagination
+
+```python
+from rest_framework.pagination import PageNumberPagination
+
+class GenericAPIView(ApiView):
+    pagination_class = PageNumberPagination  # 디폴트 지정
+```
+
+하지만 디폴트 설정으로 `PAGE_SIZE`인자가 `None`으로 설정되어있기 때문에, 리스트 처리에서 페이징처리가 되지 않습니다. 다음과 같이 전역으로 `PAGE_SIZE`설정을 하셔도 되구요.
+
+```
+# 프로젝트/settings.py
+
+REST_FRAMEWORK = {
+    'PAGE_SIZE': 20,  # 디폴트 값은 None으로서 페이징 비활성화
+}
+```
+
+각 API별로 `PAGE_SIZE`설정을 다르게 할 수도 있지만, 이는 `Pagination`의 역할이기에 `Pagination`을 커스텀하셔야 합니다.
+
+```python
+from rest_framework.pagination import PageNumberPagination
+
+class PostPageNumberPagination(PageNumberPagination):
+    page_size = 20
+
+class PostViewSet(..):
+    pagination_class = PostPageNumberPagination
 ```
 
