@@ -173,9 +173,7 @@ print(post_list)
 
 각 택배사 홈페이지에 따라 크롤링하는 방법을 선택
 
-맨 처음으로 CJ대한통운으로 선택,
-
-
+### CJ대한통운
 
 home.html에서 조회
 
@@ -284,5 +282,36 @@ urlpatterns = [
 
 
 
+### CU 택배조회
 
+#### 오류
+
+크롤링 도중 html selector copy를 해도 return 값이 없었다.
+
+이유는 아래와 같이 택배조회의 결과값이 iframe을 통해 보여주는 것이였다.
+
+\<iframe src="#" width="100%" height="500" scrolling="no" frameborder="0" title="배송상태" class="mt20">\</iframe>
+
+따라서 selenium이 제대로 html을 받아오지 못하였다.
+
+#### 해결
+
+iframe안에 html있다고 생각하면 편합니다. 즉, iframe html안에 들어가야 크롤링이가능합니다.
+
+`driver.page_source`로 selenium이 현재 가져온 정보를 일일히 확인하면서 찾아본 결과 아래와 같이 코드를 짜면 원하는대로 크롤링 가능하였다.
+
+```
+# iframe태그가  한개면 리스트 반환이 아니므로 바로 써도됨, 여러개면 리스트로 반환되므로 순서도알아야함
+iframe = driver.find_elements_by_tag_name('iframe')
+
+driver.switch_to.frame(iframe[0])
+
+html = driver.page_source
+soup = BeautifulSoup(html, 'html.parser')
+post_detail = soup.select(<원하는위치>)
+```
+
+
+
+\+ tip:  원래있던 전체 웹 페이지로 나오려면 `switch_to_default_content()` 함수로 빠저나와야 합니다.
 
