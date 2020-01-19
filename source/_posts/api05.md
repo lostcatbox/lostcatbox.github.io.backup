@@ -282,7 +282,7 @@ Out[6]: b'\xec\xb2\xab\xeb\xb2\x88\xec\xa7\xb8'
         search = self.request.GET.get('search','')
 
         if search:
-            qs = filter(title__icontains=search)
+            qs = qs.filter(title__icontains=search)
         if self.request.user.is_authenticated:  #로그인상태라면
             qs = qs.filter(
                 author=self.request.user
