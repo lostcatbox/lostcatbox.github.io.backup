@@ -1,8 +1,8 @@
 ---
 title: 기타 꿀팁과 햇갈리는 것 정리
 date: 2019-10-19 19:10:12
-categories: Terminal
-tags: [Terminal, Basic]
+categories: [Tip]
+tags: [Tip, Basic]
 ---
 
 
@@ -11,9 +11,7 @@ tags: [Terminal, Basic]
 
 ------
 
-Rest api (???)
-
-
+Rest api>> django-rest-framwork 학습함 >> 간단히 말해서 개발자가 데이터를 제공해줄때의 보편화된 양식
 
 
 
