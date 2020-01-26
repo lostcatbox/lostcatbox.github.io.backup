@@ -1,5 +1,5 @@
 ---
-title: api 기본편 10
+title: api 기본편 10 + 11
 date: 2020-01-23 15:52:04
 categories: API
 tags: [API, DRF]
@@ -271,3 +271,190 @@ class SimpleRateThrottle(BaseThrottle):
   - django.core.cache.backends.dummy.DummyCache
 
 장고 Cache([공식문서](https://docs.djangoproject.com/en/1.11/topics/cache/))에 대해서는 별도 문서/VOD를 통해 살펴보도록 하겠습니다.
+
+# EP 11 rest_framework 대표적인 디폴트 설정 살펴보기
+
+## 이번 시간에는 ...
+ rest_framework의 디폴트 설정을 살펴봄으로서, DRF의 기본동작에
+
+대해서 이해해봅시다.
+ 디폴트 설정은 rest_framework/settings.py내 DEFAULTS 사전을
+
+통해 확인하실 수 있습니다.
+ (버전 3.7.3 기준, 2017년 11월 기준, 최신버전)
+
+## HTTP 최종 응답 생성
+
+```
+DEFAULTS = { 
+	'DEFAULT_RENDERER_CLASSES': (
+    'rest_framework.renderers.JSONRenderer', 
+    'rest_framework.renderers.BrowsableAPIRenderer',  
+    ),
+}
+```
+
+- render란: client가 요청한것을 서버에서 응답을 만들때 render호출
+
+- JSONRenderer : JSON 포맷  #api응답
+
+- BrowsableAPIRenderer : Browsable API 포맷 응답 (HTML) #웹브라우저로 접속 #(django-debug-toolbar이용가능)
+
+  본 설정을 추가/삭제함으로서 응답 지원포맷을 조정할 수 있습니다.
+
+## HTTP 요청 내역 처리
+
+```
+DEFAULTS = { 
+	'DEFAULT_PARSER_CLASSES': (
+    'rest_framework.parsers.JSONParser'
+    'rest_framework.parsers.FormParser',
+    'rest_framework.parsers.MultiPartParser'
+), }
+
+```
+
+- Parser: client가 서버로 요청한것을 처리할때 호출됨
+- JSONParser : JSON 포맷 요청 처리
+- FormParser : enctype application/x-www-form-urlencoded 요청 처리
+- MultiPartParser : encytpe multipart/form-data 요청 처리 __(파일 업로드 지원)__
+
+## **각** HTTP 요청의 인증
+
+```
+DEFAULTS = { 'DEFAULT_AUTHENTICATION_CLASSES': (
+    'rest_framework.authentication.SessionAuthentication',
+    'rest_framework.authentication.BasicAuthentication'
+) }
+```
+
+- Id/pw인증지원>> 장고 기본 지원 , Token인증지원>> DRF가 지원해줌
+
+- SessionAuthentication : 세션을 통해 인증 유저를 찾습니다.
+
+- BasicAuthentication : 각 HTTP 요청에 대해 Basic Authentication을 수행 (헤더에 Authentication을 참조하며 base64로 인코딩되어있는 정보임.)
+
+  하지만, 이것만으로는 부족합니다. __API에서는 Token인증이 빠질 수 없죠.__
+
+## **각**API 호출권한체크
+디폴트 설정으로 모든 접근을 허용 (**AllowAny**) 합니다.
+
+```
+
+DEFAULTS = { 
+	'DEFAULT_PERMISSION_CLASSES': (
+		'rest_framework.permissions.AllowAny', 
+		),
+}
+```
+
+## **특정 시간 내**, **최대 요청수 제한** (Throttling)
+
+디폴트로 Throtting 꺼짐
+
+```
+DEFAULTS = { 
+	'DEFAULT_THROTTLE_CLASSES': (),
+	'DEFAULT_THROTTLE_RATES': {
+        'user': None,
+        'anon': None,
+    }
+}
+
+```
+
+- DEFAULT_THROTTLE_CLASSES : 최대 호출를 제한할 로직 (클래스)
+- DEFAULT_THROTTLE_RATES : 최대 호출 횟수 지정
+
+## **페이징 처리**
+
+디폴트로 페이징 처리 꺼짐
+
+```
+DEFAULTS = { 
+	'DEFAULT_PAGINATION_CLASS': None 
+	'PAGE_SIZE': None
+}
+```
+
+- DEFAULT_PAGINATION_CLASS : 페이징을 처리할 로직 (클래스)
+- PAGE_SIZE : 1페이지 최대 갯수
+
+## **필터** (**문자열 매칭 검색 기능**)
+
+디폴트로 필터:꺼짐 DB에서 간단한검색이라고 생각하면됨 (SQL where사용)
+
+```
+DEFAULTS = { 
+  'DEFAULT_FILTER_BACKENDS': (), 
+  'SEARCH_PARAM': 'search', 
+  'ORDERING_PARAM': 'ordering',
+}
+```
+
+## **날짜**/시간 포맷
+```
+from rest_framework import ISO_8601 # 실제 값은 문자열 "iso-8601"
+
+DEFAULTS = {
+        # Input and output formats
+    'DATE_FORMAT': ISO_8601, 
+    'DATE_INPUT_FORMATS': (ISO_8601,),
+    
+    'DATETIME_FORMAT': ISO_8601, 
+    'DATETIME_INPUT_FORMATS': (ISO_8601,),
+    
+    'TIME_FORMAT': ISO_8601,
+    'TIME_INPUT_FORMATS': (ISO_8601,), 
+}
+# 궁금하다면 ISO 8601포맷 찾아보기
+```
+
+## 인코딩
+
+```
+DEFAULTS = {
+    'UNICODE_JSON': True, 
+    'COMPACT_JSON': True, 
+    'STRICT_JSON': True, 
+    'COERCE_DECIMAL_TO_STRING': True, 
+    'UPLOADED_FILES_USE_URL': True,
+}
+```
+
+- 디폴트 UNICODE_JSON = True
+  - json.dumps 시에, ensure_ascii=False 옵션을 적용함 => UTF8 인코딩
+
+- 디폴트 COMPACT_JSON = True
+
+  - json.dumps 시에, separators 옵션을 적용
+
+    - True : ','와 ':'을 적용 => 띄워쓰기없음
+
+    - False : ', '와': '을적용
+
+- 디폴트 STRICT_JSON = True
+
+  - json.dumps 시에, allow_nan=False 옵션을 적용
+
+    - NaN : Not-A-Number 의 약어
+
+    - nan/inf/-inf 값이 있을 경우 ValueError 예외 발생
+
+- 디폴트 COERCE_DECIMAL_TO_STRING = True
+  - Decimal을 문자열로 강제 변환(python은 decimal, float형이 있지만 js는 실수형밖에없으므로 float>float으로 변환, deciamal>문자열 로 변환)
+
+- 디폴트UPLOADED_FILES_USE_URL=True
+  - 파일명대신에URL을제공할지여부
+
+## Browseable API
+
+```
+DEFAULTS = {
+	'HTML_SELECT_CUTOFF': 1000,
+	'HTML_SELECT_CUTOFF_TEXT': "More than {count} items...",
+}
+```
+
+- HTML_SELECT_CUTOFF : Choice 옵션에서 Option 최대 허용수
+- HTML_SELECT_CUTOFF_TEXT : 초과 시의 안내 메세지
