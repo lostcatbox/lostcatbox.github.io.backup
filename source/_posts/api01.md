@@ -201,8 +201,8 @@ CLI 프로그램에서 http 명령을 통해 사용하실 수 있어요. 다음�
 
 ```
 쉘> http GET 요청할주소 GET인자명==값 GET인자명==값
-쉘> http --json POST 요청할주소 GET인자명==값 GET인자명==값 POST인자명=값 POST인자명=값
-쉘> http --form POST 요청할주소 GET인자명==값 GET인자명==값 POST인자명=값 POST인자명=값
+쉘> http --json POST 요청할주소 GET인자명==값 GET인자명==값 POST인자명=값 POST인자명=값    #json 방식 (디폴트임)
+쉘> http --form POST 요청할주소 GET인자명==값 GET인자명==값 POST인자명=값 POST인자명=값    #multipartform방식
 쉘> http PUT 요청할주소 GET인자명==값 GET인자명==값 PUT인자명=값 PUT인자명값
 쉘> http DELETE 요청할주소 GET인자명==값 GET인자명==값
 ```

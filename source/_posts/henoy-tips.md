@@ -55,7 +55,18 @@ i를 누르면 edit mode
 # 파이참에서
 
 ```
-shift+shift는 프로젝트내에서 파일찾기임
+
+#프로젝트내에서 파일찾기임
+shift+shift
+
+# 클래스안에서 재정의할수있는 것들 보여줌
+control + o
+
+# import할것 자동으로 찾아서 입력해줌
+option + enter
+
+
+
 ```
 
 # Django
