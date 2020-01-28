@@ -43,7 +43,7 @@ class PostSerializer(ModelSerializer):
             fields = ('id', 'author_username', 'message', 'photo')
 ```
 
-```
+```python
 # 앱/views.py
 from rest_framework.authentication import TokenAuthentication 
 from rest_framework.permissions import IsAuthenticated
