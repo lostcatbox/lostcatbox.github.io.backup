@@ -242,3 +242,36 @@ settings.INSTALLED_APPS 에 "bootstrap3"
 9, 18, 27, 36, 45, 54, 63, 72, 81]
 지금껏 우리는 프로그램 흐름을 제어하는 if문, while문, for문에 대해 알아보았다. 아마도 여러분은 while문과 for문을 보면서 2가지가 아주 비슷하다는 느낌을 받았을 것이다. 실제로 for문을 사용한 부분을 while문으로 바꿀 수 있는 경우도 많고, while문을 for문으로 바꾸어서 사용할 수 있는 경우도 많다.
 ```
+
+
+
+# 외부망에서 localhost
+
+## Ngrok사용하기
+
+NAT와 Proxy기반으로 동작해서 localhost에서 어딘지 알 수 없는 서버(이하 A)에 그 정보를 전송하고, 퍼블릭 환경에서 로컬호스트로 접근하기 위해서는 A서버에 request를 보내면 그것을 내 localhost로 proxy(중계)해준다고 생각하면 된다.
+
+![?scode=mtistory2&fname=https%3A%2F%2Fk.kakaocdn.net%2Fdn%2FcSYoTr%2FbtqvCJOp5tX%2FXpceteh0Cj1dnbd9NwYL9K%2Fimg](https://img1.daumcdn.net/thumb/R1280x0/?scode=mtistory2&fname=https%3A%2F%2Fk.kakaocdn.net%2Fdn%2FcSYoTr%2FbtqvCJOp5tX%2FXpceteh0Cj1dnbd9NwYL9K%2Fimg.png)
+
+## [설치하기](https://dashboard.ngrok.com/get-started)
+
+![스크린샷 2020-01-31 오전 12.55.11](https://tva1.sinaimg.cn/large/006tNbRwgy1gbf10zr581j315e0sstf1.jpg)
+
+```
+# 3번과정은 계정의 인증이 ngrok.yml파일에 추가되고, 더많은 기능들 대시 보드에 나열됨
+
+ $ ./ngrok authtoken 1X7aYWPuFKYzvewLbnNoMo71kZi_2uzbB966Q4TU5cpgNPKhy
+
+# 설명서 읽기
+$ ./ngrok help
+
+# 포트 2802에서 HTTP 터널을 시작하려면 다음을 실행하십시오.
+$ ./ngrok http 2802
+
+
+```
+
+마지막로 실행하면 forwarding 을 무슨서버에서 무슨서버로 해주는지 나오고 이와 동일한 로컬주소를 만들어서 runserver해주면된다.
+
+
+
