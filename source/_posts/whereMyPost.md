@@ -1,3 +1,15 @@
+---
+title: 기타 꿀팁과 햇갈리는 것 정리
+date: 2019-01-08 15:17:12
+categories: [Project]
+tags: [Project, basic]
+
+---
+
+
+
+
+
 
 
 # whereMyPost
@@ -11,9 +23,36 @@
 ## 구현할 기능(중요도 순)
 
 - 택배사 선택후 운송장 번호 입력하면 택배 정보가 뜨는 (url로 안내함 or return값 전부 보여주던가)
+
 - 사용자가 조회 한번 햇던 운송장 번호와 택배사를 저장해놓고 바로 다시조회할수있도록구현
+
 - 조회번호 '-'상관없이 그냥 다 number로 받아드릴수있게 구현하자
-- 
+
+  (택배는 )
+
+  python requests session 에서 _csrf값 가져오기
+
+- api로 연결후 json 응답받아야함.
+
+- 카카오채널에 최근 검색기록으로 바로 가져와서 클릭시 가져옴
+
+- 나중에 참고하기 
+
+- 응답없거나 잘못된 송장번호일경우 따로 알려주기
+
+- 크롤링 참고 (https://beomi.github.io/2017/01/20/HowToMakeWebCrawler-With-Login/)
+
+- 배포 연습
+
+- AWS 서버 구성
+
+- DNS, 프로토콜, ssh, zsh, 
+
+- Requests 라이브러리 쓰는거 꼭 자세히 알기 
+
+- 세션 쿠키 개념 웹
+
+  https://github.com/iBluemind/armatis
 
 # Realize
 
@@ -329,7 +368,36 @@ post_detail = soup.select(<원하는위치>)
 ## 카카오 채널의 한계점
 
 - 5초 이내로 답변하지 않으면 응답오류가 뜸>>따라서 크롤링으로 데이터를 던저주는것은 너무 힘듬 >>> 각 택배사별로 api를 따와서 해야할듯
-- 
+
+
+
+# 크롤링포기>api로 전환
+
+## 회사별 api 정보 가져오기
+
+```
+# import
+import requests
+
+# url
+url = "http://hacksg.tistory.com"
+
+# get
+r = requests.get(url, params={'id': 'ksg', 'pw': 'password!@#'})
+
+print r.status
+
+print r.text
+
+# post
+r = requests.post(url, data={'id': 'ksg', 'pw': 'password!@#'})
+
+print r.stats
+
+print r.text
+```
+
+
 
 
 

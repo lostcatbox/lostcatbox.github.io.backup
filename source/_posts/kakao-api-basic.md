@@ -27,6 +27,10 @@ tags: [Kakao, basic]
 
 [나중에 삭제 예정된 참고자료](https://github.com/Beomi/where-is-my-customs)
 
+
+
+[https://i.kakao.com/docs/key-concepts-parameters#%EB%B4%87%EB%B9%8C%EB%8D%94%EC%97%90-%EB%93%A4%EC%96%B4%EA%B0%80%EB%8A%94-%ED%8C%8C%EB%9D%BC%EB%AF%B8%ED%84%B0-%EA%B0%92](https://i.kakao.com/docs/key-concepts-parameters#봇빌더에-들어가는-파라미터-값)
+
 ## OBT신청하기 [여기](https://i.kakao.com/login)
 
 __주의사항__
