@@ -1,8 +1,8 @@
 ---
-title: aws_python
+title: Elastic Beanstalk
 date: 2020-02-06 15:41:25
 categories: [Elastic Beanstalk]
-tags: [Basic, Elastic Beanstalk]
+tags: [Basic, Elastic Beanstalk, AWS]
 ---
 
 # Elastic Beanstalk
