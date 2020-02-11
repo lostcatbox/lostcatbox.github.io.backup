@@ -36,9 +36,7 @@ eb terminate # 환경을 종료합니다. 프로젝트 작동 종료.
 
 ```
 
-
-
-https://coding-dahee.tistory.com/75
+오류시 참조: https://coding-dahee.tistory.com/75
 
 애플리케이션을 빠르고 쉽게 **배포**하고, **모니터링**하고, **확장**할 수 있습니다. [참고](https://aws.amazon.com/ko/elasticbeanstalk/)
 

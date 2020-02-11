@@ -6,12 +6,6 @@ tags: [Project, basic]
 
 ---
 
-
-
-
-
-
-
 # whereMyPost
 
 ## 만든이유
@@ -396,6 +390,10 @@ print r.stats
 
 print r.text
 ```
+
+
+
+# AWS beanstalk으로 배포완료
 
 
 
