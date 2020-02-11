@@ -7,9 +7,42 @@ tags: [Basic, Elastic Beanstalk, AWS]
 
 # Elastic Beanstalk
 
+## EB CLI 명령어 정리
+
+```
+eb init #  EB CLI를 사용하여 만든 애플리케이션의 기본값을 설정(init의 설정한 값은 현재 디렉터리와 리포지토리에만 적용됩니다)
+
+eb init -i #  EB CLI를 사용하여 만든 애플리케이션의 기본값을 수정
+
+eb create # 환경을 생성.
+
+eb status # 환경의 현재 상태를 확인, red가 뜬다면 로드벨런스 체크해야한다
+
+eb health # 환경 전반의 상태와 환경의 인스턴스에 대한 상태 정보 확인, 
+
+eb events # 이벤트 목록 출력
+
+eb logs # 환경의 인스턴스에서 로그를 가져옵니다. red에서 로드벨런스ip주소 allowedhost추가하기
+
+eb open # 브라우저로 웹 사이트 열림
+
+eb deploy # 서버에 올림. 프로젝트 폴더의 git 리포지토리를 초기화한 경우, 대기 중인 변경 사항이 있더라도 EB CLI가 항상 최신 커밋을 배포합니다. eb deploy를 실행하기 전에 변경 사항을 커밋하여 이를 환경에 배포합니다.
+
+eb config # 실행 중인 환경에 사용 가능한 구성 옵션을 봅니다.
+
+eb terminate # 환경을 종료합니다. 프로젝트 작동 종료.
+
+
+
+```
+
+
+
 https://coding-dahee.tistory.com/75
 
 애플리케이션을 빠르고 쉽게 **배포**하고, **모니터링**하고, **확장**할 수 있습니다. [참고](https://aws.amazon.com/ko/elasticbeanstalk/)
+
+![clearbox-flow-00](https://docs.aws.amazon.com/ko_kr/elasticbeanstalk/latest/dg/images/clearbox-flow-00.png)
 
 - 장점
 
@@ -88,21 +121,6 @@ https://coding-dahee.tistory.com/75
 
 이 자습서로 시작한 애플리케이션 버전을 **Sample Application**이라고 합니다.
 
-#### **애플리케이션 버전을 업데이트하려면**
-
-1. 환경 플랫폼과 일치하는 샘플 애플리케이션을 다운로드하십시오.
-2. **Python** – [python-v1.zip](https://docs.aws.amazon.com/ko_kr/elasticbeanstalk/latest/dg/samples/python-v1.zip)
-3. [Elastic Beanstalk 콘솔](https://console.aws.amazon.com/elasticbeanstalk)을 엽니다.
-4. Elastic Beanstalk 애플리케이션 페이지에서 **getting-started-app**을 선택한 다음 **GettingStartedApp-env**를 선택합니다.
-5. **개요** 섹션에서 **업로드 및 배포**를 선택합니다.
-6. **파일 선택**을 선택한 다음 다운로드한 샘플 애플리케이션 소스 번들을 업로드하십시오.
-7. 콘솔은 자동으로 새 고유 레이블로 **버전 레이블**을 채웁니다. 고유한 버전 레이블을 입력하는 경우 고유한 레이블인지 확인하십시오.
-8. **배포**를 선택합니다.
-
-Elastic Beanstalk가 Amazon EC2 인스턴스에 파일을 배포하는 동안, 환경의 대시보드에서 배치 상태를 볼 수 있습니다. 애플리케이션 버전이 업데이트되는 동안 **Environment Health(환경 상태)**는 회색입니다. 배포가 완료되면 Elastic Beanstalk에서 애플리케이션 상태 확인을 수행합니다. 애플리케이션이 상태 확인에 응답하면 상태가 정상으로 간주되고 상태가 녹색으로 돌아갑니다. 환경 대시보드는 새로운 **실행 버전**—**버전 레이블**로 제공한 이름을 표시합니다.
-
-Elastic Beanstalk는 또한 새 애플리케이션 버전을 업로드하고 애플리케이션 버전 테이블에 추가합니다. 테이블을 보려면, **getting-started-app**을 선택하고 **애플리케이션 버전**을 선택합니다.
-
 ### 환경 구성
 
 애플리케이션에 더 적합하도록 환경을 구성할 수 있습니다. 예를 들어 컴퓨팅 집약적인 애플리케이션이 있는 경우 애플리케이션을 실행 중인 Amazon Elastic Compute Cloud(Amazon EC2) 인스턴스의 유형을 변경할 수 있습니다. 구성 변경을 적용하기 위해 Elastic Beanstalk는 환경 업데이트를 수행합니다.
@@ -112,66 +130,6 @@ Elastic Beanstalk는 또한 새 애플리케이션 버전을 업로드하고 애
 #### 구성 변경
 
 이 구성 변경 예에서는 환경의 용량 설정을 편집합니다. Auto Scaling 그룹에 2 ~ 4개의 Amazon EC2 인스턴스가 있고 로드 밸런싱 수행 및 자동 조정 환경을 구성한 다음 변경이 발생했는지 확인합니다. Elastic Beanstalk는 추가 Amazon EC2 인스턴스를 생성하여 처음 생성한 단일 인스턴스에 추가합니다. 그런 다음 Elastic Beanstalk는 두 인스턴스를 환경의 로드 밸런서와 연결합니다. 결과적으로 애플리케이션의 응답성이 향상되고 가용성이 향상됩니다.
-
-**환경 용량을 변경하려면 다음을 수행합니다.**
-
-1. [Elastic Beanstalk 콘솔](https://console.aws.amazon.com/elasticbeanstalk)을 엽니다.
-
-2. 해당 환경의 [관리 페이지](https://docs.aws.amazon.com/ko_kr/elasticbeanstalk/latest/dg/environments-console.html)로 이동합니다.
-
-3. [**Configuration**]을 선택합니다.
-
-4. **용량** 구성 범주에서 **수정**을 선택합니다.
-
-5. **Auto Scaling 그룹** 섹션에서 **환경 유형**을 **로드 밸런싱 수행**으로 변경합니다.
-
-6. **인스턴스** 행에서 **최대**를 `4`로 변경하고 **최소**를 `2`로 변경합니다.
-
-7. **Modify capacity(용량 수정)** 페이지에서 **저장**을 선택합니다.
-
-8. **Configuration overview(구성 개요)** 페이지에서 **적용**을 선택합니다.
-
-9. 이 업데이트가 현재 인스턴스를 모두 대체한다는 경고가 표시됩니다. [**Confirm**]을 선택합니다.
-
-10. 탐색 창에서 **이벤트**를 선택합니다.
-
-    환경이 업데이트되는 데 몇 분이 걸릴 수 있습니다. 완료되었는지 알아보려면 이벤트 목록에서 이벤트 **Successfully deployed new configuration to environment(새 구성이 환경에 성공적으로 배포되었습니다)**를 찾아봅니다. 이를 통해 Auto Scaling 최소 인스턴스 개수가 2로 설정되었음을 확인합니다. Elastic Beanstalk는 자동으로 두 번째 인스턴스를 시작합니다.
-
-#### 구성 변경 확인
-
-환경 업데이트가 완료되고 환경이 준비되면 변경 사항을 확인하십시오.
-
-**용량 증가를 확인하려면**
-
-1. 탐색 창에서 [**Health**]를 선택합니다.
-
-2. **확장된 상태 개요** 페이지를 봅니다.
-
-   **총** 인스턴스 수가 **2**임을 알 수 있습니다. 또한 **전체** 줄 아래에 두 개의 Amazon EC2 인스턴스가 나열되어 있음을 알 수 있습니다. 환경 용량이 2개의 인스턴스로 증가했습니다.
-
-   
-
-### 삭제
-
-축하합니다! 샘플 애플리케이션을 AWS 클라우드에 배포하고, 새 버전을 업로드하고, 구성을 수정하여 두 번째 Auto Scaling 인스턴스에 추가했습니다. 사용하지 않는 서비스에 대해 요금이 청구되지 않도록 하려면 모든 애플리케이션 버전을 삭제하고 환경을 종료하십시오. 또한 환경에서 생성한 AWS 리소스가 삭제됩니다.
-
-**애플리케이션 및 모든 관련 리소스를 삭제하려면**
-
-1. 모든 애플리케이션 버전 삭제.
-   - Elastic Beanstalk 콘솔](https://console.aws.amazon.com/elasticbeanstalk)을 엽니다.
-   - Elastic Beanstalk 애플리케이션 페이지에서 **getting-started-app**을 선택합니다.
-   - 탐색 창에서 **애플리케이션 버전**을 선택합니다.
-   - **애플리케이션 버전** 페이지에서 삭제할 모든 애플리케이션 버전을 선택한 후 **삭제**를 선택합니다.
-   - **삭제**를 선택하여 이 버전을 삭제하고자 함을 확인합니다.
-   - **Done**을 선택합니다.
-2. 환경 종료.
-   * **getting-started-app**을 클릭한 다음 **GettingStartedApp-env**를 클릭하여 환경 대시보드를 엽니다.
-   * **작업**을 선택한 후 **Terminate Environment(환경 종료)**를 선택합니다.
-   * 환경 이름을 입력하고 **종료**를 선택하여 **GettingStartedApp-env** 종료를 확인합니다.
-3. getting-started-app 애플리케이션을 삭제합니다.
-   - 환경 대시보드의 왼쪽 상단에서 **Elastic Beanstalk**을 선택하여 기본 Elastic Beanstalk 대시보드를 엽니다.
-   - Elastic Beanstalk 애플리케이션 페이지에서 **getting-started-app** 애플리케이션에 대해 **작업**을 선택한 다음 **애플리케이션 삭제**를 선택합니다.
-   - 애플리케이션 이름을 입력하고 **삭제**를 선택하여 **getting-started-app** 삭제를 확인하십시오.
 
 # Elastic Beanstalk에서의 사용을 위한 개발 머신 구성
 
@@ -210,9 +168,7 @@ GitHub는 프로젝트 코드를 온라인으로 저장할 수 있는 널리 사
 Use the following:
 
 ```
-brew install awscli하세요
-
-
+brew install awscli #brew추천함 환경변수따로 추가안해도됨
 ```
 
 Tip: 만약 pip 로 깔았다면 아래 답변을 참고하자
@@ -306,7 +262,7 @@ Elastic Beanstalk CLI를 사용하여 Elastic Beanstalk에 배포하도록 Pytho
 1. [가상 환경](https://docs.aws.amazon.com/ko_kr/elasticbeanstalk/latest/dg/python-development-environment.html#python-common-setup-venv)에서 프로젝트 디렉터리 트리(`python_eb_app`)의 상단으로 돌아가 다음을 입력합니다.
 
    ```
-   pip freeze >requirements.txt
+   pip freeze >requirements.txt #필수파일
    ```
 
    이 명령은 가상 환경에 설치된 패키지의 이름과 버전을 requirements.txt로 복사합니다. 예를 들어 *PyYAML*의 경우 *3.11*은 가상 환경에 설치되며 파일에는 다음 행이 포함됩니다.
@@ -560,6 +516,8 @@ Django 애플리케이션의 사이트 관리자를 생성하여 웹 사이트�
    ```
    ~/ebdjango$ eb deploy
    ```
+
+   
 
 6. 다음과 같이 사이트 URL에 `/admin/`을 추가하여 브라우저에서 사이트를 열어 관리 콘솔을 봅니다.
 
