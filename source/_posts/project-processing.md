@@ -1,7 +1,7 @@
 ---
 title: 효율적인 프로젝트 진행을 위한 것 
 date: 2020-01-23 19:43:10
-categories: [Tipㅑ]
+categories: [Tip]
 tags: [Basic, Tip]
 ---
 
