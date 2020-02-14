@@ -49,10 +49,6 @@ OBT에 신청해주셔서 감사합니다.”
 
 # 챗봇 만들기 (튜토리얼)
 
-
-
-
-
 ## 시나리오와 블록 만들기
 
 ### 시나리오 설정하기
@@ -157,13 +153,13 @@ OBT에 신청해주셔서 감사합니다.”
 
 다음과 같은 작업 순서 예시를 확인하십시오.
 
-#### Step 1. 발화 중 밑줄이 표시된 ‘라이언’에 인물 엔티티를 태깅합니다. (엔티티명: `@sys.person.name`)
+### Step 1. 발화 중 밑줄이 표시된 ‘라이언’에 인물 엔티티를 태깅합니다. (엔티티명: `@sys.person.name`)
 
 ![img](https://i.kakao.com/docs/assets/tutorial/utterance-create-01.png)
 
 밑줄이 나타난 단어를 드래그하면, 엔티티를 고를수 있는 팝업이 나타납니다. 필요에 따라 봇 작업자는 추천 엔티티 또는 전체 엔티티 목록에서 희망하는 엔티티를 부여할 수 있습니다.
 
-#### Step 2. 밑줄이 없더라도 ‘나이’처럼 특정 단어에 엔티티 태깅을 할 수 있습니다. (엔티티명 : `@age`)
+### Step 2. 밑줄이 없더라도 ‘나이’처럼 특정 단어에 엔티티 태깅을 할 수 있습니다. (엔티티명 : `@age`)
 
 ![img](https://i.kakao.com/docs/assets/tutorial/utterance-create-02.png)
 
@@ -171,7 +167,7 @@ OBT에 신청해주셔서 감사합니다.”
 
 입력된 발화에 대해서 최종적으로 엔티티 태깅이 완료하고 나면 패턴 발화가 생성됩니다.
 
-#### Step 3. 의도 확인에 중요한 정보는 `{sys.person.name}`, `{age}` 엔티티에 있음을 확인합니다.
+### Step 3. 의도 확인에 중요한 정보는 `{sys.person.name}`, `{age}` 엔티티에 있음을 확인합니다.
 
 ![img](https://i.kakao.com/docs/assets/tutorial/utterance-create-03.png)
 

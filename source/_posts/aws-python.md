@@ -36,7 +36,13 @@ eb terminate # 환경을 종료합니다. 프로젝트 작동 종료.
 
 ```
 
-오류시 참조: https://coding-dahee.tistory.com/75
+>Tip: .gitignore에서 숨기고싶은 파일을 등록하면 eb deploy하는중에서도 .gitignore를 참고하여버려서 원하는 값이 적절한 코드에 들어가지않을수있다. 
+>
+>이때는 .ebignore 파일을 만들어주면 .ebignore파일이 있을시 EB CLI는 .gitignore파일을 참조하지 않으므로 적절한 해결이 될수있다. 
+>
+>
+
+다른 오류시 참조: https://coding-dahee.tistory.com/75
 
 애플리케이션을 빠르고 쉽게 **배포**하고, **모니터링**하고, **확장**할 수 있습니다. [참고](https://aws.amazon.com/ko/elasticbeanstalk/)
 
@@ -161,7 +167,7 @@ GitHub는 프로젝트 코드를 온라인으로 저장할 수 있는 널리 사
 
 또한 프로젝트 폴더의 콘텐츠 대신 [빌드 아티팩트(WAR 또는 ZIP 파일)를 배포하도록 EB CLI를 구성](https://docs.aws.amazon.com/ko_kr/elasticbeanstalk/latest/dg/eb-cli3-configuration.html#eb-cli3-artifact)할 수도 있습니다
 
-#### Clone this repository
+### Clone this repository
 
 Use the following:
 
@@ -279,7 +285,7 @@ Elastic Beanstalk CLI를 사용하여 Elastic Beanstalk에 배포하도록 Pytho
 
 ## Django 
 
-#### 가상환경 만들어 시작
+__가상환경 만들어 시작__
 
 ## Elastic Beanstalk에 맞게 Django 애플리케이션 구성
 

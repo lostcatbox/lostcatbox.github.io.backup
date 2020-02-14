@@ -395,6 +395,14 @@ print r.text
 
 # AWS beanstalk으로 배포완료
 
+## 배포 중 문제점들
+
+### 오류: .gitignore를 쓰면...
+
+aws 인스턴스의 ip 주소값을 공유하지 않기위해 이것을 secrets.json파일로 따로 다루고 .gitignore에 등록해놨더니, 값은 제대로 읽지만 막상 서버에올릴때도 이 파일이 무시되어 올라가므로 wsgi.py관련 오류가 뜬다.,..
+
+#### 해결
+
 
 
 

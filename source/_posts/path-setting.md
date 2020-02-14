@@ -11,11 +11,9 @@ tags: [Basic, Linux]
 
 ```
 환경변수 확인
-$ echo $PATH
-별다른 설정이 없다.
+$ echo $PATH   ($변수명 하면 호출됨)
 
 $ echo AAA #AAA에 대한 환경변수값 확인
-
 
 $ ls -la
 .bash_profile 이라는 숨김 파일이 있는지 확인한다.
@@ -28,20 +26,19 @@ $ vi .bash_profile  -> vi를 통해 오픈
 $ open .bash_profile  -> 에디터를 통해 오픈
 ```
 
-### 환경 변수 경로 의미
+## 환경 변수 경로 의미
 
 ```
 export PATH=${PATH}  #$앞의 {PATH}의 경우 상위 Path
 
 # 그리고 그 뒤에 다른 Path가 필요할 경우 {PATH}뒤에 : 적어서 경로를 이어줍니다.
-export PATH=${PATH}:/Users/wefw/wgwe/erge/
+export PATH="/Users/wefw/wgwe/erge/:$PATH" #기존의 PATH변수에있던 값들앞에 앞에 쓴 새로운 경로추가함
+
 ```
 
+리눅스 환경은 `.bash_profile`,`.bashrc`에 설정해놓으면 되는데 
 
-
-`.bash_profile`
-`.bashrc`
-에 설정해놓으면 되는데 터미널을 껏다 키면 $PATH 가 초기화되어 계속
+zsh를 쓰는 나의 환경에서는 iterms를 껏다 키면 $PATH 가 초기화되어 계속
 
 ```
 source ~/.bash_profile
@@ -87,30 +84,16 @@ source ~/.bash_profile
 source ~/.bashrc 
 ```
 
+# 환경변수의 활용
 
-
-
-
-
-
-
-
-
-
-
-
------------
-
-# 정리 해야할것 
-
-## SECRET_KEY 분리하기
+SECRET_KEY 분리하기
 
 settings.py 파일에서 비밀 값을 분리하는 방법은 여러가지가 있는데 책에서 소개하는 방법은 2가지이다.
 
 - 환경변수패턴 : SECRET_KEY의 값을 환경변수에 저장하여 참고한다.
 - 비밀파일패턴 : SECRET_KEY의 값을 별도 파일에 저장하여 참고한다.
 
-## 1. 환경변수패턴
+## 환경변수패턴
 
 환경변수란 프로세스가 컴퓨터에서 동작하는 방식에 영향을 미치는, 동적인 값들의 모임이다.([위키](https://ko.wikipedia.org/wiki/환경_변수)) 시스템의 실행파일이 놓여 있는 디렉토리의 지정 등 OS 상에서 동작하는 응용소프트웨어가 참조하기 위한 설정이 기록된다. 환경변수를 사용하여 비밀 키를 보관함으로써 걱정 없이 세팅파일을 github 공개 저장소에 추가할 수 있다.
 
@@ -161,7 +144,7 @@ SECRET_KEY = get_env_variable("INSTA_SECRET_KEY")
 
 ------
 
-## 2. 비밀파일패턴
+## 비밀파일패턴
 
 환경변수는 경우에 따라 적용되지 않을 수 있다. (아파치를 웹 서버로 이용하는 등) 이럴 경우에는 JSON 파일에 비밀 키 정보를 입력하고, settings.py에서 참고하도록 설정할 수 있다. 우선 아래와 같이 **secrets.json** 파일을 작성한다. (주의 - 이어지는 항목이 없는 경우, 쌍따옴표 뒤에 콤마(,)를 입력해서는 안된다. python git 갱신이력을 깔끔하게 관리하려고 dictionary 마지막 항목에도 콤마를 추가하는 습관이 있어서 그대로 적용했더니 json에서는 오류가 발생했다.)
 
@@ -202,7 +185,7 @@ SECRET_KEY = get_secret("SECRET_KEY")
 
 # 결론
 
-AWS 루트키가 github 공개 저장소에 추가되면 악용되어서 요금폭탄을 맞을 수도 있다는 이야기는 많이 들어보았다. 하지만 settings에 대해서는 비교적 신경을 쓰지 못했다. Django 초보라면 대부분 SECRET_KEY를 본인의 공개 저장소에 올려본 경험은 있지 않을까? 물론 배포 전에 변경하고 분리하는 것이 가능 하지만, 그에 따른 부작용이 발생 할 수 있으니 처음부터 관리하는게 좋겠다. 앞으로 first commit 이전에 SECRET_KEY를 환경변수 혹은 json 파일로 분리하거나, 초반에는 .gitignore 파일에 settings.py 파일을 추가해 놓는 것도 괜찮겠다는 생각을 했다
+AWS 루트키가 github 공개 저장소에 추가되면 악용되어서 요금폭탄을 맞을 수도 있다는 이야기는 많이 들어보았다. 하지만 settings에 대해서는 비교적 신경을 쓰지 못했다. Django 초보라면 대부분 SECRET_KEY를 본인의 공개 저장소에 올려본 경험은 있지 않을까? 물론 배포 전에 변경하고 분리하는 것이 가능 하지만, 그에 따른 부작용이 발생 할 수 있으니 처음부터 관리하는게 좋겠다. 앞으로 first commit 이전에 SECRET_KEY를 환경변수 혹은 json 파일로 분리하거나, 초반에는 .gitignore 파일에 settings.py 파일을 추가해 놓는 것도 괜찮겠다는 생각을 했다.
 
 # 출처
 
