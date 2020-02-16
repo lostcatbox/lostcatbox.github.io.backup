@@ -5,7 +5,6 @@ categories: Git
 tags: [Git, Basic]
 ---
 
-------
 # Git Hub
 
 -----
@@ -160,11 +159,30 @@ git reset HEAD[file]   #파일명이없다면 add한 파일 전체 취소한다
 
 ### git에 올릴필요없는파일들
 
-./gitignore 에 넣으면 안올라가
+./gitignore에 경로 표시하면 해당 파일 무시됨
+
+예시)
+
+```
+# ./gitignore
+
+secrets.json 
+
+```
+
+그리고 만약 현재 추적당하는 파일을 넣어 추척을 피하고싶다면
+
+`git rm --cached` 명령을 이용하여 캐시를 다 지우고 
+
+다시 `git add .` 명령을 해주자
+
+[자세히](https://git-scm.com/docs/gitignore)
+
+
 
 ### git의 내장 GUI
 
-gitk
+
 ### 콘솔에서 git output을 컬러로 출력하기
 
 git config color.ui true

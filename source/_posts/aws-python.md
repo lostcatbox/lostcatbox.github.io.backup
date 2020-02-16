@@ -618,3 +618,39 @@ Django 애플리케이션의 사이트 관리자를 생성하여 웹 사이트�
   sudo chown -R lostcatbox /usr/local/lib/pkgconfig
   ```
 
+## 로드 밸런서, S3와 IP가 바뀜
+
+### 해결1.
+
+지금 만든 서비스가 단일 인스턴스로 해결된다면 구성>용량>로드 밸런스를 단일 인스턴스로 바꾸면 바로 해결됨 
+
+근본적으로 로드 밸런스가 내부 IP를 이용하여 서버의 상태를 확인하게 되므로 일어나는 문제이므로,,
+
+
+
+### 해결2.
+
+
+
+[참고](https://lhy.kr/elb-healthcheck-for-django?fbclid=IwAR0hJuPy_zomKc18rJWTOyC4Poe3KWXEOIyagPV4L7om9JEwGSNDH4aVC40)
+
+[참고2](https://sanyambansal.wordpress.com/2017/06/26/how-to-make-djangos-allowed_hosts-work-with-aws-elb-health-checks/?fbclid=IwAR2QZg9eXmQZc574ozolOEVBIQ404JdEDWIArlExwkjdDXU1MPttCWij5Kc)
+
+EB에서 오토스케일링 하면서 연결된EC2의 IP가 계속 바뀌더라고요 ㅡ 도메인이나 특정 아이피를 EB에 연결하셔야 해요 ㅡ 아니면 Allowed HOST에 *로 해서 테스트 하실수 있지 않나요?
+
+settings.ALLOWED_HOSTS 부분은 Health Check와는 무관하게,
+서비스되고 있는 장고의 아이피 혹은 도메인이름을 뜻합니다.
+현재 서비스가 52.78.86.29 아이피에서 되고 있기에 위 오류가 발생하는 듯 하구요. 서비스하시는 아이피 혹은 도메인을 ALLOWED_HOSTS에 추가하시고 서비스하실 수 있습니다.
+
+- [김승민](https://www.facebook.com/profile.php?id=100004859527644) [이진석](https://www.facebook.com/allieuslee?hc_location=ufi) 답변감사합니다! 늦게 확인했네요..
+  그런데 말씀하신대로 아이피를 ALLOWED_HOSTS에 추가햇더니 하루정도 문제가 없다가 하루뒤에 새로운 아이피를 또 추가하라고 합니다ㅜ
+  이 아이피가 elastic ip도 아니고, 무엇인지 aws 콘솔에서 인스턴스 관련해서 찾아보려고 해도 안보이네요…[더 보기](https://www.facebook.com/groups/askdjango/permalink/2370270649655131/#)
+
+  숨기기 또는 신고
+
+  
+
+  빈소톡도 EC2를 씁니다.
+  EC2 내역에서 아이피를 확인해보세요.
+
+  그리고 서비스 시에는 아이피로 서비스하시기보다, 도메인을 쓰시는 것이 관리상 유리하실 듯 하네요.

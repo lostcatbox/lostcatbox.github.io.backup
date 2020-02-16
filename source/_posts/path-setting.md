@@ -189,7 +189,5 @@ AWS 루트키가 github 공개 저장소에 추가되면 악용되어서 요금�
 
 # 출처
 
-[oh-my-zsh 사용시 환경변수 (path) 설정하기](http://blog.naver.com/loverman85/221265795874)|\**작성자\** [iCaan](http://blog.naver.com/loverman85)**
-
-
+[oh-my-zsh 사용시 환경변수 (path) 설정하기](http://blog.naver.com/loverman85/221265795874)
 
