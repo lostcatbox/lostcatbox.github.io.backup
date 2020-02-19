@@ -21,7 +21,7 @@ tags: [Review, Tip, Skill]
 
 # 목표
 
-하루 최소 15페이지씩 읽고 이해한다. (시작일20.02.18~)
+하루 최소 10페이지씩 읽고 이해한다. (시작일20.02.18~)
 
 # 1장 - 파이썬다운 생각
 
@@ -320,13 +320,245 @@ evens = a[-0:]
 ['red', 'orange', 'yellow', 'green', 'blue', 'purple']
 ```
 
+할당을 사용하면 슬라이스는 원본 리스트에서 지정한 범위를 대체한다. 튜플 할당과 달리 슬라이스 할당의 길이는 달라도된다.
+
+리스트는 새로 할당된 값에 맞춰 늘어나거나 줄어든다.
+
+```
+>>>
+a
+
+['red', 'orange', 'yellow', 'green', 'blue', 'purple']
+
+>>>
+a[2:4] = [1,2,3,4,5]
+
+>>>
+a
+
+['red', 'orange', 1, 2, 3, 4, 5, 'blue', 'purple']
+
+>>>
+b = a[:]  #start, end index모두 생략시, 새 리스트를 할당하지 않고!!, 슬라이스의 전체 내용을 참조대상의 복사본으로 대체한다
+print(b)
+
+['red', 'orange', 1, 2, 3, 4, 5, 'blue', 'purple']
+```
+
+위에서 즉 한 데이터에 b = a 라고했을때 a가 가르키는 저장위치에 b도 태그로 붙었다라고 볼수있다. 따라서 a와 b는 같은 데이터를 가르키므로 a를 바꾸면 b도 출력되는 데이터가 바뀌는 것을 확인할수있다.
+
+```
+In [29]: print('Before', a)
+    ...: a[:] = [101,102,103]
+Before [101, 102, 103]
+
+In [30]: assert a is b
+
+In [31]: print('After', a)
+After [101, 102, 103]
+
+In [33]:  a is b
+Out[33]: True
+
+In [34]: b
+Out[34]: [101, 102, 103]
+```
+
+## 한 슬라이스에 start, end, stride를 함께 쓰지 말자
+
+슬라이싱 문법은 `somelist[start:end:stride]` 인데 stride를 사용하면 슬라이스 간격을 설정할수있다. 
+
+즉, stride는 매 n번째 아이템을 가져오는 것이다.
+
+```
+In [40]: a = ['red', 'orange', 1, 2, 3, 4, 5, 'blue', 'purple']
+
+In [41]: odds = a[::2] #편하게 짝수번째 아이템들만 가져올수있다
+
+In [42]: odds
+Out[42]: ['red', 1, 3, 5, 'purple'] 
+```
+
+문제는 stride 문법이 버그를 만들어낸다.
+
+예를 들면 파이썬에서 바이트 문자열을 역순으로 만드는 일반적인 방법은 스트라이드 -1로 문자열을 슬라이스하는 것이다.
+
+```
+In [43]: x = b'mongoose' #byte 데이터로 지정은 b'~~'임
+
+In [44]: y = x[::-1]
+
+In [45]: y
+Out[45]: b'esoognom'
+```
+
+위의 코드는 바이트 문자열이나 아스키 문자에서는 잘 동작하지만, UTF-8 바이트 문자열로 인코드된 유니코드 문자에는 원하는 대로 동작하지 않는다.
+
+```
+In [46]: w = '고양이'
+
+In [47]: x = w.encode('utf-8')
+
+In [48]: y = x[::-1]
+
+In [49]: y.decode('utf-8')
+---------------------------------------------------------------------------
+UnicodeDecodeError                        Traceback (most recent call last)
+<ipython-input-49-afdc29402324> in <module>
+----> 1 y.decode('utf-8')
+```
+
+슬라이스 stride 응용
+
+```
+a[2::2]
+a[-2::-2] #마지막 두번째부터 거꾸로 2간격으로
+```
+
+하지만 이렇게 start, end, stride까지 써버리면 코드읽는사람이 햇갈릴수있으므로 하나씩쓰자
+
+```
+b = a[::2]
+c = b[1:-1]
+```
+
+슬라이싱하고 stride하면 데이터의 얕은 복사본이 추가로 생긴다(메모리사용하게됨)
+
+메모리 줄이고 싶다면 "내장 알고리즘과 자료 구조를 사용하자" 참조하자 
+
+(참조 내용 중 islice메서드는 start, end stride에 음수 값을 허용하지 않는다)
+
+## map과 filter 대신 리스트 컴프리헨션을 사용하자
+
+파이썬에는 한 리스트에서 다른 리스트를 만들어내는 간결한 문법 존재!
+
+이를 __list comprehension__ 이라고한다
+
+```
+>>>
+a = [1,2,3,4,5,6,7,8,9,10]
+squares = [x**2 for x in a]
+print(squares)
+
+[1, 4, 9, 16, 25, 36, 49, 64, 81, 100]
+```
+
+ 비슷하게 map은 리스트의 요소를 지정된 함수로 처리해주는 함수입니다(map은 원본 리스트를 변경하지 않고 새 리스트를 생성합니다) 
+
+문법: `list(map(함수, 리스트))`
+
+하지만 map과 달리 list comprehension을 사용하면 조건을 걸고 바로 걸러내서 출력할수있다 
+
+```
+>>>
+even_squares = [x**2 for x in a if x%2==0]
+
+[4, 16, 64, 100]
+```
+
+물론 내장함수 filter를 mmap과 연계해서 사용해도 같은 결과지만 복잡하다
+
+```
+In [62]: alt = list(map(lambda x: x**2, filter(lambda x: x%2==0, a)))
+
+In [63]: print(alt)
+[4, 16, 36, 64, 100]
+```
+
+딕셔너리와 세트에도 list comprehension표현식 지원. 
+
+쓰자! 알고리즘을 작성할 떄 파생되는자료 구조를 쉽게 생성가능
+
+```
+>>>
+chile_ranks = {'ghost': 1, 'habanero': 2, 'cayenne': 3}
+rank_dict = {rank: name for name, rank in chile_ranks.items()}
+chile_len_set = {len(name) for name in rank_dict.values()}
+print(rank_dict)
+print(chile_len_set)
+
+{1: 'ghost', 2: 'habanero', 3: 'cayenne'}
+{8, 5, 7}
+```
 
 
 
+## 리스트 컴프리헨션에서 표현식을 두개 넘게 쓰지 말자
 
+리스트안에 리스트 내용들을 하나의 평평한 리스트로 나타내는 예시, 표현식은 왼쪽에서 오른쪽으로 실행됨
 
+```
+>>>
+matrix = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
+flat = [x for row in matrix for x in row]
+print(flat)
 
+[1, 2, 3, 4, 5, 6, 7, 8, 9]
+```
 
+행렬의 각 셀에 있는 값의 제곱구함
+
+```
+>>>
+squared = [[x**2 for x in row] for row in matrix]
+print(squared)
+
+[[1, 4, 9], [16, 25, 36], [49, 64, 81]]
+```
+
+다른 루프를 넣는다면 리스트 컴프리헨션이 여러 줄로 구별해야할정도로 길어짐
+
+```
+>>>
+my_lists = [
+    [[1, 2, 3], [4, 5, 6]],
+    [[7, 8, 9], [10, 11, 12]],
+]
+flat = [x for sublist1 in my_lists
+        for sublist2 in sublist1
+        for x in sublist2]
+print(flat)
+```
+
+이번엔 일반 루프문으로 같은 결과가능, 들여쓰기로 위에보다는 이해가 쉽다
+
+```
+flat = []
+for sublist1 in my_lists:
+    for sublist2 in sublist1:
+        flat.extend(sublist2)
+print(flat)
+```
+
+리스트 컴프리헨션도 다중 if 조건 지원한다. 같은 루프 레벨에 여러 조건이 있으면 암묵적으로 and표현식이된다.
+
+예를 들어 숫자로 구성된 리스트에서 4보다 큰 짝수 값만 가지고 온다면 다음 두 리스트 컴프리헨션은 동일하다.
+
+```
+>>>
+a = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+b = [x for x in a if x > 4 if x % 2 == 0]
+c = [x for x in a if x > 4 and x % 2 == 0]
+print(b)
+print(c)
+
+[6, 8, 10]
+[6, 8, 10]
+```
+
+조건은 루프의 각 레벨에서 for 표현식 뒤에 설정할 수 있다. 합이 10이상이고 3으로 나누어 떨어지는 숫자를 셀로 구한다고 하자
+
+```
+>>>
+filterd = [[x for x in row if x%3==0] for row in matrix if sum(row)>10]
+print(filterd)
+
+[[6], [9]]
+```
+
+하지만 이런식으로 표현식이 두개를 넘어가면 피하는 게 좋다. 조건 두개, 루프 두개 혹은 조건 한개와 루프 한개가 적당하다.
+
+이것보다 복잡해지면 if, for문을 사용하고 헬퍼 함수("리스트를 반환하는 대신 제너레이터를 고려하자" 참조)로 작성하자
 
 
 
