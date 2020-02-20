@@ -1,5 +1,5 @@
 ---
-title: 파이썬 코딩의 스킬 리뷰
+title: 파이썬 코딩의 스킬 리뷰 1
 date: 2020-02-18 01:44:48
 categories: [Python]
 tags: [Review, Tip, Skill]
@@ -560,7 +560,330 @@ print(filterd)
 
 이것보다 복잡해지면 if, for문을 사용하고 헬퍼 함수("리스트를 반환하는 대신 제너레이터를 고려하자" 참조)로 작성하자
 
+## 컴프리헨션이 클 때는 제너레이터 표현식을 고려하자
 
+리스트 컴프리헨션의 문제점은 입력 시퀀스에 있는 각 값별로 아이템을 하나씩 담은 새 리스트를 통째로 생성한다는 점이다. 이는 작업이 많으면 메모리를 많이 소모해서 프로그램을 망가뜨릴수있다.
+
+에를 들어 파일을 읽어 각 줄에 있는 글자수를 리스트로 반환하고 싶다면
+
+```
+value = [len(x) for x in open('/~/~/cats.txt')]
+print(value)
+
+[100,57, 15, 1, 12, 75, 5, 86, 89, 11]
+```
+
+파이썬은 이 문제를 해결하려고 리스트 컴프리헨션과 제너레이터를 일반화한 제너레이터 표현식을 제공한다. (generator expression)
+
+제너레이터 표현식은 실행될 떄 출력 시퀀스를 모두 구체화(여기서는 메모리에 로딩)하지 않는다. 대신에 표현식에서 한 번에 한 하이템을 내주는 이터레이터(iterator)로 평가된다.
+
+제너레이터 표현식은 () 문자 사이에 리스트 컴프리헨션과 비슷한 문법을 사용하여 생성한다.
+
+위에 예제와 비슷하지만 제너레이터 표현식은 즉시 이터레이터로 평가되므로 더는 진행되지 않는다
+
+```
+it = (len(x) for x in open('/~/~/cats.txt'))
+print(it)
+
+<generator object <genexpr> at 0x10f625e10>
+```
+
+필요할 때 제너레이터 표현식에서 다음 출력을 생성하려면 내장함수 next로 반환받은 이터레이터를 한 번에 전진시키면 된다.
+
+```
+>>>
+print(next(it))
+print(next(it))
+
+100
+57
+```
+
+> 주요 용어
+>
+> __이터레이터__는 여러개의 요소를 가지는 컨테이너(리스트, 튜플, 셋, 사전, 문자열)에서 각 요소를 하나씩 꺼내 어떤 처리를 수행하는 간편한 방법을 제공하는 객체입니다.!(즉, 요소하나씩만 빼오므로 메모리 부담이없다.)
+>
+> ```
+> In [73]: s = 'abc'
+> 
+> In [74]: it = iter(s)   #이터레이터 객체로 만듬
+> 
+> In [75]: it
+> Out[75]: <str_iterator at 0x10f625e10>
+> 
+> In [76]: next(it)
+> Out[76]: 'a'
+> 
+> In [77]: next(it)
+> Out[77]: 'b'
+> 
+> In [78]: next(it)
+> Out[78]: 'c'
+> 
+> In [79]: next(it)
+> 
+> StopIteration
+> ```
+
+제너레이터 표현식의 또 다른 제너레이터 표현식과 함께 사용가능한것이다. 
+
+예시는 앞의 제너레이터 표현식이 반환한 이터레이터를 다른 제너레이터 표현식의 입력으로 사용한 예다.
+
+```
+>>>
+roots = ((x, x**0.5) for x in it) #it은 이터레이터
+print(next(roots))
+
+(15, 3.872983346207417) #왜냐면 다음 it에서 나오는 것이 아이템 15였기때문
+
+```
+
+이처럼 만약 큰 입력 스트림에 동작하는 기능을 결합하는 방법을 찾을 때는 제너레이터 표현식이 최선의 도구다. 
+
+제너레이터 표현식은 서로 연결되어 있을 때 매우 빠르게 실행된다.
+
+단, 제너레이터 표현식이 반환한 이터레이터에는 상태가 있으므로 이터레이터를 한 번 넘게 사용하지 않도록 주의해야 한다. 
+
+("인수를 순회할 때는 방어적으로 하자" 참조)
+
+
+
+## range보다는 enumerate를 사용하자
+
+내장 함수 range는 정수 집합을 순회(iterate)하는 루프를 실행할 때 유용하다.
+
+이는 리스트에서 현재 아이템의 인덱스(위치)를 알고 싶은 경우가 있을 때 range을 사용하면 편리하다.
+
+```
+>>>
+flavor_list = ['vanilla', 'chocolate', 'pecan', 'strawberry']
+for flavor in flavor_list:
+    print('%s is delicious' % flavor)
+
+vanilla is delicious
+chocolate is delicious
+pecan is delicious
+strawberry is delicious
+
+>>>
+for i in range(len(flavor_list)):
+    flavor = flavor_list[i]
+    print('%d: %s' % (i + 1, flavor))
+
+1: vanilla
+2: chocolate
+3: pecan
+4: strawberry
+```
+
+하지만 위에 코드는 세련되지 못하다. 리스트길이정보와 배열을 인덱스로 접근해야 하며, 읽기 불편하다.
+
+파이썬은 이런 상황을 처리하려고 내장함수 enumerate를 제공한다.
+
+enumerate는 지연 제너레이터(lazy generator)로 이터레이터를 감싼다. (???)
+
+이 제너레이터는 이터레이터에서 루프 인덱스와 다음 값을 한쌍으로 가져와 넘겨준다.
+
+
+
+```
+>>>
+for i, flavor in enumerate(flavor_list):
+    print('%d: %s' % (i + 1, flavor))
+
+1: vanilla
+2: chocolate
+3: pecan
+4: strawberry
+
+>>>
+for i, flavor in enumerate(flavor_list, 1):   #세기 시작숫자는 1부터 시작할꺼다!! 분명 0번째지만 i는 1로받음
+    print('%d: %s' % (i, flavor))
+    
+```
+
+즉, enumerate는 이터레이터를 순회하면서 이터레이터에서 각 아이템의 인덱스를 얻어오는 간결한 문법을 제공하낟.
+
+tip: enumerate의 두번째 파라미터는 세기 시작할 숫자를 지정할 수 있다.
+
+
+
+## 이터레이터를 병렬로 처리하려면 zip을 사용하자
+
+파이썬에서 관련 객체로 구성된 리스트를 많이 사용한다.
+
+리스트 컴프로헨션을 사용하여 소스 리스트(source list)에 표현식을 적용하여 파생 리스트(derived list)를 쉽게 얻을수있다
+
+("map과 filter 대신 리스트 컴프리헨션을 사용하자" 참조)
+
+```
+>>>
+names = ['Cecilia', 'Lise', 'Marie']
+letters = [len(n) for n in names]
+print(letters)
+```
+
+현재 예시에서는 파생 리스트의 아이템과 소스 리스트의 아이템은 서로의 인덱스로 연관되어 있다. 따라서 두 리스트를 병렬로 순회하려면 소스 리스트인 names의 길이만큼 순회하면 된다.
+
+```
+>>>
+longest_name = None
+max_letters = 0
+
+for i in range(len(names)):  #len(names) 3임
+    count = letters[i]
+    if count > max_letters:
+        longest_name = names[i]
+        max_letters = count
+
+print(longest_name)
+
+Cecilia
+```
+
+문제는 전체 루프문이 별로 보기 안 좋다는 것이다. names와 letters를 인덱스로 접근하면 코드를 읽기어려워진다.
+
+루프의 인덱스 i로 배열에 접근하는 동작이 두번 일어난다. enumerate를 사용하면 조금 개선가능하다
+
+```
+>>>
+for i, name in enumerate(names):
+    count = letters[i]
+    if count > max_letters:
+        longest_name = name
+        max_letters = count
+```
+
+파이썬은 위 코드를 좀더 명료하게 하는 내장함수 zip을 제공한다.
+
+파이썬3에서 zip은 지연 제너레이터로 이터레이터 두 개 이상을 감싼다.
+
+zip 제너레이터는 각 이터레이터로부터 다음 값을 담은 튜플 얻어온다.
+
+zip 제너레이터를 사용한 코드는 다중 리스트에서 인덱스로 접근하는 코드보다 휠씬 명료하다.
+
+```
+>>>
+longest_name = None
+max_letters = 0
+for name, count in zip(names, letters):
+    if count > max_letters:
+        longest_name = name
+        max_letters = count
+print(longest_name)
+```
+
+__내장 함수 zip을 사용할때는 두가지 문제점 존재__
+
+- 파이썬2에서 제공하는 zip이 제너레이터가 아니라는 점, 따라서 제공한 이터레이터를 완전히 순회해서 모든 튜플을 반환한다.
+
+  이과정에서 메모리 너무 사용함. (해결은 "내장 알고리즘과 자료 구조를 사용하자" 참조)
+
+- 입력 이터레이터들의 길이가 다르면 zip이 이상하게 동작한다는 점이다. 
+
+  예를 들면 names리스트에는 다른 이름을 추가했지만 letters에는 없다면 그건 그냥 빼고 연산해버린다.(그냥 버려버림)
+
+  리스트의 길이가 같다고 확신 할 수 없다면 대신 내장 모듈 itertools의 zip_longest를 사용하는 방안을 고려해보자(파이썬2에서는 izip_longest)
+
+## for와 while 루프 뒤에는 else블록을 쓰지말자
+
+파이썬의 루프에는 다른 프로그래밍 언어에는 없는 추가적인 기능이 있다. 루프에서 반복되는 내부 블록 바로 다음에 else 블로을 둘 수 있는 기능이다.
+
+```
+>>>
+for i in range(3):
+    print('Loop %d' % i)
+else:
+    print('Else block!')
+```
+
+for구문이 종료되면 else가 실행되는것처럼보인다.(if/else구문에서 if블록이 실행되지 않으면 else블록이 실행된다는 느낌)
+
+> try/exept 문에서는 except도  '이전블록에서 실패하면 이 블록이 실행된다' 는 의미
+>
+> try/except/else는 '이전 블록이 실패하지 않으면 실행해라'는 의미
+>
+> try/finally 는 '이전 블록을 실행하고 항상 마지막에 실행하라'는 의미
+
+처음 접하면 for/else에서 for문이 실행되지 않으면 else가 실행된다고 생각할텐데 이 생각은 틀렸다
+
+```
+>>>
+for i in range(3):
+    print('Loop %d' % i)
+    if i == 1:
+        break
+else:
+    print('Else block!')
+    
+    
+Loop 0
+Loop 1
+```
+
+위와 같이 `for x in []:` ,`while False`: 를 해도 else구문 실행된다. 
+
+이렇게 동작하는 이유는 루프 다음에 오는 else블록은 루프로 뭔가를 검색할 떄 유용하기 때문이다. 
+
+예를 들어 두 숫자가 서로소인지를 판별한다고 하자.
+
+```
+>>>
+a = 4
+b = 9
+
+for i in range(2, min(a, b) + 1):
+    print('Testing', i)
+    if a % i == 0 and b % i == 0:
+        print('Not coprime')
+        break
+else:
+    print('Coprime')
+
+
+Testing 2
+Testing 3
+Testing 4
+Coprime
+```
+
+실제로 이런 코드를 작성하면 안된다. 대신에 이런 계산을 하는 헬퍼 함수를 작성하는 게 좋다
+
+이런 헬퍼 함수는 두가지 일반적인 스타일로 작성한다
+
+
+
+(작성중)
+
+
+
+
+
+```
+
+# Example 6
+def coprime(a, b):
+    for i in range(2, min(a, b) + 1):
+        if a % i == 0 and b % i == 0:
+            return False
+    return True
+print(coprime(4, 9))
+print(coprime(3, 6))
+
+
+# Example 7
+def coprime2(a, b):
+    is_coprime = True
+    for i in range(2, min(a, b) + 1):
+        if a % i == 0 and b % i == 0:
+            is_coprime = False
+            break
+    return is_coprime
+print(coprime2(4, 9))
+print(coprime2(3, 6))
+
+
+```
 
 
 
