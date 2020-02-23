@@ -825,20 +825,20 @@ Loop 1
 
 이렇게 동작하는 이유는 루프 다음에 오는 else블록은 루프로 뭔가를 검색할 떄 유용하기 때문이다. 
 
-예를 들어 두 숫자가 서로소인지를 판별한다고 하자.
+예를 들어 두 숫자가 서로소(공약수가하나임)인지를 판별한다고 하자.
 
 ```
 >>>
 a = 4
 b = 9
 
-for i in range(2, min(a, b) + 1):
+for i in range(2, min(a, b) + 1):   #python 내장함수 min은 최소값을 반환한다.
     print('Testing', i)
     if a % i == 0 and b % i == 0:
         print('Not coprime')
         break
 else:
-    print('Coprime')
+    print('Coprime')   #for을 다 돌았는데도 없다면 a,b는 최소 서로소
 
 
 Testing 2
@@ -851,9 +851,167 @@ Coprime
 
 이런 헬퍼 함수는 두가지 일반적인 스타일로 작성한다
 
+- 첫 번째 방법은 찾으려는 조건을 찾았을 때 바로 반환
+
+  루프가 실패로 끝나면 기본 결과(True)반환한다
+
+  ```
+  >>>
+  def coprime(a, b):
+      for i in range(2, min(a, b) + 1):
+          if a % i == 0 and b % i == 0:
+              return False
+      return True
+  print(coprime(4, 9))
+  print(coprime(3, 6))
+  ```
+
+- 두 번째 방법은 루프에서 찾으려는 대상을 찾았는지 알려주는 결과 변수를 사용하는 것이다, 
+
+  뭔가를 찾았으면 즉시 break로 루프를 중단한다.
+
+  ```
+  >>>
+  def coprime2(a, b):
+      is_coprime = True
+      for i in range(2, min(a, b) + 1):
+          if a % i == 0 and b % i == 0:
+              is_coprime = False
+              break
+      return is_coprime
+  print(coprime2(4, 9))
+  print(coprime2(3, 6))
+  ```
+
+이 두 가지 방법을 적용하면 낯선 코드를 접하는 개발자들이 코드를 휠씬 쉽게 이해할 수 있다.
+
+__루프 뒤에는 절대 else블록 쓰지 말자__
+
+## try/except/else/finally 에서 각 블록의 장점을 이용하자(중요)
+
+파이썬에는 예외 처리 과정에서 동작을 넣을 수 있는 네 번의 구분되는 시점이 있다. 
+
+__try, except, else, finally 블록 기능으로 각 시점을 처리한다. 
+
+각 블록은 복합문에서 독자적인 목적이 있으며, 이 블록들을 다양하게 조합하면 유용하다.
+
+("루트 Exception을 정의해서 API로부터 호출자를 보호하자" 참조)
 
 
-(작성중)
+
+### finally 블록
+
+에외를 전달하고 싶지만, 예외가 발생해도 정리 코드를 실행하고 싶을 때
+
+__try/finally__ 를 사용하면 된다.
+
+예를 들어, 파일 핸들러를 제대로 종료하는 작업이다
+
+("재사용 가능한 try/finally 동작을 만들려면 contextlib와 with문을 고려하자" 참조)
+
+```
+import logging
+from pprint import pprint
+from sys import stdout as STDOUT
+
+>>>
+handle = open('random_data.txt', 'w', encoding='utf-8') #현재 경로에서 txt파일 만들어짐
+handle.write('success\nand\nnew\nlines') #내용을 적음 한줄뛰기로 적용됨
+handle.close()
+handle = open('random_data.txt')  # May raise IOError
+try:
+    data = handle.read()  # May raise UnicodeDecodeError
+finally:
+    handle.close()        # Always runs after try:
+```
+
+read 메서드에서 발생한 예외는 항상 호출 코드까지 전달되며, handle의 close 메서드 또한 finally 블록에서 실행되는 것이 보장된다.
+
+파일이 없을 때 IOError처럼, 파일을 열 때  일어나는 예외는 finally블록에서 처리하지 않아야 하므로 try블록 앞에서 open을 호출해야한다.
+
+### else 블록
+
+코드에서 어떤 예외를 처리하고 어떤 예외를 전달할지를 명확하게 하려면 __try/except/else__ 를 사용해야 한다.
+
+try: 블록이 예외를 읽으키지 않으면 다음 else 블록이 실행된다(else블록을 사용하면 try블록 최소화 +가독성상승 가능)
+
+except: try블록에서 예외가 발생하면 실행됨(else는 실행안됨!!)
+
+예를 들어 문자열에서 JSON 딕셔너리 데이터를 로드하여 그 안에 든 키의 값을 반환한다고 하자.
+
+```
+import json
+
+def load_json_key(data, key):
+    try:
+        result_dict = json.loads(data)  # May raise ValueError
+    except ValueError as e:
+        raise KeyError from e
+    else:
+        return result_dict[key]         # May raise KeyError
+```
+
+데이터가 올바른 JSON이 아니라면 json.loads로 디코드할때 ValueError가 일어난다.
+
+ 이 예외는 except블록에서 발견되어 처리된다
+
+디코딩이 성공하면 else블록에서 키를 찾는다. 
+
+키를 찾을 때 에외가 일어나면 그 예외는 try블록 밖에 있으므로 호출 코드까지 전달된다.(터미널에 에러코드가 뜬다는말인듯???)
+
+else절은 try/except 다음에 나오는 처리를 시각적으로 except블록과 구분해준다. 그래서 예외 전달 행위를 명확하게 한다.
+
+
+
+## 모두 함께 사용하기(??? json정리후 다시읽어보기)
+
+복합문 하나로 모든 것을 처리하고 싶다면 __try/except/else/finally__ 를 사용하면 된다.
+
+예를 들어 파일에서 수행할 작업 설명을 읽고 처리한 후 즉석에서 파일을 업데이트한다고 하자.
+
+여기서 try 블록은 파일을 읽고 처리하는데 사용한다.
+
+except 블록은 try 블록에서 일어난 예외를 처리하는데 사용한다.
+
+else 블록은 파일을 즉석에서 업데이트하고 이와 관련한 예회가 전달되게 하는 데 사용한다.
+
+finally블록은 파일 핸들을 정리하는 데 사용한다.
+
+[참고](https://docs.python.org/ko/3/library/json.html)
+
+```
+import json
+UNDEFINED = object()
+
+def divide_json(path):
+    handle = open(path, 'r+')   # May raise IOError
+    try:
+        data = handle.read()    # May raise UnicodeDecodeError
+        op = json.loads(data)   # May raise ValueError
+        value = (
+            op['numerator'] /
+            op['denominator'])  # May raise ZeroDivisionError
+    except ZeroDivisionError as e:
+        return UNDEFINED
+    else:
+        op['result'] = value
+        result = json.dumps(op)
+        handle.seek(0)
+        handle.write(result)    # May raise IOError
+        return value
+    finally:
+        handle.close()          # Always runs
+```
+
+이 레이아웃은 모든 블록이 직관적인 방식으로 엮여서 동작하므로 특히 유용하다.
+
+예를 들어 결과 데이터를 재작성하는 동안에 else 블록에서 예외가 일어나도 finally블록은 여전히 실행되어 파일 핸들을 닫는다.
+
+__else 블록은 try 블록의 코드가 성공적으로 실행된 후 finally블록에서 공통 정리 코드를 실행하기 전에 추가 작업을 하는데 사용할수 있다__
+
+
+
+
 
 
 
@@ -863,26 +1021,78 @@ Coprime
 
 ```
 
-# Example 6
-def coprime(a, b):
-    for i in range(2, min(a, b) + 1):
-        if a % i == 0 and b % i == 0:
-            return False
-    return True
-print(coprime(4, 9))
-print(coprime(3, 6))
+import json
+
+def load_json_key(data, key):
+    try:
+        result_dict = json.loads(data)  # May raise ValueError
+    except ValueError as e:
+        raise KeyError from e
+    else:
+        return result_dict[key]         # May raise KeyError
+
+# JSON decode successful
+assert load_json_key('{"foo": "bar"}', 'foo') == 'bar'
+try:
+    load_json_key('{"foo": "bar"}', 'does not exist')
+    assert False
+except KeyError:
+    pass  # Expected
+
+# JSON decode fails
+try:
+    load_json_key('{"foo": bad payload', 'foo')
+    assert False
+except KeyError:
+    pass  # Expected
 
 
-# Example 7
-def coprime2(a, b):
-    is_coprime = True
-    for i in range(2, min(a, b) + 1):
-        if a % i == 0 and b % i == 0:
-            is_coprime = False
-            break
-    return is_coprime
-print(coprime2(4, 9))
-print(coprime2(3, 6))
+# Example 3
+import json
+UNDEFINED = object()
+
+def divide_json(path):
+    handle = open(path, 'r+')   # May raise IOError
+    try:
+        data = handle.read()    # May raise UnicodeDecodeError
+        op = json.loads(data)   # May raise ValueError
+        value = (
+            op['numerator'] /
+            op['denominator'])  # May raise ZeroDivisionError
+    except ZeroDivisionError as e:
+        return UNDEFINED
+    else:
+        op['result'] = value
+        result = json.dumps(op)
+        handle.seek(0)
+        handle.write(result)    # May raise IOError
+        return value
+    finally:
+        handle.close()          # Always runs
+
+# Everything works
+temp_path = 'random_data.json'
+handle = open(temp_path, 'w')
+handle.write('{"numerator": 1, "denominator": 10}')
+handle.close()
+assert divide_json(temp_path) == 0.1
+
+# Divide by Zero error
+handle = open(temp_path, 'w')
+handle.write('{"numerator": 1, "denominator": 0}')
+handle.close()
+assert divide_json(temp_path) is UNDEFINED
+
+# JSON decode error
+handle = open(temp_path, 'w')
+handle.write('{"numerator": 1 bad data')
+handle.close()
+try:
+    divide_json(temp_path)
+    assert False
+except ValueError:
+    pass  # Expected
+
 
 
 ```
