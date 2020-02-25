@@ -189,15 +189,116 @@ def sort_priority2(numbers, group):
 found = sort_priority2(numbers, group)
 print('Found:', found)
 print(numbers)
+
+
+Found: False
+[2, 3, 3, 4, 1, 6, 7, 8]
 ```
 
+__왜 found값이 false가 나와버렸을까?__
+
+__표현식에서 변수를 참조할 때__ 파이썬 인터프리터는 참조를 해결하려고 다음과 같은 수서로 유효 범위(scope)를 탐색한다.
+
+1. 현재 함수의 스코프
+2. (현재 스코프를 담고있는 다른 함수 같은) 감싸고 있는 스코프
+3. 코드를 포함하고 있는 모듈의 스코프(전역 스코프라고도함)
+4. (len이나 str 같은 함수를 담고 있는) 내장 스코프
+
+이 주 어느 스코프에도 참조한 이름으로 된 변수가 정의되어 있지 않으면 NameError 예외가 일어난다
+
+__변수에 값을 할당할 때__는 다른 방식으로 동작한다. 변수가 이미 현재 스코프에 정의되어 있다면 새로운 값을 얻는다
+
+__파이썬은 변수가 현재 스코프에 존재하지 않으면 변수 정의로 취급한다. __
+
+__새로 정의되는 변수의 스코프는 그 할당을 포함하고 있는 함수가 된다.__
+
+__(즉, 새로 정의된 변수는 정의되었던 스코프밖을 나가지못함, 지금은 found=True가 helper함수 밖을 나가지 못함 )__
+
+즉, sort_priority2함수의 반환 값이 잘못된이유는 found변수는 helper 클로저에서 True로 할당되도록 설계하려고 햇으나, 실제로 클로저 할당은 sort_priority2에서  일어나느 할당이 아닌 helper함수아 안ㅇ데서 일어나는 새 변수 정의가 되어버렸기때문이다.
+
+이런 점은 초보자들을 놀라게한다. ('스코프 버그'라고함)
+
+하지만 이 동작은 함수의 지역 변수가 자신을 포함하는 모듈을 오염시키는 문제를 막아준다. 그렇지 않았다면 함수 안에서 일어나는 모든 할당이 전역 모듈 스코프에 쓰레기를 넣는 결과로 이어졌을 것이다.
+
+그렇게 되면 불필요한 할당에 그치지 않고 결과로 만들어지는 전역 변수들의 상호 작용으로 알기 힘든 버그가 생긴다.
+
+### 데이터 얻어오기
+
+파이썬 3에는 클로저에서 >>> 데이터를 얻어오는 특별한 문법이 있다. nonlocal문은 특정 변수 이름에 할당할 때 __스코프 탐색이 일어나야 함을 나타낸다. __(이렇게 하면 탐색후 할당)
+
+유일한 제약은 nonlocal이 (전역 변수 오염 피하려고) 모듈 수준 스코프까지는 탐색할 수 없다는 점이다.
+
+다음은 nonlocal을 사용하여 같은 함수를 다시 정의한 예다.
+
+(nonlocal문을 사용하여 클로저를 감싸는 스코프의 변수를 수정할 수있음을 알린다.)
+
+```
+def sort_priority3(numbers, group):
+    found = False
+    def helper(x):
+        nonlocal found
+        if x in group:
+            found = True  #nonlocal이라고 알려줬기때문에 탐색 먼저진행 후 값 바뀜
+            return (0, x)
+        return (1, x)
+    numbers.sort(key=helper)
+    return found
+    
+    
+found = sort_priority3(numbers, group)
+print('Found:', found)
+print(numbers)
+
+```
+
+nonlocal 문은 클로저에서 데이터를 다른 스코프에 할당하는 시점을 알아보기 쉽게 해준다.
+
+nonlocal문은 변수 할당이 모듈 스코프에 직접 들어가게 하는 global문을 보안한다(모듈 스코프는안됨.)
+
+__하지만 전역 변수의 안티패턴(anti-pattern)과 마찬가지로 간단한 함수 이외에는 nonlocal을 사용하지 않도록 주의해야 한다. nonlocal의 부작용은 알아내니가 상당히 어렵다.__
+
+특히 nonlocal문과 관련 변수에 대한 할당이 멀리 떨어진 긴 함수에서는 이해하기가 더욱 어렵다
+
+nonlocal을 사용할 때 복잡해지기 시작하면 헬퍼 클래스로 상태를 감싸는 방법을 이용하는 게 낫다.
+
+이제 nonlocal을 사용할 때와 같은 결과를 얻는 클래스를 정의해 보자
+
+코드는 약간 더 길지만 이해하기는 훨씬 쉽다("인터페이스가 간단하면 클래스 대신 함수를 받자"에서 \_\_call\_\_ 이라는 특별한 메서를 자세히 설명한다.) (???)
+
+```
+class Sorter(object):
+    def __init__(self, group):
+        self.group = group
+        self.found = False
+
+    def __call__(self, x):
+        if x in self.group:
+            self.found = True
+            return (0, x)
+        return (1, x)
+
+sorter = Sorter(group)
+numbers.sort(key=sorter)
+assert sorter.found is True
+print('Found:', found)
+print(numbers)
+```
+
+### 파이썬2의 스코프
+
+nonlocal지원안함.. pass
+
+found = [False]로 줘서 수정가능한 helper함수안에 found[0] = Ture를 하면 탐색이 일어나므로 변경은 가능....
+
+## 리스트를 반환하는 대신 제너레이터를 고려하자
 
 
 
 
 
 
-### 중요한 참고 사항
+
+#### 중요한 참고 사항
 
 [클로저 자세히](https://yes90.tistory.com/50)
 
