@@ -290,15 +290,7 @@ nonlocal지원안함.. pass
 
 found = [False]로 줘서 수정가능한 helper함수안에 found[0] = Ture를 하면 탐색이 일어나므로 변경은 가능....
 
-## 리스트를 반환하는 대신 제너레이터를 고려하자
-
-
-
-
-
-
-
-#### 중요한 참고 사항
+### 중요한 참고 사항
 
 [클로저 자세히](https://yes90.tistory.com/50)
 
@@ -364,4 +356,70 @@ found = [False]로 줘서 수정가능한 helper함수안에 found[0] = Ture를 
 >>> list(y)
 [3, 2, 11, 1]
 ```
+
+
+
+## 리스트를 반환하는 대신 제너레이터를 고려하자
+
+일련의 결과를 생성하는 함수에서 택할 가장 간단한 방법은 아이템의 리스트를 반환하는 것이다. 
+
+예를 들어 문자열에 있는 모든 단어의 인덱스를 출력하고 싶다(띄어쓰기를 기준으로 나누면됨)
+
+다음 코드에서 append 메서드로 리스트에 결과들을 누적하고 함수가 끝날 때 해당 리스트를 반환한다.
+
+```
+def index_words(text):
+    result = []
+    if text:
+        result.append(0)
+    for index, letter in enumerate(text):
+        if letter == ' ':
+            result.append(index + 1)
+    return result
+```
+
+샘플 입력이 몇 개뿐일 때는 함수가 기대한 대로 동작한다.
+
+```
+address = 'Four score and seven years ago our fathers brought forth on this continent a new nation, conceived in liberty, and dedicated to the proposition that all men are created equal.'
+result = index_words(address)
+print(result[:3])
+
+
+[0, 5, 11]
+
+```
+
+하지만 inndex_words 함수에는 두 가지 문제가 있다.
+
+- 첫 번째 문제는 코드가 약간 복잡하고 깔끔하지 않다는 것이다. 새로운 결과가 나올 때마다 append 메서드를 호출해야 한다. 메서드 호출(result.append)이 많아서 리스트에 주가하는 값(index+1)이 덜 중요해 보인다. 결과 리스트를 생성하는 데 한 줄이 필요하고, 그 값을 반환하는 데도 한 줄이 필요하다. 함수 몸체에 문자가 130개 가량(공백 제외)있지만 그중에서 중요한 문자는 약 75개다
+
+  이 함수를 작성하는 더 좋은 방법은 제너레이터(generator)를 사용하는것이다
+
+  
+
+  제너레이터는 yield 표현식을 사용하는 함수다. 제너레이터 함수는 호출되면 실제로 실행하지 않고 바로 이터레이터(iterator)를 반환한다. __내장 함수 next를 호출할 때마다 이터레이터는 제너레이터가 다음 yield 표현식으로 진행하게 한다.__ 제너레이터에서 yield에 전달한 값을 이터레이터가 호출하는 쪽으로 반환한다.
+
+  동일결과를 내는 제너레이터 함수
+
+  ```
+  def index_words_iter(text):
+      if text:
+          yield 0
+      for index, letter in enumerate(text):
+          if letter == ' ':
+              yield index + 1
+              
+  my_result = index_words_iter("고양이 최고 귀엽다") #1
+  print my_result # 호출안되고 누군가 값을 물어보기를 기다리는 대기상태 #1
+  print next(my_result) #이때 호출됨
+  
+  
+  <generator object index_words_iter at 0x10c4aa7d0>
+  0
+  ```
+
+  제너레이터는 자신이 리턴할 모든 값을 메모리에 저장하지 않기 때문에 조금 전 일반 함수의 결과와 같이 한번에 리스트로 보이지 않는 것입니다. __제너레이터는 한 번 호출될때마다 하나의 값만을 전달(yield)합니다.__ 즉, 위의 #1까지는 아직 아무런 계산을 하지 않고 누군가가 다음 값에 대해서 물어보기를 기다리고 있는 상태입니다.
+
+
 
