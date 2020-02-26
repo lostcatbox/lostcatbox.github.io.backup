@@ -23,6 +23,8 @@ tags: [Review, Tip, Skill]
 
 하루 최소 10페이지씩 읽고 이해한다. (시작일20.02.18~)
 
+[파이썬 객체 관련질문](https://python.bakyeono.net/chapter-8-2.html)
+
 # 1장 - 파이썬다운 생각
 
 파이썬다운것은 다음과같다
