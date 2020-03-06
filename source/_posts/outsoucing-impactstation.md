@@ -1,8 +1,8 @@
 ---
 title: outsoucing_impactstation
 date: 2020-03-05 10:01:25
-categories: Outsourcing
-tags: [Outsourcing]
+categories: [Outsourcing]
+tags: [Outsourcing, Django]
 ---
 
 # 처음 외주를 시작하며
@@ -42,7 +42,7 @@ __과정__
 
 - 메일 템플릿 구현
 
-  - Django 템플릿에서 {% if %}사용하면 페이지에서 생기고 없애기 쉬움
+  - Django 템플릿에서 {% raw %} `{% if %}` {% endraw %} 사용하면 페이지에서 생기고 없애기 쉬움
 
 - 메인 구현
 
@@ -132,7 +132,7 @@ onetoone(teacher)
 - teacher_sns
 - teacher_detail
 
-## 수업 app
+## Course app
 
 - 이용약관넣기
 
