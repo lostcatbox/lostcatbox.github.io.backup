@@ -111,36 +111,48 @@ __과정__
 
 ### User
 
-onetoone(student)
-
-onetoone(teacher)
-
 #### student(수강생)
 
+- user = OneToOne(User)
 - name
 - email
 - phone_number
-- secret
-- comfirm_secret
 - 이용약관(boolen)(강제)
 - 이벤트 및 할인소식(boolen)(choose)
 
 #### teacher(강의자)
 
-- image
+- user = OneToOne(User)
+- profile_image
 - teacher_name
-- teacher_sns
+- teacher_sns # <- Facebook/Twitter등 여러 요소일 경우에는?
 - teacher_detail
 
-## Course app
+```
+이후에 들어가는 부분은 모두
+created_at = models.DateTimeField()
+updated_at = models.DateTimeField()
+이 두개를 추가해 둬야 함. 이 2개 항목은 생성일시 수정일시로 모든 모델에 기본적으로 들어가있어야 함.
+따라서 
 
-- 이용약관넣기
+class DateTimeModel(models.Model):
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        abstract = True # 이런식으로 메타클래스로 만들어줘야 함
+       
+```
+
+## 수업 app
+
+- 이용약관넣기 # TODO?
 
 ### Main Pages(file, m2m???)
 
 - top_image
 - top_text
-- course(4개까지 클래스 앞에 띄울수있음)(클래스 id 값입력하면 바로 ㄲ)
+- course(4개까지 클래스 앞에 띄울수있음)(클래스 id 값입력하면 바로 ㄲ) - ManyToMany(Course)
 
 ### Course(클래스를 이렇게치환시킴, 클래스 상세페이지내용)
 
@@ -151,25 +163,43 @@ onetoone(teacher)
 - lecture_id()
 - lecture_purpose(강의목적)
 - foreginKey(Course)
+- 강의자료는..?
 
-### Course Comments(후기)
+### Course Comments(댓글)
 
-- userid
+- user = ForeignKey(User)
 - foreignkey(Course)
+- content # 본문 어디감?
 
 ### Lecture Comments
 
-- foreignkey(Lecture)
-- userid
+- lecture = foreignkey(Lecture)
+- user = ForeignKey(User)
 - content
 
 ### Course Review(클래스후기)
 
 - userid
 - foreignkey(course)
-- expose(노출여부 boole 
+- is_visible(노출여부 boolen)
+- content (본문 어디감?)
 
+### Course Ticket
 
+- userid
+- course_id
+- ticket(자동발급) # UUID Field 이용할 것
+
+### Lecture QnA
+
+- foreignkey(Lecture)
+- userid
+- content
+
+### Corse History
+
+- userid
+- lecture_history = 숫자담기
 
 
 
