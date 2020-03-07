@@ -78,6 +78,7 @@ __과정__
   - 티켓관리
   - 회원관리
   - 강사관리(내가 임의로 추가)
+    - 홈페이지에서 회원가입 후 회원관리에서 강사는 등록 강사등록 후 클래스 등록에 뜸
   - 후기관리 
     - 노출, 비노출 선택가능
   - QnA 관리
@@ -103,6 +104,8 @@ __과정__
 
   - 데이터 있고 없을때 django에서 템플릿에서 if문 else 쓰면 편할듯
 
+  - 이용약관넣기 # TODO?
+
   
 
 # 설계
@@ -119,6 +122,8 @@ __과정__
 - phone_number
 - 이용약관(boolen)(강제)
 - 이벤트 및 할인소식(boolen)(choose)
+- is_active
+- created_at = models.DateTimeField()
 
 #### teacher(강의자)
 
@@ -127,6 +132,7 @@ __과정__
 - teacher_name
 - teacher_sns # <- Facebook/Twitter등 여러 요소일 경우에는?
 - teacher_detail
+- created_at = models.DateTimeField()
 
 ```
 이후에 들어가는 부분은 모두
@@ -140,13 +146,11 @@ class DateTimeModel(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     
     class Meta:
-        abstract = True # 이런식으로 메타클래스로 만들어줘야 함
+        abstract = True # 이런식으로 메타클래스로 만들어줘야 함, makemigration할때 해당클래스는 안잡히고 따라서 상속받은애들만 구성요소가진 테이블 생성됨
        
 ```
 
 ## 수업 app
-
-- 이용약관넣기 # TODO?
 
 ### Main Pages(file, m2m???)
 
@@ -156,50 +160,99 @@ class DateTimeModel(models.Model):
 
 ### Course(클래스를 이렇게치환시킴, 클래스 상세페이지내용)
 
-- 수강
+- course_infor
+- curriculum(그냥 lecture에있는 거 뷰 단에서 다 쿼리셋가져오면되지않나?)
+- teacher_infor = onetoone(Teacher)
+- class_review = onetoone(CourseReview)
 
 ### Lecture(강의들, 각 강의의 구성요소)
 
-- lecture_id()
-- lecture_purpose(강의목적)
-- foreginKey(Course)
-- 강의자료는..?
-
-### Course Comments(댓글)
-
-- user = ForeignKey(User)
-- foreignkey(Course)
-- content # 본문 어디감?
+- course_id = foreignkey(Course)  (관리자 페이지에서  코스안에 들어가면 자동입력가능? )
+- lecture_id = models.AutoField(primary_key=True)
+- lecture_purpose(강의목적) =models.TextField
+- lecture_file = filefield()
 
 ### Lecture Comments
 
 - lecture = foreignkey(Lecture)
 - user = ForeignKey(User)
-- content
+- content =textField
 
 ### Course Review(클래스후기)
 
-- userid
+- user= onetoone(user)
 - foreignkey(course)
 - is_visible(노출여부 boolen)
-- content (본문 어디감?)
+- content = textField(본문 어디감?)
 
 ### Course Ticket
 
-- userid
-- course_id
-- ticket(자동발급) # UUID Field 이용할 것
+- userid = onetoone(user)
+- course_id = onetoone(Course)
+- ticket(자동발급) = model.charfield # UUID Field 이용할 것
+- created_date
 
 ### Lecture QnA
 
 - foreignkey(Lecture)
 - userid
 - content
+- created_date
+- id (???)
+- 답글작성 구현,,
+- [링크참조](https://stackoverflow.com/questions/44837733/how-to-make-add-replies-to-comments-in-django) (장고로 대댓글 만들기)
 
 ### Corse History
 
 - userid
-- lecture_history = 숫자담기
+- lecture_history = textfield() (???) (여기에다가 리스트에 lecture_id 값을 넣으면 되나?)
+
+# 구현
+
+## User
+
+### 상황
+
+기본auth.user에다가 OnetoOne으로 연결해서 student와 teacher을 만들려고 하니까 
+
+모델이 각자 따로있으면서 장점도 있지만 그에따라 user가 같이 생성이 무조건되어야만 onetoone관계가 되므로
+
+이건 무조건 forms.py에서 auth.user와 student 또는 auth.user와 teacher을 동시에 입력받아야함
+
+그럼 회원 가입 페이지는 한개인데 multiform이용해서 어렵게 구성해야함. 따라서 Account모델에 통합하기함
+
+
+
+### 해결
+
+일단 필요한 정보 Account앱으로 바꿈(당연히 auth.user에서 accounts.Account로 바꿔줘야함, 로그인 회원가입에 사용되는 모델지정)
+
+로그인 등등 모두 Account앱으로 할수있도록 만듬
+
+추후 강사로 지정할수있는 버튼을 회원관리에다가 만들겠음
+
+회원관리에서 강사는 is_teacher(True변경)후 클래스 등록에 뜸
+
+```
+class Account(AbstractUser):
+    event_confirm = models.BooleanField('이용약관', default=False)
+    event_receive = models.BooleanField('광고선택', default=False)
+    is_teacher = models.BooleanField('강사', default=False)
+    created_at = models.DateTimeField('생성날', auto_now_add=True)
+    
+
+class Teacher(models.Model):
+    user = models.OneToOneField(Account, on_delete=models.CASCADE, blank=False)
+    profile_image = models.FileField()
+    teacher_name = models.CharField('강사이름', max_length=30, blank=False)
+    teacher_sns = models.CharField('sns주소', max_length=100)
+    teacher_detail = models.TextField('강사소개')
+    created_at = models.DateTimeField('생성날짜', auto_now_add=True)
+```
+
+
+
+
 
 
 
