@@ -150,7 +150,7 @@ class DateTimeModel(models.Model):
        
 ```
 
-## 수업 app
+## mainpage app
 
 ### Main Pages(file, m2m???)
 
@@ -158,12 +158,31 @@ class DateTimeModel(models.Model):
 - top_text
 - course(4개까지 클래스 앞에 띄울수있음)(클래스 id 값입력하면 바로 ㄲ) - ManyToMany(Course)
 
+## 수업 app
+
 ### Course(클래스를 이렇게치환시킴, 클래스 상세페이지내용)
 
 - course_infor
-- curriculum(그냥 lecture에있는 거 뷰 단에서 다 쿼리셋가져오면되지않나?)
+
+- curriculum(그냥 lecture에있는 거 뷰 단에서 다 쿼리셋가져오면되지않나?)(???)
+
 - teacher_infor = onetoone(Teacher)
-- class_review = onetoone(CourseReview)
+
+  
+
+### Course Review(클래스후기)
+
+- user = models.OneToOneField(Account)
+- course_id = models.OneToOneField(Course)  (어차피 review는 한사람당 한개니까)
+- is_visible = models.BooleanField()
+- content = models.TextField()
+
+### Course Ticket(발급난수)
+
+- userid = onetoone(Account)
+- course_id = onetoone(Course)
+- ticket(자동발급) = model.charfield # UUID Field 이용할 것
+- created_date
 
 ### Lecture(강의들, 각 강의의 구성요소)
 
@@ -171,26 +190,6 @@ class DateTimeModel(models.Model):
 - lecture_id = models.AutoField(primary_key=True)
 - lecture_purpose(강의목적) =models.TextField
 - lecture_file = filefield()
-
-### Lecture Comments
-
-- lecture = foreignkey(Lecture)
-- user = ForeignKey(User)
-- content =textField
-
-### Course Review(클래스후기)
-
-- user= onetoone(user)
-- foreignkey(course)
-- is_visible(노출여부 boolen)
-- content = textField(본문 어디감?)
-
-### Course Ticket
-
-- userid = onetoone(user)
-- course_id = onetoone(Course)
-- ticket(자동발급) = model.charfield # UUID Field 이용할 것
-- created_date
 
 ### Lecture QnA
 
@@ -202,10 +201,10 @@ class DateTimeModel(models.Model):
 - 답글작성 구현,,
 - [링크참조](https://stackoverflow.com/questions/44837733/how-to-make-add-replies-to-comments-in-django) (장고로 대댓글 만들기)
 
-### Corse History
+### Course History
 
-- userid
-- lecture_history = textfield() (???) (여기에다가 리스트에 lecture_id 값을 넣으면 되나?)
+- userid =onetoone
+- lecture_history = textfield() (???) (여기에다가 리스트에 lecture_id 값을 넣으면 되나?)(???)
 
 # 구현
 
@@ -264,4 +263,33 @@ class Teacher(models.Model):
 
 - ajax는 비동기 구현하는 방식을 뜻함. 라이브러리이름아님 > 쌩JS보다 Jquery가 ajax더 쓰기쉬움
 
-- 
+# 파이썬 문법
+
+- *args는 복수의 인자를 받으면 그것을 튜플형태로 전달
+
+  ```
+  In [6]: def name(*args):
+     ...:     for i in args:
+     ...:         print(i)
+    
+    
+  name("고양이1", "고양이2")
+  ```
+
+  
+
+- **kwargs는 (키워드=특정값) 형태로 함수를 호출할수있습니다.
+
+  그것은 그대로 딕셔너리 형태로 {'키워드':'특정값'}으로 함수 내부로 전달됩니다.
+
+  ```
+  In [16]: def name_number(**kwargs):
+      ...:     for i, n in kwargs.items():
+      ...:
+      ...:         print(i, n)
+      ...:
+      
+  name_number(rhdiddl="싫어", 사랑해="고양이")
+  ```
+
+  
