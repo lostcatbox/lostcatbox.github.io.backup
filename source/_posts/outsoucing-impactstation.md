@@ -249,6 +249,31 @@ class Teacher(models.Model):
     created_at = models.DateTimeField('생성날짜', auto_now_add=True)
 ```
 
+### 상황
+
+django.admin에서 model inline model을 지원 안함
+
+### 해결 
+
+[nested-inline](https://github.com/s-block/django-nested-inline) 라이브러리를 사용하여 구축하였다.(사용법은 README.md 참조)
+
+```
+class LevelOneInline(NestedStackedInline):
+    model = Lecture
+    extra = 1
+    fk_name = 'course_id'
+
+class TopLevelAdmin(NestedModelAdmin):
+    model = Course
+    inlines = [LevelOneInline]
+
+admin.site.register(Course, TopLevelAdmin)
+```
+
+
+
+
+
 
 
 
