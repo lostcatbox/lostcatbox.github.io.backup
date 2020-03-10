@@ -390,10 +390,13 @@ flush privileges;
 
 
 
+
+
 ```
 # 장고와 mysql연동시
 migrate에서 에러코드 2059가 뜨고 막히더라구요... 결국 고민하다가 결과가 8.04버전 이상부터는 플러그인 방식이 달라서 생기는 오류였습니다. (버전 8.04 MySQL은 이전에 mysql_native_password를 쓰지않고 caching_password를 기본 인증 플러그인을 쓰니까 그랬습니다.)
-mysql의 다운그레이드 혹은 mysql에서 ALTER USER '유저이름'@'유저호스트정보' IDENTIFIED WITH mysql_native_password BY '비밀번호'; 로 유저 비밀번호 플러그인 변경후 migrate 재시도하니까 됩니다.
+mysql의 다운그레이드 혹은 mysql에서 ALTER USER '유저이름'@'유저호스트정보' IDENTIFIED WITH
+mysql_native_password BY '비밀번호'; 로 유저 비밀번호 플러그인 변경후 migrate 재시도하니까 됩니다.
 혹시나 삽질하실 다음분들이 있을까봐 노파심에 남깁니다. 화이팅!
 ```
 
