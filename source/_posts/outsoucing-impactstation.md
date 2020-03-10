@@ -317,4 +317,36 @@ admin.site.register(Course, TopLevelAdmin)
   name_number(rhdiddl="싫어", 사랑해="고양이")
   ```
 
-  
+  # MySQL
+
+  ## 설치 방법
+
+  [자세히](https://junhobaik.github.io/mac-install-mysql/)
+
+```
+1. MySQL 서버 시작 : mysql.server start
+
+2. MySQL DB 로그인 : mysql -u root -p
+
+3. MySQL DB 로그아웃 : exit 또는 quit
+
+4. MySQL 서버 종료 : mysql.server stop
+
+5. 완전 제거 "sudo rm -rf /usr/local/bin/mysql*" 
+```
+
+## 기본 구조
+
+table(표와같음): row(행)와 column(열) 로 구성됨
+
+같은 앱에서 사용되는 연관된 table들을 묶어서 database(table의 디렉토리와같음)라고함
+
+즉, 하나의 애플리케이션이 하나의 db와 대응됨
+
+하나의 컴퓨터 안에 여러 애플리케이션이 있으므로 DB도 여러 개임 이런 DB를 묶어서 DB server(예시:opentutorial.org:3306)라고 함
+
+그래서 사용자가 user가 DB server에 접속한다면 (opentutorial.org라는 컴퓨터에 있는 3306번을 리스닝하고있는 DBserver로 접속)
+
+사용자는 자신의 id, password를 사용하여 DB server에 접속후 해당 DB로 접속후 테이블에 접근
+
+![스크린샷 2020-03-10 오후 1.11.27](https://tva1.sinaimg.cn/large/00831rSTgy1gcoph5l5juj31080kiadr.jpg)
