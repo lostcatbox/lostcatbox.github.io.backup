@@ -317,16 +317,19 @@ admin.site.register(Course, TopLevelAdmin)
   name_number(rhdiddl="싫어", 사랑해="고양이")
   ```
 
-  # MySQL
+# MySQL
 
-  ## 설치 방법
+## 설치 방법
 
-  [자세히](https://junhobaik.github.io/mac-install-mysql/)
+[자세히](https://junhobaik.github.io/mac-install-mysql/)
 
 ```
 1. MySQL 서버 시작 : mysql.server start
 
-2. MySQL DB 로그인 : mysql -u root -p
+2. MySQL DB 로그인 : mysql -u root -p  (u유저, p패스워드)
+(mysql -h localhost -u root -p)(로컬호스트로 접속)(위에랑 같음)
+(mysql -h opentutorials.org -P3306 -u root -p)(다른컴퓨터 주소로 접속, 3306번포트로접속)
+
 
 3. MySQL DB 로그아웃 : exit 또는 quit
 
@@ -350,3 +353,47 @@ table(표와같음): row(행)와 column(열) 로 구성됨
 사용자는 자신의 id, password를 사용하여 DB server에 접속후 해당 DB로 접속후 테이블에 접근
 
 ![스크린샷 2020-03-10 오후 1.11.27](https://tva1.sinaimg.cn/large/00831rSTgy1gcoph5l5juj31080kiadr.jpg)
+
+## MySQL 사용
+
+```
+mysql> create database o2;  #o2라는 DB생성
+mysql> show databases; #현재 DB모두 보여줌
+mysql> use o2 #o2 Db로 접근
+mysql> show tables; #테이블 조회
+Empty set (0.00 sec)
+
+mysql> create table `topic` ( `id` int(11) NOT NULL AUTO_INCREMENT,     `title` varchar(100) NOT NULL,     `description` text NOT NULL,     `author` varchar(30) NOT NULL,     PRIMARY KEY (id) ) ENGINE=InnoDB DEFAULT CHARSET=utf8;   #테이블 생성
+
+mysql> INSERT INTO topic (title, description, author) VALUES('java','Computer language', 'eogo'); #행 추가
+
+SELECT * FROM topic #테이블 모든 행가져옴 조회
+
+mysql> SELECT * FROM topic WHERE id=2; # id=2인 행 가져옴
+
+mysql> UPDATE topic SET title='npm' WHERE id=2; # 수정  #where문 빠트리면 큰일난다. ㄹㅇ
+
+DELETE From topic where id=2; #삭제
+
+
+
+```
+
+
+
+```
+권한없다고할떄
+CREATE USER ‘user’@’localhost’ IDENTIFIED BY ‘root’;
+GRANT ALL PRIVILEGES ON *.* TO ‘user’@’localhost’ WITH GRANT OPTION;
+flush privileges;
+```
+
+
+
+```
+# 장고와 mysql연동시
+migrate에서 에러코드 2059가 뜨고 막히더라구요... 결국 고민하다가 결과가 8.04버전 이상부터는 플러그인 방식이 달라서 생기는 오류였습니다. (버전 8.04 MySQL은 이전에 mysql_native_password를 쓰지않고 caching_password를 기본 인증 플러그인을 쓰니까 그랬습니다.)
+mysql의 다운그레이드 혹은 mysql에서 ALTER USER '유저이름'@'유저호스트정보' IDENTIFIED WITH mysql_native_password BY '비밀번호'; 로 유저 비밀번호 플러그인 변경후 migrate 재시도하니까 됩니다.
+혹시나 삽질하실 다음분들이 있을까봐 노파심에 남깁니다. 화이팅!
+```
+
