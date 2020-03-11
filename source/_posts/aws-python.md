@@ -630,6 +630,57 @@ Django 애플리케이션의 사이트 관리자를 생성하여 웹 사이트�
 
 ### 해결2.
 
+~~와시바했다~~
+
+미들웨어를 건드려서 하는방법이 존재한다 하지만 왜인지 모두 해결되지않았다
+
+아래와 같이 결국 해결하였다. 
+
+```
+       
+#settings.py
+
+ALLOWED_HOSTS = [
+    'yourdomain.tld',
+    '.compute-1.amazonaws.com', # allows viewing of instances directly
+]
+
+import requests
+EC2_PRIVATE_IP  =   None
+try:
+    EC2_PRIVATE_IP  =   requests.get('http://169.254.169.254/latest/meta-data/local-ipv4', timeout = 0.01).text
+except requests.exceptions.RequestException:
+    pass
+
+if EC2_PRIVATE_IP:
+    ALLOWED_HOSTS.append(EC2_PRIVATE_IP)
+    
+```
+
+wigs.py
+
+```
+해결은 django.config 작성할때 
+
+option_settings:
+  aws:elasticbeanstalk:container:python:
+    WSGIPath: impactstation/wsgi.py
+    
+    
+    
+하고 eb create 후에도 
+eb config 가서 wsgi.py 경로를 
+application/wsgi.py로 해당 부분찾아가서 수정해줘야함
+
+----------------------
+option_settings: #환경변수 학습후 참고해보기
+  aws:elasticbeanstalk:application:environment:
+    DJANGO_SETTINGS_MODULE: config.settings
+    PYTHONPATH: /opt/python/current/app/eb-django:$PYTHONPATH
+  aws:elasticbeanstalk:container:python:
+    WSGIPath: eb-django/config/wsgi.py
+```
+
 
 
 [참고](https://lhy.kr/elb-healthcheck-for-django?fbclid=IwAR0hJuPy_zomKc18rJWTOyC4Poe3KWXEOIyagPV4L7om9JEwGSNDH4aVC40)
@@ -644,3 +695,20 @@ settings.ALLOWED_HOSTS 부분은 Health Check와는 무관하게,
 
 빈스톡도 EC2를 쓰고
 EC2 내역에서 아이피를 확인하면 바뀜>이것이 로드스케일링 ip주소와 같다면> EC2에  아이피로 서비스하시기보다, 도메인을 쓰시는 것이 관리상 유리
+
+
+
+## 다중 계정 사용시
+
+[자세히]([http://jeonghwan-kim.github.io/eb-cli-%ED%88%B4-%EC%82%AC%EC%9A%A9%EB%B2%95-%EC%A0%95%EB%A6%AC/](http://jeonghwan-kim.github.io/eb-cli-툴-사용법-정리/))
+
+
+
+
+
+## 꼭 참고하기
+
+[자세히](https://devlog.jwgo.kr/2018/02/22/things-about-elasticbeanstalk/)
+
+[자세히2](https://lhy.kr/elb-healthcheck-for-django)
+

@@ -31,6 +31,10 @@ __과정__
 
 - 나중에 프론트와 연결
 
+## 현재 해야할것 (TO-DO_LIST)
+
+- aws 구축
+
 
 
 ## 구현시 팁
@@ -354,6 +358,32 @@ table(표와같음): row(행)와 column(열) 로 구성됨
 
 ![스크린샷 2020-03-10 오후 1.11.27](https://tva1.sinaimg.cn/large/00831rSTgy1gcoph5l5juj31080kiadr.jpg)
 
+## MySQL django 적용
+
+```
+~/pip3 install pymysql
+
+# settings.py
+import pymysql
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.mysql', #mysql로 바꿔주기
+        'NAME': 'impactstation', #테이블이름
+        'USER': 'impactstation', #유저이름
+        'PASSWORD': 'save2020!', #유저비번
+        'HOST': 'localhost', #서버호스트
+        'POST': '3306', #기본 포트 3306임
+        'OPTIONS': {
+            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'"
+        },
+
+    }
+}
+```
+
+
+
 ## MySQL 사용
 
 ```
@@ -371,7 +401,7 @@ SELECT * FROM topic #테이블 모든 행가져옴 조회
 
 mysql> SELECT * FROM topic WHERE id=2; # id=2인 행 가져옴
 
-mysql> UPDATE topic SET title='npm' WHERE id=2; # 수정  #where문 빠트리면 큰일난다. ㄹㅇ
+mysql> UPDATE topic SET title='npm' WHERE id=2; # 수정  #where문 빠트리면 큰일난다.
 
 DELETE From topic where id=2; #삭제
 
@@ -379,24 +409,129 @@ DELETE From topic where id=2; #삭제
 
 ```
 
-
+### 유저 생성 및 권한 부여
 
 ```
+키마를 mysql 로 변경하겠습니다.
+
+mysql>use mysql;
+
+mysql>select host,user from user  #모든 유저확인
+ 
 권한없다고할떄
-CREATE USER ‘user’@’localhost’ IDENTIFIED BY ‘root’;
-GRANT ALL PRIVILEGES ON *.* TO ‘user’@’localhost’ WITH GRANT OPTION;
-flush privileges;
+mysql>CREATE USER ‘아이디’@’localhost’ IDENTIFIED BY ‘비번’;
+mysql>GRANT ALL PRIVILEGES ON *.* TO ‘user’@’localhost’ WITH GRANT OPTION;  #*.*는 필요에 따라 DB명.테이블명 을 지정해서 권한을 줄수있음
+mysql>flush privileges;
+
+delete from user where user='아이디'; #유저 삭제
 ```
 
-
-
-
-
 ```
-# 장고와 mysql연동시
+# 장고와 mysql연동시 에러 발생 처리
 migrate에서 에러코드 2059가 뜨고 막히더라구요... 결국 고민하다가 결과가 8.04버전 이상부터는 플러그인 방식이 달라서 생기는 오류였습니다. (버전 8.04 MySQL은 이전에 mysql_native_password를 쓰지않고 caching_password를 기본 인증 플러그인을 쓰니까 그랬습니다.)
 mysql의 다운그레이드 혹은 mysql에서 ALTER USER '유저이름'@'유저호스트정보' IDENTIFIED WITH
 mysql_native_password BY '비밀번호'; 로 유저 비밀번호 플러그인 변경후 migrate 재시도하니까 됩니다.
-혹시나 삽질하실 다음분들이 있을까봐 노파심에 남깁니다. 화이팅!
+```
+
+# AWS RDS
+
+MySQL을 기준으로 설명합니다
+
+https://ap-northeast-2.console.aws.amazon.com/rds/home
+
+접속후에 DB 인스턴스 생성 >> 추가 정보 눌러서 꼭 DB이름지정하고 포트 맞는지 확인
+
+파라미터 검색 및 편집에서 아래와 같이 속성 수정하고 생성했던 DB에 속성에서 이 파라미터속성으로 적용
+
+```
+character_set_client: UTF-8
+character_set_connection: UTF-8
+character_set_database: UTF-8
+character_set_filesystem: UTF-8
+character_set_results: UTF-8
+character_set_server: UTF-8
+```
+
+__접속 권한설정까지하면 이제 외부에서 접속도 가능하게된다 (내 컴퓨터에서 workbench를 쓰기위해)__
+
+EC2관리 콘솔>보안그룹>인바운드>편집>MySQL추가하기(여기에서 외부모두허용)
+
+이제 DB로 다시가서 속성에서 위에 보안그룹으로 변경 + 보안 그룹에 외부의 EC2인스턴스 접근 '예'로 설정해놔야함(혹여나 다른지확인)
+
+이제 MySQL workbench로 원격접속
+
+```
+HostName: 앤드포인트
+post: 포트번호 (deflualt:3306)
+Username: 사용자명
+password: 사용자 pw
+```
+
+그리고 migrate해보면
+
+오류를 볼수있다 (mysql 5.7이하만.)
+
+이 오류는 strict mode를 켜는 것을 권장하는것이다(mysql이 마음대로 값을 넣어버리는것을 방지함)
+
+```
+WARNING
+?: (mysql.W002) MySQL Strict Mode is not set for database connection 'default'
+	HINT: MySQL's Strict Mode fixes many data integrity problems in MySQL, such as data truncation upon insertion, by escalating warnings into errors. It is strongly recommended you activate it. See: https://docs.djangoproject.com/en/3.0/ref/databases/#mysql-sql-mode
+```
+
+해결
+
+```
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'impactstation1',
+        'USER': 'impactstation',
+        'PASSWORD': 'save2020!',
+        'HOST': 'database-1.cfmnthdcxoyk.ap-northeast-2.rds.amazonaws.com',
+        'POST': '3306',
+        'OPTIONS': {
+            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'", # strict mode 설정 추가
+        }
+
+    }
+}
+
+```
+
+
+
+
+
+[자세히](https://solt.tistory.com/61)
+
+접속권한 [자세히](https://solt.tistory.com/61)
+
+
+
+
+
+# django static 파일
+
+```
+우선 장고에서 static 파일들을 처리할 수 있도록 settings.py 를 설정을 해주자.
+
+# settings.py
+
+import os
+
+# Build paths inside the project like this: os.path.join(BASE_DIR, ...)
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+# static files
+STATIC_URL = '/static/'
+STATIC_DIR = os.path.join(BASE_DIR, 'static')
+STATICFILES_DIRS = [
+    STATIC_DIR,
+]
+지금까지는 위와 같이 설정해주고 static 폴더 안에 정적 파일들을 넣어 적용시켰었다.
+이제 이 상태로 scp 로 서버에 업로드하면 css가 적용되어 있을까?
+프로젝트 폴더에 static 폴더를 만들고 아무 내용이나 작성한 test.txt 파일을 하나 넣어두자.
+일단 로컬에서 runserver 를 실행하고 localhost:8000/static/test.txt 로 접속하면 아래와 같이 test.txt 의 내용을 확인할 수 있다.
 ```
 
