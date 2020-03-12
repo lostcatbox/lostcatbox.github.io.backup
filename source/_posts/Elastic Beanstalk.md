@@ -1,11 +1,11 @@
 ---
-title: Elastic Beanstalk
+title: AWS Elastic Beanstalk + django
 date: 2020-02-06 15:41:25
 categories: [Elastic Beanstalk]
 tags: [Basic, Elastic Beanstalk, AWS]
 ---
 
-# Elastic Beanstalk
+# Elastic Beanstalk + Django
 
 ## EB CLI 명령어 정리
 
@@ -27,10 +27,23 @@ eb logs # 환경의 인스턴스에서 로그를 가져옵니다. red에서 로�
 eb open # 브라우저로 웹 사이트 열림
 
 eb deploy # 서버에 올림. 프로젝트 폴더의 git 리포지토리를 초기화한 경우, 대기 중인 변경 사항이 있더라도 EB CLI가 항상 최신 커밋을 배포합니다. eb deploy를 실행하기 전에 변경 사항을 커밋하여 이를 환경에 배포합니다.
+eb deploy --staged  # git add .만하고 deploy하고 싶다면 
 
 eb config # 실행 중인 환경에 사용 가능한 구성 옵션을 봅니다.
 
 eb terminate # 환경을 종료합니다. 프로젝트 작동 종료.
+
++ 
+django.config 작성할때 
+
+option_settings:
+  aws:elasticbeanstalk:container:python:
+    WSGIPath: impactstation/wsgi.py
+    
+eb create 후에도 
+eb config 가서 wsgi.py 경로를 
+application/wsgi.py로 해당 부분찾아가서 수정해줘야함
+
 
 
 
@@ -305,7 +318,7 @@ __가상환경 만들어 시작__
 
 5. `.ebextensions` 디렉터리 내에서 다음 텍스트가 있는 `django.config`라는 [구성 파일](https://docs.aws.amazon.com/ko_kr/elasticbeanstalk/latest/dg/ebextensions.html)을 추가합니다.
 
-   예) __~/ebdjango/.ebextensions/django.config__ 
+   예) __~/project/.ebextensions/django.config__ 
 
 6. 이 설정 `WSGIPath`는 Elastic Beanstalk가 애플리케이션을 시작하는 데 사용하는 WSGI 스크립트의 위치를 지정합니다.
 
@@ -365,10 +378,10 @@ Elastic Beanstalk에 애플리케이션을 배포하기 위해 필요한 모든 
 
    키 페어가 이미 있는 경우 이를 선택하거나, 프롬프트에 따라 키 페어를 생성합니다. 프롬프트가 보이지 않거나 나중에 설정을 변경해야 하는 경우 **eb init -i**를 실행합니다.
 
-3. 환경을 만들고 **eb create**로 해당 환경에 애플리케이션을 배포합니다.
+3. 환경을 만들고 **eb create**로 해당 환경에 애플리케이션을 배포합니다.  
 
    ```
-   ~/ebdjango$ eb create django-env
+   ~/project$ eb create django-env
    ```
 
    **참고**
@@ -410,7 +423,7 @@ Elastic Beanstalk에 애플리케이션을 배포하기 위해 필요한 모든 
 7. 환경 업데이트 프로세스가 완료되면 **eb open**으로 웹 사이트를 엽니다.
 
    ```
-   ~/ebdjango$ eb open
+   ~/project$ eb open
    ```
 
    그러면 애플리케이션에 대해 생성된 도메인 이름을 사용하여 브라우저 창이 열립니다. 로컬에서 만들고 테스트한 것과 동일한 Django 웹 사이트가 보일 것입니다.
@@ -535,7 +548,9 @@ Django 애플리케이션의 사이트 관리자를 생성하여 웹 사이트�
 
    ![               Elastic Beanstalk에 배포된 Django 웹사이트의 Django 관리 콘솔             ](https://docs.aws.amazon.com/ko_kr/elasticbeanstalk/latest/dg/images/eb_django_admin_console.png)
 
-로컬 업데이트/테스트와 비슷한 절차를 사용할 수 있으며, 그 다음 **eb deploy**를 수행합니다. Elastic Beanstalk에서 라이브 서버를 업데이트하는 작업을 처리하므로 서버 관리 대신에 애플리케이션 개발에 집중할 수 있습니다.
+로컬 업데이트/테스트와 비슷한 절차를 사용할 수 있으며, 그 다음 **eb deploy**를 수행합니다. Elastic Beanstalk에서 라이브 서버를 업데이트하는 작업을 처리하므로 서버 관리 대신에 애플리케이션 개발에 집중할 수 있습니다. 
+
+(`git add .`만하고 deploy하고 싶다면 `eb deploy --staged` )
 
 ### 데이터베이스 마이그레이션 구성 파일 추가
 
@@ -562,7 +577,7 @@ Django 애플리케이션의 사이트 관리자를 생성하여 웹 사이트�
 2. 애플리케이션 배포
 
    ```
-   ~/ebdjango$ eb deploy
+   ~/project$ eb deploy
    ```
 
 ## 정리
@@ -570,7 +585,7 @@ Django 애플리케이션의 사이트 관리자를 생성하여 웹 사이트�
 개발 세션 사이에 인스턴스 시간과 여러 AWS 리소스를 저장하려면 **eb terminate**를 사용하여 Elastic Beanstalk 환경을 종료합니다.
 
 ```
-~/ebdjango$ eb terminate django-env
+~/project$ eb terminate django-env
 ```
 
 이 명령은 환경과 그 안에서 실행되는 모든 AWS 리소스를 종료합니다. 그러나 애플리케이션은 삭제되지 않으므로 **eb create**를 다시 실행하여 동일한 구성의 더 많은 환경을 언제든 생성할 수 있습니다. EB CLI 명령에 대한 자세한 내용은 [EB CLI를 사용하여 Elastic Beanstalk 환경 관리](https://docs.aws.amazon.com/ko_kr/elasticbeanstalk/latest/dg/eb-cli3-getting-started.html) 단원을 참조하십시오.
@@ -581,14 +596,6 @@ Django 애플리케이션의 사이트 관리자를 생성하여 웹 사이트�
 ~$ rm -rf ~/eb-virt
 ~$ rm -rf ~/ebdjango
 ```
-
-## 다음 단계
-
-심화 자습서를 포함해 Django에 대한 자세한 내용은 [공식 설명서](https://docs.djangoproject.com/en/2.1/)를 참조하십시오.
-
-다른 Python 웹 프레임워크를 사용해 보고 싶은 경우 [Elastic Beanstalk에 Flask 애플리케이션 배포](https://docs.aws.amazon.com/ko_kr/elasticbeanstalk/latest/dg/create-deploy-python-flask.html) 단원을 참조하십시오.
-
-
 
 
 
@@ -604,7 +611,7 @@ Django 애플리케이션의 사이트 관리자를 생성하여 웹 사이트�
 
 [기타 전체 설명서](https://docs.aws.amazon.com/index.html?nc2=h_ql_doc_do_v)
 
-# 오류 모음
+# 오류
 
 ## sudo
 
@@ -622,11 +629,9 @@ Django 애플리케이션의 사이트 관리자를 생성하여 웹 사이트�
 
 ### 해결1.
 
-지금 만든 서비스가 단일 인스턴스로 해결된다면 구성>용량>로드 밸런스를 단일 인스턴스로 바꾸면 바로 해결됨 
-
 근본적으로 로드 밸런스가 내부 IP를 이용하여 서버의 상태를 확인하게 되므로 일어나는 문제이므로,,
 
-
+지금 만든 서비스가 단일 인스턴스로 해결된다면 구성>용량>로드 밸런스를 단일 인스턴스로 바꾸면 바로 해결됨 
 
 ### 해결2.
 
@@ -634,14 +639,18 @@ Django 애플리케이션의 사이트 관리자를 생성하여 웹 사이트�
 
 미들웨어를 건드려서 하는방법이 존재한다 하지만 왜인지 모두 해결되지않았다
 
-아래와 같이 결국 해결하였다. 
+아래와 같이 결국 requests를 통해 해결하였다. 
 
 ```
        
 #settings.py
 
 ALLOWED_HOSTS = [
-    'yourdomain.tld',
+    'localhost',
+    '127.0.0.1',
+    '.elasticbeanstalk.com',
+    'impactstation-dev.ap-northeast-2.elasticbeanstalk.com',
+    '.amazonaws.com',
     '.compute-1.amazonaws.com', # allows viewing of instances directly
 ]
 
@@ -657,21 +666,10 @@ if EC2_PRIVATE_IP:
     
 ```
 
-wigs.py
+위에 방법외에도 빈스톡도 EC2를 쓰고
+EC2 내역에서 아이피를 확인하면 바뀜>이것이 로드스케일링 ip주소와 같다면> EC2에  아이피로 서비스하시기보다, 도메인을 쓰시는 것이 관리상 유리하다,. 나중에 해보기
 
 ```
-해결은 django.config 작성할때 
-
-option_settings:
-  aws:elasticbeanstalk:container:python:
-    WSGIPath: impactstation/wsgi.py
-    
-    
-    
-하고 eb create 후에도 
-eb config 가서 wsgi.py 경로를 
-application/wsgi.py로 해당 부분찾아가서 수정해줘야함
-
 ----------------------
 option_settings: #환경변수 학습후 참고해보기
   aws:elasticbeanstalk:application:environment:
@@ -681,34 +679,67 @@ option_settings: #환경변수 학습후 참고해보기
     WSGIPath: eb-django/config/wsgi.py
 ```
 
-
-
 [참고](https://lhy.kr/elb-healthcheck-for-django?fbclid=IwAR0hJuPy_zomKc18rJWTOyC4Poe3KWXEOIyagPV4L7om9JEwGSNDH4aVC40)
 
 [참고2](https://sanyambansal.wordpress.com/2017/06/26/how-to-make-djangos-allowed_hosts-work-with-aws-elb-health-checks/?fbclid=IwAR2QZg9eXmQZc574ozolOEVBIQ404JdEDWIArlExwkjdDXU1MPttCWij5Kc)
-
-EB에서 오토스케일링 하면서 연결된EC2의 IP가 계속 바뀌더라고요 ㅡ 도메인이나 특정 아이피를 EB에 연결하셔야 해요 ㅡ 아니면 Allowed HOST에 *로 해서 테스트 하실수 있지 않나요?
-
-settings.ALLOWED_HOSTS 부분은 Health Check와는 무관하게,
-서비스되고 있는 장고의 아이피 혹은 도메인이름을 뜻합니다.
-현재 서비스가 52.78.86.29 아이피에서 되고 있기에 위 오류가 발생하는 듯 하구요. 서비스하시는 아이피 혹은 도메인을 ALLOWED_HOSTS에 추가하시고 서비스하실 수 있습니다.
-
-빈스톡도 EC2를 쓰고
-EC2 내역에서 아이피를 확인하면 바뀜>이것이 로드스케일링 ip주소와 같다면> EC2에  아이피로 서비스하시기보다, 도메인을 쓰시는 것이 관리상 유리
 
 
 
 ## 다중 계정 사용시
 
-[자세히]([http://jeonghwan-kim.github.io/eb-cli-%ED%88%B4-%EC%82%AC%EC%9A%A9%EB%B2%95-%EC%A0%95%EB%A6%AC/](http://jeonghwan-kim.github.io/eb-cli-툴-사용법-정리/))
+__AWS CLI로 인증 정보 (Access Key ID, Secret Access Key) 관리하기__
 
+```
+~/.aws/
+vim config
 
+[profile user01]
+aws_access_key_id = <key_id>
+aws_secret_access_key = <key>
+output = json
+region = us-west-1
+
+[profile user02]
+aws_access_key_id = <key_id>
+aws_secret_access_key = <key>
+output = json
+region = us-west-1
+
+```
+
+설정후 앞으로 명령 내릴때 는 --profile user01와 같이 뒤에 붙이면 그 계정으로 속하여 실행됨
+
+```
+eb create --profile user01
+```
+
+```
+$ cat ~/.aws/credentials
+[default]
+aws_access_key_id = ABCDEF
+aws_secret_access_key = GHIJKL
+[work]
+aws_access_key_id = WORK1234
+aws_secret_access_key = WORK5678
+참고로 .aws 디렉토리에는 credentials 파일 말고도 config라는 파일도 있는데 이 곳에는 위에서 설정한 디폴트 기본 리전 및 출력 포멧 옵션들이 저장되어 있습니다.
+```
+
+참고로 `.aws` 디렉토리에는 `credentials` 파일 말고도 `config`라는 파일도 있는데 이 곳에는 위에서 설정한 디폴트 기본 리전 및 출력 포멧 옵션들이 저장되어 있습니다.
 
 
 
 ## 꼭 참고하기
 
-[자세히](https://devlog.jwgo.kr/2018/02/22/things-about-elasticbeanstalk/)
+**eb에서 사용하는 .elasticbeanstalk 디렉토리는 배포 대상이 아니다.**
+zip으로 압축해서 웹으로 통해 업로드할 때 이 디렉토리도 함께 압축해서 올려야 하는지 궁금했는데 명확하게 딱 표시된 곳이 없었다. 나중에 git init을 한 후 .gitignore파일을 만들었더니 거기에 .elasticbeanstalk를 제외하는 부분이 있더라. 그러니 이 디렉토리는 제외하면 된다. **.elasticbeanstalk** 디렉토리를 열어보면 eb 배포 환경에 관한 파일이 config.yml이 들어 있다. **.elasticbeanstalk**와 비슷하게 생긴 **.ebextensions** 디렉토리는 django.config와 같이 .config 확장자 파일로 배포 시 수행해야 하는 명령이나 WSGIPath 등 옵션을 설정할 수 있는 파일이 들어 있다. 이 디렉토리는 zip으로 압축할 때 같이 압축해주면 된다.
 
-[자세히2](https://lhy.kr/elb-healthcheck-for-django)
+**가상환경 디렉토리까지 eb deploy 대상에 포함시키지 마라.**
+pip freeze로 생성된 requirements.txt로 eb가 알아서 ec2 인스턴스 /opt/python/run/venv 경로에 가상환경을 만든다.
+
+**eb deploy를 통해 배포에서 제외할 파일을 설정할 때**
+git init으로 git이 활성화 되어 있어야 .gitignore 파일이 적용된다. 그렇지 않으면 .ebignore 사용할 것
+
+[자세히2](https://lhy.kr/elb-healthcheck-for-django)(aws 전반적인 원리 이해하기)
+
+
 

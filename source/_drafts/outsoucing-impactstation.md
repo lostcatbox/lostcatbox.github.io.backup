@@ -511,7 +511,7 @@ DATABASES = {
 
 
 
-# django static 파일
+# django static 파일 서비스
 
 ```
 우선 장고에서 static 파일들을 처리할 수 있도록 settings.py 를 설정을 해주자.
