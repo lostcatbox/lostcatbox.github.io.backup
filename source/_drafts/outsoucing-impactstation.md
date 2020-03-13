@@ -501,17 +501,13 @@ DATABASES = {
 
 
 
-
-
 [자세히](https://solt.tistory.com/61)
 
 접속권한 [자세히](https://solt.tistory.com/61)
 
+# Django static 파일 서비스
 
-
-
-
-# django static 파일 서비스
+## static 경로 설정
 
 ```
 우선 장고에서 static 파일들을 처리할 수 있도록 settings.py 를 설정을 해주자.
@@ -524,7 +520,7 @@ import os
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # static files
-STATIC_URL = '/static/'
+STATIC_URL = '/static/'  # STATIC_URL 이 선언되어 있는데, 이건 static 파일을 불러올 때의 URL이다
 STATIC_DIR = os.path.join(BASE_DIR, 'static')
 STATICFILES_DIRS = [
     STATIC_DIR,
@@ -534,4 +530,169 @@ STATICFILES_DIRS = [
 프로젝트 폴더에 static 폴더를 만들고 아무 내용이나 작성한 test.txt 파일을 하나 넣어두자.
 일단 로컬에서 runserver 를 실행하고 localhost:8000/static/test.txt 로 접속하면 아래와 같이 test.txt 의 내용을 확인할 수 있다.
 ```
+
+## STATICFILES_DIRS 경로 설정(static파일들이 어딧는지알려줘야하니까.)
+
+```python
+STATICFILES_DIRS = (
+    os.path.join(BASE_DIR, "static"), # Root의 static 파일
+    '/mainpages/static/',	# mainpages App의 static 파일
+)
+```
+
+요청한 static 파일을 위에 설정한 경로 순서대로 찾게된다
+
+## 불러오기
+
+현재 /static 으로 불러오면 `/mainpages/static` 폴더를 찾아볼 것이다.
+
+여기서 namespace로 불러오기 위해서 `/mainpages/static`폴더 안에 `mainpages` 폴더를 하나 더 만들고
+
+, 그 안에서 static 파일을 불러올 것이다
+
+```
+mainpages/static/garden/style.css
+body {
+  background-color: red;
+}
+```
+
+static 파일은 작성했고, 이제 Django 템플릿에서 불러보자
+
+```
+template.html
+<html>
+  <head>
+    <title>Static 테스트</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'mainpages/style.css' %}">
+  </head>
+```
+
+이렇게 static 앱을 load 하고 불러오면 된다
+
+## 정적 파일 모으기
+
+css파일 등과 같은 정적 파일들은 장고 내에 여러 폴더에 분산되어 있다.
+
+예를 들어, 장고 관리자 페이지에 적용되는 정적 파일들은 아래 경로에 저장되어 있다.
+
+```
+/home/che1/.pyenv/versions/ec2_deploy/lib/python3.6/site-packages/django/contrib/admin/static/admin
+```
+
+또, 우리가 만든 정적 파일들은 아래 경로에 저장된다.
+
+```
+/home/che1/Projects/Django/EC2_Deploy_Project/mysite/static
+```
+
+이렇게 하나의 프로젝트에서 사용하는 정적 파일들은 여기저기에 분산되어 있기 때문에 요청이 들어왔을 때 필요한 정적 파일을 돌려주려면 많은 경로들을 다 찾아보아야 하며 이는 매우 비효율적일 것이다.
+
+그래서 사용하는 모든 정적 파일을 하나의 경로로 모아주는 작업이 필요하다.
+`runserver` 는 개발자가 개발에만 집중할 수 있도록 이 작업을 알아서 해준다. runserver는 알게모르게 알아서 해주는 편의기능이 아주 많다.
+하지만 실제 서비스를 배포할때는 runserver를 사용하지 않으므로 직접 모아주어야 하며, 이 때 사용하는 것이 `collectstatic` 명령이다.
+
+### collectstatic
+
+`collectstatic` 파일은 프로젝트에서 사용하는 css, font, javascript 등 모든 정적 파일들을 모아서 하나의 경로에 모아준다.
+collectstatic을 실행하기 위해서는 먼저 파일들을 __모을 경로를 지정__해주어야 하며 이 경로는 `settings.py` 의 `STATIC_ROOT` 라는 변수로 지정한다.
+
+```
+import os
+
+# Build paths inside the project like this: os.path.join(BASE_DIR, ...)
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+# static files
+STATIC_URL = '/static/'
+STATIC_DIR = os.path.join(BASE_DIR, 'static')
+STATICFILES_FINDERS = (
+    'django.contrib.staticfiles.finders.FileSystemFinder',
+    'django.contrib.staticfiles.finders.AppDirectoriesFinder',
+#    'django.contrib.staticfiles.finders.DefaultStorageFinder',
+)
+STATICFILES_DIRS = [
+    STATIC_DIR,
+]
+
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+```
+
+프로젝트 루트의 상위 폴더에 `static` 라는 폴더를 생성하고 그곳으로 모든 정적 파일들을 모으도록 설정하였다.
+
+ static  <-- collectstatic을 실행하면 생성될 폴더
+
+collectstatic은 `settings.py` 의 `INSTALLED_APPS` 목록에 등록된 앱이 사용하는 모든 정적 파일들과 `STATICFILES_DIRS` 리스트에 명시된 경로에 있는 모든 정적 파일들을 한 곳에 모은다.
+AWS 서버에 접속한 뒤 `manage.py` 가 있는 경로로 이동한 다음 아래 명령을 실행하여 정적 파일들을 모아보자.
+
+`.static_root` 라는 폴더가 생성된 것을 볼 수 있으며 그 내용물은 아래와 같다.
+
+```
+├── admin
+│   ├── css
+│   ├── fonts
+│   ├── img
+│   └── js
+└── test.txt
+```
+
+장고 관리자 페이지의 정적 파일들은 물론이고 우리가 만들었던 `static` 폴더 내의 내용물인 `test.txt` 파일도 가져와진 것을 볼 수 있다.
+
+이 폴더의 내용물들은 이미 어딘가에 있는 정적 파일들을 __복사__해온 것이므로, 버전 컨트롤에서 제외시켜야 한다.
+`.gitignore` 파일을 열어 `.static_root/` 를 추가해준다.
+
+이제 서버에서 정적 파일을 요청하는 URL을 처리할 수 있게 해주어야한다
+
+[자세히](https://nachwon.github.io/django-deploy-7-s3/)
+
+
+
+
+
+-------------------
+
+#### Django App의 Static 폴더
+
+필요에 따라 각각의 Django App마다 App별 정적 파일을 담는 별도의 "static" 폴더를 둘 수도 있다. 이를 위해서는 settings.py 파일 안에 STATICFILES_FINDERS을 설정하고 그 값으로 AppDirectoriesFinder을 추가해 주어야 한다. 각 App의 static 폴더는 그 폴더명을 "static" 으로 지정해 주어야 하며, 일반적으로 App명/static/App명 과 같이 각 App의 static 폴더 안에 다시 "App명"" 서브폴더를 둘 것을 권장한다. 이는 Deployment 시 collectstatic 을 실행할 때, 각 static 폴더 밑의 내용을 그대로 복사하므로 동명 파일들이 충돌하지 않게 하기 위함이다.
+
+```
+STATICFILES_FINDERS ``=` `(``  ``'django.contrib.staticfiles.finders.FileSystemFinder'``,``  ``'django.contrib.staticfiles.finders.AppDirectoriesFinder'``,``)
+```
+
+참고로 위의 FileSystemFinder는 STATICFILES_DIRS 에 있는 경로들로부터 정적 파일을 찾을 수 있게 한다.
+
+#### 3. Static 파일 사용
+
+Static 파일들은 주로 템플릿에서 사용되는데, settings.py 설정을 마친 후 static 파일들을 사용하기 위해서는, 템플릿 상단에 {% load staticfiles %} 태그를 먼저 명시해 주어야 한다. 그리고, 실제 static 파일을 가리키기 위해서는 아래 link 태그에서 보이듯이 "{% static '리소스명' %}" 와 같이 static 템플릿 태그를 사용하여 해당 리소스를 지정한다. 이때 리소스명에는 "static/" 폴더명 다음의 경로만 지정한다.
+
+```
+{% load staticfiles %}
+
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="{% static 'bootstrap/css/bootstrap.min.css' %}">
+</head>
+<body>
+</body>
+</html>
+```
+
+#### 4. collectstatic
+
+Django 프로젝트를 Deploy할 때, 흩어져 있는 Static 파일들을 모아 특정 디렉토리로 옮기는 작업을 할 수 있는데, 이 작업은 위해 "./manage.py collectstatic" 명령을 사용한다. 즉, collectstatic 명령은 Django 프로젝트와 각 Django App 안에 있는 Static 파일들을 settings.py 파일 안에 정의되어 있는 STATIC_ROOT 디렉토리로 옮기는 작업을 수행한다.
+
+예를 들어, settings.py 에 다음과 같이 STATIC_ROOT 가 설정되어 있을 때,
+
+```
+STATIC_ROOT = '/var/www/myweb_static'
+```
+
+아래 collectstatic 명령은 모든 정적 파일들을 /var/www/myweb_static 디렉토리에 복사해 준다.
+
+```
+(venv1) /var/www/myweb $ ./manage.py collectstatic
+```
+
+
 
