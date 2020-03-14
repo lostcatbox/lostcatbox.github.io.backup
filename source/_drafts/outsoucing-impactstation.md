@@ -696,3 +696,5 @@ STATIC_ROOT = '/var/www/myweb_static'
 
 
 
+
+
