@@ -605,17 +605,20 @@ import os
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # static files
-STATIC_URL = '/static/'
-STATIC_DIR = os.path.join(BASE_DIR, 'static')
+STATIC_URL = '/static/' # 라우팅주소
+STATIC_DIR = os.path.join(BASE_DIR, 'static') 
 STATICFILES_FINDERS = (
     'django.contrib.staticfiles.finders.FileSystemFinder',
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
 #    'django.contrib.staticfiles.finders.DefaultStorageFinder',
 )
+
+#static파일들 위치 등록
 STATICFILES_DIRS = [
     STATIC_DIR,
 ]
 
+# collectstatic 명령시 모을곳
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 ```
 
@@ -623,46 +626,21 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
  static  <-- collectstatic을 실행하면 생성될 폴더
 
-collectstatic은 `settings.py` 의 `INSTALLED_APPS` 목록에 등록된 앱이 사용하는 모든 정적 파일들과 `STATICFILES_DIRS` 리스트에 명시된 경로에 있는 모든 정적 파일들을 한 곳에 모은다.
-AWS 서버에 접속한 뒤 `manage.py` 가 있는 경로로 이동한 다음 아래 명령을 실행하여 정적 파일들을 모아보자.
-
-`.static_root` 라는 폴더가 생성된 것을 볼 수 있으며 그 내용물은 아래와 같다.
-
-```
-├── admin
-│   ├── css
-│   ├── fonts
-│   ├── img
-│   └── js
-└── test.txt
-```
-
-장고 관리자 페이지의 정적 파일들은 물론이고 우리가 만들었던 `static` 폴더 내의 내용물인 `test.txt` 파일도 가져와진 것을 볼 수 있다.
-
-이 폴더의 내용물들은 이미 어딘가에 있는 정적 파일들을 __복사__해온 것이므로, 버전 컨트롤에서 제외시켜야 한다.
-`.gitignore` 파일을 열어 `.static_root/` 를 추가해준다.
-
-이제 서버에서 정적 파일을 요청하는 URL을 처리할 수 있게 해주어야한다
-
-[자세히](https://nachwon.github.io/django-deploy-7-s3/)
-
-
-
-
-
--------------------
-
-#### Django App의 Static 폴더
+### Django App의 Static 폴더
 
 필요에 따라 각각의 Django App마다 App별 정적 파일을 담는 별도의 "static" 폴더를 둘 수도 있다. 이를 위해서는 settings.py 파일 안에 STATICFILES_FINDERS을 설정하고 그 값으로 AppDirectoriesFinder을 추가해 주어야 한다. 각 App의 static 폴더는 그 폴더명을 "static" 으로 지정해 주어야 하며, 일반적으로 App명/static/App명 과 같이 각 App의 static 폴더 안에 다시 "App명"" 서브폴더를 둘 것을 권장한다. 이는 Deployment 시 collectstatic 을 실행할 때, 각 static 폴더 밑의 내용을 그대로 복사하므로 동명 파일들이 충돌하지 않게 하기 위함이다.
 
 ```
-STATICFILES_FINDERS ``=` `(``  ``'django.contrib.staticfiles.finders.FileSystemFinder'``,``  ``'django.contrib.staticfiles.finders.AppDirectoriesFinder'``,``)
+STATICFILES_FINDERS = (
+    'django.contrib.staticfiles.finders.FileSystemFinder',
+    'django.contrib.staticfiles.finders.AppDirectoriesFinder',
+#    'django.contrib.staticfiles.finders.DefaultStorageFinder',
+)
 ```
 
 참고로 위의 FileSystemFinder는 STATICFILES_DIRS 에 있는 경로들로부터 정적 파일을 찾을 수 있게 한다.
 
-#### 3. Static 파일 사용
+### Static 파일 사용
 
 Static 파일들은 주로 템플릿에서 사용되는데, settings.py 설정을 마친 후 static 파일들을 사용하기 위해서는, 템플릿 상단에 {% load staticfiles %} 태그를 먼저 명시해 주어야 한다. 그리고, 실제 static 파일을 가리키기 위해서는 아래 link 태그에서 보이듯이 "{% static '리소스명' %}" 와 같이 static 템플릿 태그를 사용하여 해당 리소스를 지정한다. 이때 리소스명에는 "static/" 폴더명 다음의 경로만 지정한다.
 
@@ -678,7 +656,7 @@ Static 파일들은 주로 템플릿에서 사용되는데, settings.py 설정�
 </html>
 ```
 
-#### 4. collectstatic
+### collectstatic
 
 Django 프로젝트를 Deploy할 때, 흩어져 있는 Static 파일들을 모아 특정 디렉토리로 옮기는 작업을 할 수 있는데, 이 작업은 위해 "./manage.py collectstatic" 명령을 사용한다. 즉, collectstatic 명령은 Django 프로젝트와 각 Django App 안에 있는 Static 파일들을 settings.py 파일 안에 정의되어 있는 STATIC_ROOT 디렉토리로 옮기는 작업을 수행한다.
 
@@ -694,7 +672,76 @@ STATIC_ROOT = '/var/www/myweb_static'
 (venv1) /var/www/myweb $ ./manage.py collectstatic
 ```
 
+Tip: `python3 manage.py runserver --insecure` 명령을 하면 로컬에서 static파일 서비스 가능
 
+# 로그인 구현
 
+폼 구현할떄 {{form.as_p}}확인후 해당 값들 다시 html css로 적용
 
+```
+질문에서, 나는 파이썬 폼 클래스 대신 HTML 템플릿의 모양과 느낌을 변경하고 싶다고 가정합니다. 이 경우 기본 django-auth 형식에 필요한 이름과 id 속성이 일치하는 입력 유형 필드 만 포함하면됩니다. 다음 단계를 사용하여이를 달성 할 수 있습니다.
+
+{{form.as_p}}를 사용하여 지금 렌더링 할 때 템플릿을 렌더링하십시오.
+요소를 검사하고 기본 인증 양식으로 생성 된 사용자 이름, 비밀번호 및 제출 단추 이름 및 ID를 확인하십시오.
+나만의 커스텀 스타일을 사용하여 동일한 태그를 재생성하십시오.
+다음과 비슷한 내용이 있습니다.
+
+<form method="POST">
+  {% csrf_token %}
+  <input type="input" class="form-control" name="username" id="inputEmail" placeholder="Username" required >
+  <input type="password" class="form-control" name="password" id="inputPass" placeholder="Password" required>
+  <button type="submit" style="opacity: 1 !important;">Login</button>
+  <a href="/password_reset">Reset Password</a>
+</form>
+이 후 당신은 당신의 상상력을 사용하고 요구 사항에 따라 로그인 양식을 디자인 할 수 있습니다.
+
+도움이 되었기를 바랍니다.
+```
+
+### 오류코드는 반드시확인하자
+
+계속 회원가입 시도했지만,. 원점으로 돌아왔다
+
+form.errors를 찍어보니, 비번과 이름이 비슷해서 안된다고 오류가 뜨더라,,제발
+
+오류코드 확인하자 
+
+```
+# template에서
+
+				{% for field in form %}
+				  {{ field.errors }}
+				{% endfor %}
+```
+
+### 회원 가입, 로그인, 로그아웃
+
+이메일로 구현해야했다.
+
+```
+#Models.py
+
+class MyUserManager(BaseUserManager):
+    def create_superuser(self, email, password, **kwargs):
+        user = self.model(email=email, is_staff=True, is_superuser=True, **kwargs)
+        user.set_password(password)
+        user.save()
+        return user
+
+class Account(AbstractUser):
+
+    USERNAME_FIELD = 'email'                 #username을 email로 바꿈,
+    email = models.EmailField(verbose_name='이메일', unique=True, blank=False)
+    event_confirm = models.BooleanField(verbose_name='이용약관', default=True)
+    event_receive = models.BooleanField(verbose_name='광고선택', default=False)
+    is_teacher = models.BooleanField(verbose_name='강사', default=False)
+    created_at = models.DateTimeField(verbose_name='생성날', auto_now_add=True)
+
+    REQUIRED_FIELDS = []
+
+    objects = MyUserManager()
+
+    def __str__(self):
+        return self.username
+```
 
