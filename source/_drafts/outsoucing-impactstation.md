@@ -745,3 +745,94 @@ class Account(AbstractUser):
         return self.username
 ```
 
+## 마이페이지 구현
+
+```
+#views.py
+@login_required
+def mypage(request):
+    qs = Account.objects.get(email=request.user.email)
+
+    context = {
+        'username' : qs.username
+    }
+
+    return render(request, "accounts/mypage_student.html", context=context)
+
+```
+
+## media_root 설정
+
+이미지가 저장될 위치를 세팅합니다. 저의 경우는 `root` 폴더와 동등한 위치에 `.media` 폴더를 만들고, 안에 저장시키려고 합니다. 모델에서 `image_file` 필드의 `upload_to`를 `items`로 지정해놓았으니 최종적으로 이미지가 저장되는 위치는 `.media/items/~~~~` 가 될 것입니다.(upload_to를 지정해주는것이 파일관리용이)
+
+```
+class Item(models.Model):
+    purchase_url = models.URLField('상품 URL', max_length=400, blank=True)
+    image_file = models.ImageField('상품 이미지', upload_to='items', blank=True)
+```
+
+
+
+```
+settings.py
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+ROOT_DIR = os.path.dirname(BASE_DIR)
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(ROOT_DIR, '.media')
+...
+```
+
+tip: 로컬서버에서는 media는 serve안되므로  아래 코드 추가해줘야함
+
+```
+#urls.py
+
+from django.conf import settings
+from django.conf.urls.static import static
+
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+```
+
+## course들의 detail뷰 만들때 
+
+모델 클래스 내 get_absolute_url 멤버함수 강추
+
+## get_absolute_url 작성
+
+```
+class Post(models.Model):
+    # ... (중략)
+    def get_absolute_url(self):
+        return reverse('blog:post_detail', args=[self.id])
+```
+
+## get absolute url 활용
+
+- 2, 3, 1 의 순서대로 많이 사용
+- 처음부터 get_absolute_url 을 적극적으로 사용하는 연습을 하는 것이 좋음
+
+### 1. url template tag로 활용
+
+```
+<li><a href="{{ post.get_absolute_url }}">{{ post.title }}</a> </li>
+```
+
+### 2. resolve_url, redirect를 통한 활용
+
+```
+from django.shortcuts import resolve_url
+from django.shortcuts import redirect
+
+resolve_url('blog:post_detail', post.id) # '/blog/105/'
+resolve_url(post) # '/blog/105/' 인자의 인스턴스 메소드로 get_absolute_url 있는지 체크해서 리턴
+
+print(redirect('blog:post_detail', post.id))
+print(redirect(post))
+# <HttpResponseRedirect status_code=302, "text/html; charset=utf-8", url="/blog/105/">
+```
+
+### 3. CBV 에서의 활용
+
+- CreateView, UpdateView에 success_url을 제공하지 않는 경우, 해당 model instance의 get_absolute_url 주소로 이동이 가능한지 체크
+- 생성, 수정 뒤에 Detail 화면으로 가는 것은 일반적
