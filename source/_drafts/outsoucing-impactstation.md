@@ -836,3 +836,74 @@ print(redirect(post))
 
 - CreateView, UpdateView에 success_url을 제공하지 않는 경우, 해당 model instance의 get_absolute_url 주소로 이동이 가능한지 체크
 - 생성, 수정 뒤에 Detail 화면으로 가는 것은 일반적
+
+## 이메일로 비번설정 링크 보내기
+
+이메일 전송할 때 SMTP 서버부터 구축해야 하는 줄 알고 미뤄두고 있었는데 정말 간단한 방법으로 메일 전송이 가능했다. 우선 `settings.py`에서 아래 내용을 추가한다.
+
+```
+EMAIL_HOST = 'smtp.gmail.com' 
+EMAIL_PORT = 587 
+EMAIL_HOST_USER = 'USER_NAME@gmail.com' 
+EMAIL_HOST_PASSWORD = 'USER_PASSWORD' 
+EMAIL_USE_TLS = True 
+```
+
+유저와 패스워드에는 자신의 아이디와 패스워드를 입력하면 된다. 위 소스코드는 `Gmail` 기준
+
+
+
+#### 구글 계정 설정
+
+구글 계정에서 약간의 설정을 거쳐줘야 한다.
+
+- [IMAP 설정](https://support.google.com/mail/answer/7126229?hl=ko&rd=3&visit_id=1-636281811566888160-3239280507#ts=1665018) : 1단계로 변경해야 한다.
+- [보안 수준이 낮은 앱 허용](https://support.google.com/accounts/answer/6010255) : 사용으로 바꿔줘야 한다.
+
+2번째는 테스트를 위해서 잠시 허용하는 것으로 장기간 사용으로 해두면 보안상 결함이 있을거라 생각된다. 아래에서 `SSL`을 도입하면 다시 사용 안함으로 전환해도 된다.
+
+위에 모두 진행후
+
+```
+PasswordResetView 사용하기
+```
+
+
+
+## 토큰값 발생 및 메일 전송
+
+
+
+#### 메일 전송 테스트
+
+```
+python manage.py shell 
+```
+
+쉘 스크립트를 실행해서 테스트를 진행할 것이다.
+
+```
+from django.core.mail import EmailMessage 
+mail = EmailMessage('TITLE', 'CONTENT', to=['USER_NAME@USER_DOMAIN']) 
+mail.send() 
+```
+
+위와같이 전송하면 정상적으로 전송됐다는 1이 출력된다.
+
+#### 텍스트대신 HTML 전송
+
+‘CONTENT’ 부분을 아래와 같이 `render_to_string`으로 된 오브젝트로 전송하고 컨텐츠 타입을 `html`로 설정한 뒤 사용할 템플릿 파일을 템플릿 디렉터리에 만들어 두면 된다. 템플릿 사용은 기존의 `render`와 동일하게 딕셔너리로 객체를 전달해주면 된다.
+
+```
+from django.template.loader import render_to_string 
+
+... 
+
+html_message = render_to_string('mail_template.html', { 'ARG1':ARG1 })
+email = EmailMessage(title, html_message, to=[ MALE_LIST ]) 
+email.content_subtype = "html" 
+return email.send()
+```
+
+[자세히]([https://ssungkang.tistory.com/entry/Django-%E1%84%92%E1%85%AC%E1%84%8B%E1%85%AF%E1%86%AB%E1%84%80%E1%85%A1%E1%84%8B%E1%85%B5%E1%86%B8-%E1%84%89%E1%85%B5-%E1%84%8B%E1%85%B5%E1%84%86%E1%85%A6%E1%84%8B%E1%85%B5%E1%86%AF-%E1%84%8B%E1%85%B5%E1%86%AB%E1%84%8C%E1%85%B3%E1%86%BC-SMTP](https://ssungkang.tistory.com/entry/Django-회원가입-시-이메일-인증-SMTP))
+
