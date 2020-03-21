@@ -560,6 +560,7 @@ body {
 static 파일은 작성했고, 이제 Django 템플릿에서 불러보자
 
 ```
+
 template.html
 <html>
   <head>
@@ -567,6 +568,7 @@ template.html
     {% load static %}
     <link rel="stylesheet" href="{% static 'mainpages/style.css' %}">
   </head>
+
 ```
 
 이렇게 static 앱을 load 하고 불러오면 된다
@@ -642,9 +644,14 @@ STATICFILES_FINDERS = (
 
 ### Static 파일 사용
 
-Static 파일들은 주로 템플릿에서 사용되는데, settings.py 설정을 마친 후 static 파일들을 사용하기 위해서는, 템플릿 상단에 {% load staticfiles %} 태그를 먼저 명시해 주어야 한다. 그리고, 실제 static 파일을 가리키기 위해서는 아래 link 태그에서 보이듯이 "{% static '리소스명' %}" 와 같이 static 템플릿 태그를 사용하여 해당 리소스를 지정한다. 이때 리소스명에는 "static/" 폴더명 다음의 경로만 지정한다.
+{% raw %}
+
+Static 파일들은 주로 템플릿에서 사용되는데, settings.py 설정을 마친 후 static 파일들을 사용하기 위해서는, 템플릿 상단에 `{% load staticfiles %}` 태그를 먼저 명시해 주어야 한다. 그리고, 실제 static 파일을 가리키기 위해서는 아래 link 태그에서 보이듯이 `{% static '리소스명' %}` 와 같이 static 템플릿 태그를 사용하여 해당 리소스를 지정한다. 이때 리소스명에는 "static/" 폴더명 다음의 경로만 지정한다.
+
+{% endraw %}
 
 ```
+
 {% load staticfiles %}
 
 <html lang="en">
@@ -654,6 +661,7 @@ Static 파일들은 주로 템플릿에서 사용되는데, settings.py 설정�
 <body>
 </body>
 </html>
+
 ```
 
 ### collectstatic
@@ -679,6 +687,7 @@ Tip: `python3 manage.py runserver --insecure` 명령을 하면 로컬에서 stat
 폼 구현할떄 {{form.as_p}}확인후 해당 값들 다시 html css로 적용
 
 ```
+
 질문에서, 나는 파이썬 폼 클래스 대신 HTML 템플릿의 모양과 느낌을 변경하고 싶다고 가정합니다. 이 경우 기본 django-auth 형식에 필요한 이름과 id 속성이 일치하는 입력 유형 필드 만 포함하면됩니다. 다음 단계를 사용하여이를 달성 할 수 있습니다.
 
 {{form.as_p}}를 사용하여 지금 렌더링 할 때 템플릿을 렌더링하십시오.
@@ -696,6 +705,8 @@ Tip: `python3 manage.py runserver --insecure` 명령을 하면 로컬에서 stat
 이 후 당신은 당신의 상상력을 사용하고 요구 사항에 따라 로그인 양식을 디자인 할 수 있습니다.
 
 도움이 되었기를 바랍니다.
+
+
 ```
 
 ### 오류코드는 반드시확인하자
@@ -707,11 +718,16 @@ form.errors를 찍어보니, 비번과 이름이 비슷해서 안된다고 오�
 오류코드 확인하자 
 
 ```
+
 # template에서
 
 				{% for field in form %}
 				  {{ field.errors }}
 				{% endfor %}
+				
+				
+				
+
 ```
 
 ### 회원 가입, 로그인, 로그아웃
@@ -867,6 +883,12 @@ EMAIL_USE_TLS = True
 ```
 PasswordResetView 사용하기
 ```
+
+
+
+
+
+
 
 
 
