@@ -894,6 +894,43 @@ PasswordResetView 사용하기
 
 ## 토큰값 발생 및 메일 전송
 
+### 토큰값 발생
+
+저장될 떄 값을 만들고
+
+기존값들에서 유일한지 판단
+
+```
+#models.py
+class CourseTicket(DateTimeModel):
+    user = models.ForeignKey(Account, on_delete=models.CASCADE, verbose_name="유저ID")
+    course_id = models.ForeignKey(Course, on_delete=models.CASCADE, verbose_name="클래스ID")
+    ticket = models.CharField(max_length=150, verbose_name="티켓난수", blank=True)
+    ticket_available = models.BooleanField(default=True, verbose_name="미사용 티켓")
+    sent_email = models.BooleanField(default=False, verbose_name="이메일발송완료")
+
+    def __str__(self):
+        return self.user.username
+
+    def generate_unique_token(self, token_field="token", token_function=lambda: uuid.uuid4().hex[:8]):
+        unique_token_found = False
+        while not unique_token_found:
+            token = token_function()
+            if CourseTicket.objects.filter(**{token_field:token}).count() is 0:
+                unique_token_found = True
+
+        return token
+
+    def save(self, *args, **kwargs):
+        token = self.generate_unique_token(token_field='ticket')
+        self.ticket = token
+        super(CourseTicket, self).save(*args, **kwargs)
+```
+
+
+
+
+
 
 
 #### 메일 전송 테스트
