@@ -900,6 +900,10 @@ PasswordResetView 사용하기
 
 기존값들에서 유일한지 판단
 
+아래 코드(???) 에서 꼭 모르는 문법들 찾아서 적어놓기!!
+
+
+
 ```
 #models.py
 class CourseTicket(DateTimeModel):
@@ -966,3 +970,18 @@ return email.send()
 
 [자세히]([https://ssungkang.tistory.com/entry/Django-%E1%84%92%E1%85%AC%E1%84%8B%E1%85%AF%E1%86%AB%E1%84%80%E1%85%A1%E1%84%8B%E1%85%B5%E1%86%B8-%E1%84%89%E1%85%B5-%E1%84%8B%E1%85%B5%E1%84%86%E1%85%A6%E1%84%8B%E1%85%B5%E1%86%AF-%E1%84%8B%E1%85%B5%E1%86%AB%E1%84%8C%E1%85%B3%E1%86%BC-SMTP](https://ssungkang.tistory.com/entry/Django-회원가입-시-이메일-인증-SMTP))
 
+
+
+
+
+### aws 에서ssl인증 적용
+
+[자세히](https://amanokaze.github.io/blog/Using-HTTPS-in-Elastic-Beanstalk/)
+
+
+
+
+
+# 외주끝나고 배울것
+
+서버 구성, docker
