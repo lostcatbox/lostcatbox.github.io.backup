@@ -452,6 +452,12 @@ character_set_results: UTF-8
 character_set_server: UTF-8
 ```
 
+```
+create database DB_NAME default character set utf8 collate utf8_general_ci;  #mysql환경에서 utf-8적용된 DB만들기
+```
+
+
+
 __접속 권한설정까지하면 이제 외부에서 접속도 가능하게된다 (내 컴퓨터에서 workbench를 쓰기위해)__
 
 EC2관리 콘솔>보안그룹>인바운드>편집>MySQL추가하기(여기에서 외부모두허용)
