@@ -982,6 +982,53 @@ return email.send()
 
 
 
+## aws s3 django storage 연결
+
+[자세히](https://nachwon.github.io/django-deploy-7-s3/)
+
+### s3 계정 권한추가!!
+
+iam에서 `AmazonS3FullAccess` 권한을 체크하고 다음
+
+### 설정 및 설치 라이브러리
+
+```
+pip install django_storages
+pip install boto3
+```
+
+```
+#settings.py
+DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+AWS_ACCESS_KEY_ID = 'AKIAJOP4E4KWP3XYGMEA'
+AWS_SECRET_ACCESS_KEY = '**************'
+AWS_STORAGE_BUCKET_NAME = 'che1-s3-practice'
+
+STATIC_DIR = os.path.join(BASE_DIR, 'static')
+STATICFILES_DIRS = [
+    STATIC_DIR,
+]
+
+```
+
+```
+~/python3 manage.py collectstatic
+yes!
+```
+
+### 오류해결
+
+반드시  requirements.txt 업데이트해주자 그래야 eb가 해당 package설치함
+
+```
+~/pip3 freeze>requirements.txt
+```
+
+
+
+
+
 
 
 ### aws 에서ssl인증 적용
@@ -998,12 +1045,6 @@ return email.send()
 
 --------------
 
-갑자기
-
-무료사이트와 유료사이트로 나뉨,,시바
-
-
-
 # 외주끝나고 배울것
 
-서버 구성, docker
+서버 구성, docker, 장고 미들웨어
