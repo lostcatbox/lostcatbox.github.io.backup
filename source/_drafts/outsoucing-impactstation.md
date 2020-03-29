@@ -1031,6 +1031,8 @@ yes!
 
 
 
+
+
 ### aws 에서ssl인증 적용
 
 [자세히](https://amanokaze.github.io/blog/Using-HTTPS-in-Elastic-Beanstalk/)
