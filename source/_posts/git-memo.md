@@ -50,6 +50,27 @@ $ git fetch <remote>
 
 그냥 쉽게 `git pull` 명령으로 리모트 저장소 브랜치에서 데이터를 가져올 뿐만 아니라 자동으로 로컬 브랜치와 Merge 시킬 수 있다(다음 섹션과 [Git 브랜치](https://git-scm.com/book/ko/v2/ch00/ch03-git-branching) 에서 좀더 자세히 살펴본다). 먼저 `git clone` 명령은 자동으로 로컬의 master 브랜치가 리모트 저장소의 master 브랜치를 추적하도록 한다(물론 리모트 저장소에 master 브랜치가 있다는 가정에서). 그리고 `git pull` 명령은 Clone 한 서버에서 데이터를 가져오고 그 데이터를 자동으로 현재 작업하는 코드와 Merge 시킨다.
 
+## 저장소 commit 되돌리기 (rollback)
+
+```
+git reset <옵션> <돌아가고싶은 커밋>
+
+git reset --hard xxxxxxx # 돌아가려는 이력이후의 모든 내용을 지워 버립니다.
+
+git reset --soft  xxxxxx # 돌아가려 했던 이력으로 되돌아 갔지만, 이후의 내용이 지워지지 않고, 해당 내용의 인덱스(또는 스테이지)도 그대로 있습니다. 
+
+git reset HEAD~6 # 위와 같이 현재부터 6개 이전 이력으로 돌아가라라고 상대적으로 지정
+
+git psuh --force #분명 위에과정을 거치면 로컬과  git다를텐데 강제로 push
+
+```
+
+[자세히]([https://www.devpools.kr/2017/02/05/%EC%B4%88%EB%B3%B4%EC%9A%A9-git-%EB%90%98%EB%8F%8C%EB%A6%AC%EA%B8%B0-reset-revert/](https://www.devpools.kr/2017/02/05/초보용-git-되돌리기-reset-revert/))
+
+
+
+
+
 ## Git 의 구성
 
 ------

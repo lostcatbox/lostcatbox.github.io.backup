@@ -1049,6 +1049,22 @@ django-ckeditor
 
 
 
+```
+#settings.py
+
+CKEDITOR_UPLOAD_PATH = "uploads/"
+CKEDITOR_BASEPATH = "/static/ckeditor/ckeditor/"
+CKEDITOR_IMAGE_BACKEND = "pillow"
+CKEDITOR_JQUERY_URL = 'https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js'
+CKEDITOR_CONFIGS = { #이건 폰트조절까지다됨
+    'default': {
+        'toolbar': None,
+    },
+}
+```
+
+
+
 
 
 --------------
