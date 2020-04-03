@@ -15,8 +15,6 @@ tags: [Outsourcing, Django]
 
 __과정__ 
 
-
-
 - 설계(DB단(UML)과 홈페이지기준으로 두개를 계획후 이어지게함)
 
   - DB설계
