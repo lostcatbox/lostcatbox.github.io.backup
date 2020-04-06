@@ -1067,6 +1067,33 @@ CKEDITOR_CONFIGS = { #이건 폰트조절까지다됨
 
 
 
+### adminpage 관련 정보
+
+아래 코드는 admin.ModelAdmin에서 검색을 활성화 하는것이며
+
+related field를 통해 검색을 구현할수도있다
+
+`foreign_key__field_name` 형식으로 구현하면된다
+
+```
+#admin.py
+
+@admin.register(CourseReview)
+class CourseReviewAdmin(admin.ModelAdmin):
+    list_display = ['username', 'course_id', 'content', 'is_visible']
+    actions = ['make_visible', 'make_invisible']
+
+    ordering = ['created_at']
+    search_fields = ['username','content', 'course_id__course_name']
+
+    def make_visible(self,request,queryset):
+        queryset.update(is_visible=True)
+
+    def make_invisible(self,request,queryset):
+        queryset.update(is_visible=False)
+
+```
+
 
 
 --------------
@@ -1074,3 +1101,5 @@ CKEDITOR_CONFIGS = { #이건 폰트조절까지다됨
 # 외주끝나고 배울것
 
 서버 구성, docker, 장고 미들웨어
+
+django admin page에서 ordering 
