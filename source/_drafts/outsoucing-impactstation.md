@@ -1096,6 +1096,41 @@ class CourseReviewAdmin(admin.ModelAdmin):
 
 
 
+
+
+### 댓글 구현중 좋은 팁
+
+내가 현재 comment모델에서 user_id가 필드 이름이므로 이건 foregin_key이므로 객체를 받아와야하지만 user_id_id를 받는것은 id값 그 숫자 자체(데이터필드가 user_id_id임)를 받아오면됨
+
+
+
+```
+#views.py
+
+def take_course(request, id):
+    qs = get_object_or_404(Course, pk=id)
+    qs2 = qs.teacher_infor
+
+    if request.method == "POST":
+        comment_form = CommentForm(request.POST)
+        comment_form.instance.user_id_id = request.user.id
+        comment_form.instance.course_id_id = id
+
+        if comment_form.is_valid():
+            comment = comment_form.save()
+
+
+    comment_form = CommentForm()
+    comments = qs.coursereview_set.all()
+    comments_user = qs.coursereview_set.all().filter(user_id=request.user.id)
+    return render(request, 'lecture/takeclass.html', {'qs': qs, 'qs2': qs2, "comments":comments, "comment_form":comment_form, 'comments_user':comments_user})
+
+
+
+```
+
+
+
 --------------
 
 # 외주끝나고 배울것
