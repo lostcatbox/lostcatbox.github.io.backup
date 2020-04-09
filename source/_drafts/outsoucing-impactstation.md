@@ -1137,6 +1137,19 @@ def take_course(request, id):
 
 
 
+### django template에서 꿀팁
+
+```
+#templates/~~.html
+{% for ~~ in ~~ %}
+    ~~
+    {{ forloop.count }} # 이렇게 하면 1부터 for문 돌때마다 +=1 됨 그리고 count0면 0부터 해줌
+    ~~
+{% endfor%}
+```
+
+
+
 
 
 --------------
