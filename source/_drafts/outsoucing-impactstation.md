@@ -1131,9 +1131,31 @@ def take_course(request, id):
 
 
 
+### datetimefield와 지나면 접근불가 권한 설정
+
+아래처럼 설정하면 timezone기준이 한국으로 바뀜
+
+```
+#settings.py
+
+LANGUAGE_CODE = 'en-us'
+
+TIME_ZONE = 'Asia/Seoul'
+
+#USE_I18N = True
+
+#USE_L10N = True
+
+#USE_TZ = True
+```
+
+
+
 ### 왜 css파일에서 경로를 바꾸면 collectstatic까지 했는데도 반영된다
 
 하지만 파일이 형식이 같다고 해서 똑같이 적용되는건아님..왜그럴까,
+
+컨트롤+쉬프트+R눌러서 캐쉬 초기화하자
 
 
 
@@ -1146,6 +1168,20 @@ def take_course(request, id):
     {{ forloop.count }} # 이렇게 하면 1부터 for문 돌때마다 +=1 됨 그리고 count0면 0부터 해줌
     ~~
 {% endfor%}
+```
+
+
+
+### login view 쓸때는 무조건 설정
+
+```
+#settings.py
+
+LOGIN_URL = 'accounts:login'
+
+LOGIN_REDIRECT_URL = 'accounts:mypage'
+
+꼭설정해줘야원하는 대로 작동
 ```
 
 
