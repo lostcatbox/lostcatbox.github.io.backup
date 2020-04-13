@@ -18,8 +18,6 @@ defaults write org.R-project.R force.LANG en_US.UTF-8
 
 [자세히](https://m.blog.naver.com/PostView.nhn?blogId=dic1224&logNo=80206009323&proxyReferer=https%3A%2F%2Fwww.google.com%2F)
 
-
-
 ```
 #temminal
 brew install r     #R 설치
@@ -129,6 +127,6 @@ v1[c(1,5)] <- c(10,20) # v1의 1, 5번째 값을 각각 10, 20으로 변경
 
 ```
 sort(d, decreasing = FALSE)  # 오름차순 정렬 default값임
-sort(d, decreasing = TRUE)   #  내림차순 정렬
+sort(d, decreasing = TRUE)   # 내림차순 정렬
 ```
 
