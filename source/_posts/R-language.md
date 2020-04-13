@@ -1,8 +1,8 @@
 ---
-title: R_language
+title: R_언어 공부
 date: 2020-03-27 15:32:53
-categories:
-tags:
+categories: [R]
+tags: [R, Basic]
 ---
 
 
