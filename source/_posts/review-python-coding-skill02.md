@@ -1,5 +1,5 @@
 ---
-title: review-python-coding-skill02
+title: 파이썬 코딩의 스킬 리뷰 2
 date: 2020-02-23 19:15:33
 categories: [Python]
 tags: [Review, Tip, Skill]
@@ -307,7 +307,7 @@ found = [False]로 줘서 수정가능한 helper함수안에 found[0] = Ture를 
 
 - sort : 정렬, 기본값은 오름차순 정렬, reverse옵션 True는 내림차순 정렬
 
-```
+```python
 >>> a = [1, 10, 5, 7, 6]
 >>> a.sort()
 >>> a
@@ -359,7 +359,7 @@ found = [False]로 줘서 수정가능한 helper함수안에 found[0] = Ture를 
 
 
 
-## 리스트를 반환하는 대신 제너레이터를 고려하자
+## 리스트를 반환하는 대신 제너레이터를 고려하자(B16)
 
 일련의 결과를 생성하는 함수에서 택할 가장 간단한 방법은 아이템의 리스트를 반환하는 것이다. 
 
@@ -367,7 +367,7 @@ found = [False]로 줘서 수정가능한 helper함수안에 found[0] = Ture를 
 
 다음 코드에서 append 메서드로 리스트에 결과들을 누적하고 함수가 끝날 때 해당 리스트를 반환한다.
 
-```
+```python
 def index_words(text):
     result = []
     if text:
@@ -380,7 +380,7 @@ def index_words(text):
 
 샘플 입력이 몇 개뿐일 때는 함수가 기대한 대로 동작한다.
 
-```
+```python
 address = 'Four score and seven years ago our fathers brought forth on this continent a new nation, conceived in liberty, and dedicated to the proposition that all men are created equal.'
 result = index_words(address)
 print(result[:3])
@@ -390,19 +390,25 @@ print(result[:3])
 
 ```
 
-하지만 inndex_words 함수에는 두 가지 문제가 있다.
+하지만 index_words 함수에는 두 가지 문제가 있다.
 
-- 첫 번째 문제는 코드가 약간 복잡하고 깔끔하지 않다는 것이다. 새로운 결과가 나올 때마다 append 메서드를 호출해야 한다. 메서드 호출(result.append)이 많아서 리스트에 주가하는 값(index+1)이 덜 중요해 보인다. 결과 리스트를 생성하는 데 한 줄이 필요하고, 그 값을 반환하는 데도 한 줄이 필요하다. 함수 몸체에 문자가 130개 가량(공백 제외)있지만 그중에서 중요한 문자는 약 75개다
+- 첫 번째 문제는 코드가 약간 복잡하고 깔끔하지 않다는 것이다. 새로운 결과가 나올 때마다 append 메서드를 호출해야 한다. 메서드 호출(result.append)이 많아서 리스트에 가하는 값(index+1)이 덜 중요해 보인다. 결과 리스트를 생성하는 데 한 줄이 필요하고, 그 값을 반환하는 데도 한 줄이 필요하다. 함수 몸체에 문자가 130개 가량(공백 제외)있지만 그중에서 중요한 문자는 약 75개다
 
   이 함수를 작성하는 더 좋은 방법은 제너레이터(generator)를 사용하는것이다
 
   
 
-  제너레이터는 yield 표현식을 사용하는 함수다. 제너레이터 함수는 호출되면 실제로 실행하지 않고 바로 이터레이터(iterator)를 반환한다. __내장 함수 next를 호출할 때마다 이터레이터는 제너레이터가 다음 yield 표현식으로 진행하게 한다.__ 제너레이터에서 yield에 전달한 값을 이터레이터가 호출하는 쪽으로 반환한다.
+  __제너레이터는 yield 표현식을 사용하는 함수다.__ 
 
+  __제너레이터 함수는 호출되면 실제로 실행하지 않고 바로 이터레이터(iterator)를 반환한다. __
+
+  __내장 함수 next를 호출할 때마다 이터레이터는 제너레이터가 다음 yield 표현식으로 진행하게 한다.__
+  
+   제너레이터에서 yield에 전달한 값을 이터레이터가 호출하는 쪽으로 반환한다.
+  
   동일결과를 내는 제너레이터 함수
-
-  ```
+  
+  ```python
   def index_words_iter(text):
       if text:
           yield 0
@@ -412,18 +418,181 @@ print(result[:3])
               
   my_result = index_words_iter("고양이 최고 귀엽다") #1
   print my_result # 호출안되고 누군가 값을 물어보기를 기다리는 대기상태 #1
-  print next(my_result) #이때 호출됨
+print next(my_result) #이때 호출됨
   
   
   <generator object index_words_iter at 0x10c4aa7d0>
   0
   ```
-
+  
   제너레이터는 자신이 리턴할 모든 값을 메모리에 저장하지 않기 때문에 조금 전 일반 함수의 결과와 같이 한번에 리스트로 보이지 않는 것입니다. __제너레이터는 한 번 호출될때마다 하나의 값만을 전달(yield)합니다.__ 즉, 위의 #1까지는 아직 아무런 계산을 하지 않고 누군가가 다음 값에 대해서 물어보기를 기다리고 있는 상태입니다.
+  
+  
+  
+  결과 리스트와 연동하는 부분이 사라져서 훨씬 이해하기 쉽다. 결과는 리스트가 아닌 yield 표현식으로 전달된다.
+  
+  제너레이터 호출로 반환되는 이터레이터를 내장 함수 list에 전달하면 손쉽게 리스트로 변환할 수 있다.(B9 참조)
+  
+  ```python
+  myresult=list(index_words_iter('rhdiddlsms 최고다 rhddd'))
+  ```
+
+- 두번째 문제는
+
+  반환하기 전에 모든 결과를 리스트에 저장해야한다는 점이다. 입력이 매우 많다면 프로그램 실행 중에 메모리가 고갈되어 동작을 멈추는 원인이 된다. 반면 __제너레이터로 작성한 버전은 다양한 길이의 입력에도 쉽게 이용가능__
+
+다른 예시로 또 차이를 보자
+
+아래 함수는 파일에서 입력을 한 번에 한 줄씩 읽어서 한 번에 한 단어씩 출력을 내어주는 제너레이터다. 이 함수가 동작할 때 사용하는 메모리는 입력 한 줄의 최대 길이까지다.
+
+```
+def index_file(handle):
+    offset = 0
+    for line in handle:
+        if line:
+            yield offset
+        for letter in line:
+            offset += 1
+            if letter == ' ':
+                yield offset
+                
 
 
+from itertools import islice
+with open ('파일경로/rhdiddl.txt', 'r') as f:
+    re=islice(index_file(f),0,3)              
+    print(list(re))
+    
+>>>
+[0, 11, 15]
+
+```
+
+> islice는 이터레이너 객체가 반환하는 제너레이터를 처음(0), 마지막(3)으로  슬라이스침
+>
+> 이터레이터는 반복가능한 객체를 말한다(next()가 가능한 객체)
+>
+> 제너레이터(반복가능한 객체를 만들어주는 행위)
+>
+> yield(제너레이터에서의 return과 동일한 역할을 수행,, )
+
+이와 같이 제너레이터를 정의할 때 알아둬야 할 단 하나는 반환되는 이터레이터에 상태가 있고 재사용할 수 없다는 사실을 호출하는 쪽에서 알아야 한다는 점이다(B17 참조)
+
+### 정리
+
+- 제너레이터에서 반환한 이터레이터는 제너레이터 함수의 본문에 있는 yield 표현식에 전달된 값들의 집합이다.(???)
+- 제너레이터는 모든 입력과 출력을 메모리에 저장하지 않으므로 입력값의 양을 알기 어려울 때도 연속된 출력을 만들 수 있다.
+
+## 인수를 순회할 때는 방어적으로 하자(B17)
+
+파라미터로 객체의 리스트를 받는 함수에서 리스트를 여러 번 순회해야 할 때가 종종있다.
+
+예를 들어 미국 텍사스주의 여행자 수를 분석하자
+
+데이터 집합은 각 도시의 방문자수라고 하자
+
+각 도시에서 전체 여행자 중 몇 퍼센트를 받아들이는지 알고 싶을 것이다
+
+이런 작업을 하려면 정규화 함수가 필요하다. 정규화 함수에서는 입력을 합산해서 연도별 총 여행자 수를 구한다.
+
+그러고 나서 각 도시의 방문자 수를 전체 방문자 수로 나누어 각 도시가 전체에서 차지하는 비중을 알아낸다.
+
+```
+def normalize(numbers):
+    total = sum(numbers)
+    result = []
+    for value in numbers:
+        percent = 100 * value / total
+        result.append(percent)
+    return result
+```
+
+방문 리스트를 확대하려면 모든 도시가 들어 있는 파일에서 데이터를 읽어야한다.
+
+모든 데이터의 리스트를 메모리에 넣는건 무리..
+
+나중에 같은 함수를 재사용하여 더 큰 데이터 세트인 전 세계의 여행자 수를 계산할 수 있기 때문에 리스트보다 제너레이터로구현한다
+
+```
+def read_visits(data_path):
+    with open(data_path) as f:
+        for line in f:
+            yield int(line)
+```
+
+```
+it = read_visits('my_numbers.txt')
+percentages = normalize(it)
+print(percentages)
+```
+
+위 함수를 해보면 안된다. 그 이유는 이터레이터가 결과를 한 번만 생성하기 때문이다
+
+이미 StopIteration 예외를 일으킨 이터레이터나 제너레이터를 순회하면 어떤 결과도 얻을수없다. 아래 참조하자
+
+```
+it = read_visits('my_numbers.txt')
+print(list(it))   #정상 데이터리스트
+print(list(it))  #결과는 빈 리스트가 나와버림
+```
+
+이를 해결하려면 입력 이터레이터를 명시적으로 소진하고 전체 콘텐츠의 복사본을 리스트에 저장해야 한다.
+
+(없어지는 값을 일단 복사)
+
+```
+def normalize_copy(numbers):
+    numbers = list(numbers)  # Copy the iterator
+    total = sum(numbers)
+    result = []
+    for value in numbers:
+        percent = 100 * value / total
+        result.append(percent)
+    return result
+```
+
+이 방법의 문제점은 입력받은 이터레이터 콘텐츠의 복사본이 클 수도 있다는 점이다
+
+이런 이터레이터를 복사하면 프로그램의 메모리가 고갈되어 동작을 멈출 수도있다.
+
+이런 문제를 피하는 한가지 방법은 호출될 떄마다 새 이터레이터를 반환하는 함수를 받게 만드는 것이다
+
+```
+def normalize_func(get_iter):
+    total = sum(get_iter())   # New iterator
+    result = []
+    for value in get_iter():  # New iterator
+        percent = 100 * value / total
+        result.append(percent)
+    return result
+```
+
+`normalize_func` 을 사용하려면 제너레이터를 호출해서 매번 새 이터레이터를 생성하는 람다 표현식을 넘겨주면 된다.
+
+```
+percentages = normalize_func(lambda: read_visits(path))
+print(percentages)
+```
+
+코드가 잘 동작하긴 하지만, 이렇게 람다 함수를 넘겨주는 방법은 세련되지 못하다. 같은 결과를 얻는 더 좋은 방법은 이터레이터 프로토콜을 구현한 새 컨테이너 클래스를 제공하는 것이다.
+
+이터레이터 프로토콜은 파이썬의 for 루프와 관련 표현식이 컨테이너 타입의 콘텐츠를 탐색하는 방법을 나타낸다
+
+파이썬은 `for x in foo`  같은 문장을 만나면 실제로는 iter(foo)를 호출한다. 그러면 내장 함수 iter는 특별한 메서드인 foo.\_\_iter\_\_ 를 호출한다.  \_\_iter\_\_ 메서드는 (\_\_next\_\_ 라는 특별한 메서드를 구현하는) 이터레이터 객체를 반환해야 한다. 마지막으로 for 루프는 이터레이터를 모두 소진할 때까지 (그래서 StopIteration 예외가 발생할 때까지) 이터레이터 객체에 내장 함수 `next` 를 계속 호출한다.
+
+(???)
 
 (작성중)
+
+
+
+
+
+
+
+
+
+
 
 
 
