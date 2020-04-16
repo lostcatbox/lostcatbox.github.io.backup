@@ -1186,7 +1186,57 @@ LOGIN_REDIRECT_URL = 'accounts:mypage'
 
 
 
+### js를 이용하여 간단한 alert 설정
 
+```
+<input type="checkbox" name="event_confirm" id="id_event_confirm" checked="checked" onClick="aaa(this);"> #객체화 시킴.
+```
+
+아래 js로 객체를 가져와 손쉽게 alert설정가능
+
+```
+<script language="javascript">
+<!--
+function aaa(chkbox)
+{
+if ( chkbox.checked == true )
+{
+alert("약관에 동의하셨습니다");
+}
+else
+{
+alert("약관에 동의해야 회원가입이 가능합니다");
+}
+}
+//-->
+</script>
+```
+
+### 비번 재설정 이메일로 보내는 로직중 깨달은것
+
+```python
+class PasswordResetView(auth_views.PasswordResetView):
+    email_template_name = 'accounts/password_reset_email.html'
+    subject_template_name = 'accounts/password_reset_subject.txt'
+    template_name = 'accounts/password_reset_form.html'
+    success_url = reverse_lazy('accounts:password_reset_done')
+
+    def form_valid(self, form):
+        from_email= form.cleaned_data['email']
+        print(from_email)
+        try:
+            account = Account.objects.all().filter(email=from_email)
+            print(account)
+            if not account:
+                raise ValueError
+            return super().form_valid(form)
+        except:
+            messages.warning(self.request, "해당 이메일로 가입된 이메일이 존재하지 않습니다.")
+            return redirect('accounts:password_reset')
+
+```
+
+위를 통해 모든 CBV는 생각보다 똑같은 View, Form의 로직을 상속받고있기때문에 커스텀 하기편함
 
 # 외주 기능 모두 완성됨 2020.04.10
 
