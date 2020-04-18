@@ -1238,6 +1238,93 @@ class PasswordResetView(auth_views.PasswordResetView):
 
 위를 통해 모든 CBV는 생각보다 똑같은 View, Form의 로직을 상속받고있기때문에 커스텀 하기편함
 
+
+
+### django templatetags
+
+내가 필요한 프로젝트> 앱> templatetags 디렉토리 생성후 안에 filename.py를 만듬 (이름은 자유)
+
+```
+#filename.py
+import os
+from django import template
+
+
+register = template.Library()
+
+@register.filter
+def filename(value):
+    return os.path.basename(value.file.name)
+```
+
+그럼 아래와같은 상황에서 쓸수있다.
+
+```
+#template에서
+
+{% load filename %}
+
+{{ coursefile|filename }}
+```
+
+[자세히](https://blueshw.github.io/2016/03/03/django-using-custom-templatetags/)
+
+
+
+### django admin에서 modeladmin사용시 csv파일 추출 코드
+
+```
+#admin
+
+import csv
+from django.http import HttpResponse
+
+
+@admin.register(CourseTicket)
+class CourseTicketAdmin(admin.ModelAdmin):
+    list_display = ('course_id', 'user', 'end_date' ,'ticket','created_at', 'ticket_available', 'sent_email', 'user_email')
+    search_fields = ['course_id__course_name', 'user__email', 'user_email']
+
+    actions = ["export_as_csv"]     #이 줄부터 아래코드
+
+    def export_as_csv(self, request, queryset):
+        meta = self.model._meta
+        field_names = [field.name for field in meta.fields]
+
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename={}.csv'.format(meta)
+        writer = csv.writer(response)
+
+        writer.writerow(field_names)
+        for obj in queryset:
+            row = writer.writerow([getattr(obj, field) for field in field_names])
+
+        return response
+
+    export_as_csv.short_description = "Export to csv by Selected"
+```
+
+
+
+### AWS에서 CORS이슈로 s3의 fonts를 못가져왔음
+
+CORS이슈임. s3의 권한에서 cors 구성에 아래코드 추가
+
+```
+<CORSConfiguration>
+        <CORSRule>
+                <AllowedOrigin>*</AllowedOrigin>
+                <AllowedMethod>GET</AllowedMethod>
+                <MaxAgeSeconds>3000</MaxAgeSeconds>
+                <AllowedHeader>Authorization</AllowedHeader>
+        </CORSRule>
+</CORSConfiguration>
+```
+
+[자세히](https://homoefficio.github.io/2015/07/21/Cross-Origin-Resource-Sharing/)
+
+
+
 # 외주 기능 모두 완성됨 2020.04.10
 
 
