@@ -1271,6 +1271,8 @@ def filename(value):
 
 
 
+
+
 ### django admin에서 modeladmin사용시 csv파일 추출 코드
 
 ```
