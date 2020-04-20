@@ -483,7 +483,7 @@ with open ('파일경로/rhdiddl.txt', 'r') as f:
 - 제너레이터에서 반환한 이터레이터는 제너레이터 함수의 본문에 있는 yield 표현식에 전달된 값들의 집합이다.(???)
 - 제너레이터는 모든 입력과 출력을 메모리에 저장하지 않으므로 입력값의 양을 알기 어려울 때도 연속된 출력을 만들 수 있다.
 
-## 인수를 순회할 때는 방어적으로 하자(B17)
+## 인수를 순회할 때는 방어적으로 하자(B17) (???)
 
 파라미터로 객체의 리스트를 받는 함수에서 리스트를 여러 번 순회해야 할 때가 종종있다.
 
@@ -499,9 +499,9 @@ with open ('파일경로/rhdiddl.txt', 'r') as f:
 
 ```
 def normalize(numbers):
-    total = sum(numbers)
+    total = sum(numbers)  #여기서도 numbers호출
     result = []
-    for value in numbers:
+    for value in numbers:   #여기서도 numbers호출
         percent = 100 * value / total
         result.append(percent)
     return result
@@ -540,7 +540,7 @@ print(list(it))  #결과는 빈 리스트가 나와버림
 
 (없어지는 값을 일단 복사)
 
-```
+```python
 def normalize_copy(numbers):
     numbers = list(numbers)  # Copy the iterator
     total = sum(numbers)
@@ -557,11 +557,11 @@ def normalize_copy(numbers):
 
 이런 문제를 피하는 한가지 방법은 호출될 떄마다 새 이터레이터를 반환하는 함수를 받게 만드는 것이다
 
-```
+```python
 def normalize_func(get_iter):
     total = sum(get_iter())   # New iterator
     result = []
-    for value in get_iter():  # New iterator
+    for value in get_iter():  # New iterator 
         percent = 100 * value / total
         result.append(percent)
     return result
@@ -569,8 +569,11 @@ def normalize_func(get_iter):
 
 `normalize_func` 을 사용하려면 제너레이터를 호출해서 매번 새 이터레이터를 생성하는 람다 표현식을 넘겨주면 된다.
 
-```
-percentages = normalize_func(lambda: read_visits(path))
+(위에 나왔던방식은 이터레이터가 한번만 소모될수있었으므로 안됬으니까 이렇게 함수안에서 호출을 두번 새롭게 해주면된다.)
+
+```python
+percentages = normalize_func(lambda: read_visits(path)) 
+#lambda로 임시 함수를 만들었으니까 normalize_func안에서는 호출해야됨 그게 get_iter() 에서  ()가 붙은이유
 print(percentages)
 ```
 
