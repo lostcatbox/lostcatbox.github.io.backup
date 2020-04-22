@@ -581,17 +581,500 @@ print(percentages)
 
 이터레이터 프로토콜은 파이썬의 for 루프와 관련 표현식이 컨테이너 타입의 콘텐츠를 탐색하는 방법을 나타낸다
 
-파이썬은 `for x in foo`  같은 문장을 만나면 실제로는 iter(foo)를 호출한다. 그러면 내장 함수 iter는 특별한 메서드인 foo.\_\_iter\_\_ 를 호출한다.  \_\_iter\_\_ 메서드는 (\_\_next\_\_ 라는 특별한 메서드를 구현하는) 이터레이터 객체를 반환해야 한다. 마지막으로 for 루프는 이터레이터를 모두 소진할 때까지 (그래서 StopIteration 예외가 발생할 때까지) 이터레이터 객체에 내장 함수 `next` 를 계속 호출한다.
+파이썬은 `for x in foo`  같은 문장을 만나면 실제로는 iter(foo)를 호출한다. 그러면 내장 함수 iter는 특별한 메서드인 foo.\_\_iter\_\_ 를 호출한다.  \_\_iter\_\_ 메서드는 (\_\_next\_\_ 라는 특별한 메서드를 구현하는) 이터레이터 객체를 반환해야 한다. 마지막으로 for 루프는 이터레이터를 모두 소진할 때까지 (그래서 StopIteration 예외가 발생할 때까지) 이터레이터 객체에 내장 함수 `next` 를 계속 호출한다. [자세히](https://dojang.io/mod/page/view.php?id=2406)
 
-(???)
+```
+#__iter__ 써보자
+class Counter:
+    def __init__(self, stop):
+        self.current = 0    # 현재 숫자 유지, 0부터 지정된 숫자 직전까지 반복
+        self.stop = stop    # 반복을 끝낼 숫자
+ 
+    def __iter__(self):
+        return self         # 현재 인스턴스를 반환
+ 
+    def __next__(self):
+        if self.current < self.stop:    # 현재 숫자가 반복을 끝낼 숫자보다 작을 때
+            r = self.current            # 반환할 숫자를 변수에 저장
+            self.current += 1           # 현재 숫자를 1 증가시킴
+            return r                    # 숫자를 반환
+        else:                           # 현재 숫자가 반복을 끝낼 숫자보다 크거나 같을 때
+            raise StopIteration         # 예외 발생
+ 
+for i in Counter(3): 
+    print(i, end=' ')
+###아래 내용은 추측.
+# __init__는 클래스 객체 생성할때.
+# __iter__는 for문에서 iter(x)를 처음에 호출하므로 이때 메서드가 호출된다. 즉 이때 반환되는 객체가 이터레이터(돌수있는것)이여야한다.
+# __next__는 for문에서 루프는 __next__를 호출하면서 
+```
+
+
+
+복잡해 보이지만 사실 클래스의 \_\_iter\_\_ 메서드를 제너레이터로 구현하면 이렇게 동작을 만들 수 있다.
+
+다음은 여행자 데이터를 담은 파일을 읽는 이터러블(iterable:순회가능)컨테이너 클래스다
+
+```
+class ReadVisits(object):  #object는 필요없지안나???
+    def __init__(self, data_path):
+        self.data_path = data_path
+    def __iter__(self):
+        with open(self.data_path) as f:
+            for line in f:
+                yield int(line)
+```
+
+새로 정의한 컨테이너 타입은 원래의 함수에 수정을 가하지 않고 넘겨도 제대로 동작한다.
+
+```
+visits = ReadVisits("rhdiddl.txt")
+percentages = normalize(visits)
+print(percentages)
+```
+
+normalize를 쓸수있는 이유는 normalize의 sum메서드가 새 이터레이터 객체를 할당하려고 ReadVisits.\_\_iter\_\_ 를 호출하기때문이다. (새 이터레이터 만듬)
+
+또한 숫자를 정규화하는 for 루프도 두 번째 이터레이터 객체를 할당할때 \_\_iter\_\_ 를 호출한다. 따라서 두 이터레이터는 독립적으로 동작하므로 각각의 순회 과정에서 모든 입력 데이터 값을 얻을 수 있다. 이 방법의 유일한 단점은 입력 데이터를 여러번 읽는다는 점이다
+
+이제 ReadVisits와 같은 컨테이너의 작동방법을 안다.
+
+파라미터가 단순한 이터레이터가 아님을 보장하는 함수를 작성할 차례다.
+
+프로토콜에 따르면 내장 함수 iter에 이터레이터를 넘기면 이터레이터 자체가 반환된다. 반면 iter에 컨테이너 타입을 넘기면 매번 새 이터레이터 객체가 반환된다. 따라서 이 동작으로 입력값을 테스트해서 이터레이터면 TypeError를 일으켜 거부하게 만들면 된다.
+
+```
+def normalize_defensive(numbers):
+    if iter(numbers) is iter(numbers):  # 이터레이터 거부
+        raise TypeError('Must supply a container')
+    total = sum(numbers)
+    result = []
+    for value in numbers:
+        percent = 100 * value / total
+        result.append(percent)
+    return result
+```
+
+normalize_defensive는 normalize_copy처럼 입력 이터레이터 전체를 복사하고 싶지 앉지만, 입력 데이터를 여러번 순회해야 할 때, 사용하면 좋다. 이 함수는 list와 ReadVisits를 입력으로 받으면 입력이 컨테이너이므로 기대한 대로 동작한다. 이터레이터 프로토콜을 따르면 어떤 컨테이너 타입에 대해서도 제대로 동작할 것이다.
+
+```
+visits = [15, 35, 80]
+normalize_defensive(visits)  # No error
+visits = ReadVisits(path)
+normalize_defensive(visits)  # No error
+```
+
+하지만 입력이 이터러블이어도 컨테이너가 아니면 예외를 일으킨다
+
+>  이 함수를 사용할때 그냥 이터레이터가 들어오면 순환하지 못하므로 그것을 방지하기위해 if절로 구별함
+
+```
+it = iter(visits)
+normalize_defensive(it)
+
+>>>
+TypeError
+```
+
+
+
+### 정리
+
+- 입력 인수를 여러번 순회하는 함수를 작성할 때 주의하자. 입력인수가 이터레이터라면 이상하게 동작(한번만 호출되고 사라지므로)해서 값 잃어버림
+- 파이썬의 이터레이터 프로토콜은 컨테이너와 이터레이터가 내장함수 iter, next와 for 루프 및 관련 표현식과 상호작용하는 방법을 정의한다
+-  \_\_iter\_\_ 메서드를 제너레이터로 구현하면 자신만의 이터러블 컨테이너 타입을 쉽게 정의할 수있다
+- 어떤 값에 iter를 두번 호출했을때 같은 결과(위치까지같고, 변한게없음)가 나오고 내장 함수 next로 전진시킬 수 있다면 그 값은 컨테이너가 아닌 이터레이터다.
+
+## 가변 위치 인수로 깜끔하게 보이게 하자(B18)
+
+선택적인 위치 인수(이런 파라미터의 이름을 보통 *arg라 한다. 'star args'라고도함)를 받게 만들면 함수 호출을 더 명확하게 할 수 있고 보기에 방해가 되는 요소를 없앨 수 있다.
+
+예를 들어 디버그 정보 몇 개를 로그남기자. 인수의 개수가 고정되어 있다면 메시지와 값 리스트를 받는 함수를 구현
+
+```python
+def log(message, values):
+    if not values:
+        print(message)
+    else:
+        values_str = ', '.join(str(x) for x in values)
+        print('%s: %s' % (message, values_str))
+
+log('My numbers are', [1, 2])
+log('Hi there', [])
+```
+
+로그로 남길 값이 없을 때 빈 리스트를 넘겨야 한다는 것은 불편함.
+
+두 번 째 인수를 아예 남겨주면 좋을 것이다. 파이썬에서의 *기호를 마지막 위치 파라미터 이름 앞에 붙이면된다.
+
+로그 메세지(log함수의 message인수)를 의미하는 첫 번째 파라미터는 필수지만, 다음의 나오는 위치 인수는 몇개든 선택적이다. 
+
+```python
+def log(message, *values):
+    if not values:
+        print(message)
+    else:
+      
+        values_str = ', '.join(str(x) for x in values)
+        print('%s: %s' % (message, values_str))
+        
+log('My numbers are', 1, 2) #여기서 중간에 values를 보면 튜플로 가져오는것을 볼수있다(1,2)
+log('Hi there')  #훨씬 간결함
+
+#아래처럼 실행하면 리스트 풀리고 튜플로 다시 묶여서 진행하는것확인
+favorites = [7, 33, 99]
+log('Favorite colors', *favorites)
+
+```
+
+가변 개수의 위치 인수를 받는 방법에는 두 가지 문제가 있다
+
+첫번째는 가변 인수가 함수에 전달되기에 앞서 항상 튜플로 변환된다는 점이다.
+
+이는 함수를 호출하는 쪽에서 제너레이터에 *연상자를 쓰면 제너레이터가 모두 소진될 떄까지 순회됨을 의미한다. 결과로 만들어지는 튜플은 제너레이터로부터 생성된 모든 값을 담으므로 메모리를 많이 차지해서 프로그램 망가짐.
+
+```python
+def my_generator():
+    for i in range(10):
+        yield i
+
+def my_func(*args):
+    print(args)
+
+it = my_generator()
+my_func(*it)
+```
+
+*arg를 받는 함수는 인수 리스트에 있는 입력의 수가 적당히 적다는 사실을 아는 상황에서 가장 좋은 방법이다. 이런 함수는 많은 리터럴이나 변수 이름을 한꺼번에 넘기는 함수 호출에 이상적이다. 개발자들을 편하게하고 가독성 높임
+
+두 번째는 추후에 호출 코드를 모두 변경하지 않고서는 새 위치 인수를 추가할 수 없다는 것이다. 인수 리스트의 앞쪽에 위치 인수를 추가하면 기존의 호출 코드가 수정 없이는 이상하게 동작함(사용법까지 바꿔야함)
+
+```python
+#앞에 sequence인수추가
+def log(sequence, message, *values):  
+    if not values:
+        print('%s: %s' % (sequence, message))
+    else:
+        values_str = ', '.join(str(x) for x in values)
+        print('%s: %s: %s' % (sequence, message, values_str))
+
+log(1, 'Favorites', 7, 33)      # New usage is OK
+log('Favorite numbers', 7, 33)  # Old usage breaks
+```
+
+이 코드의 문제는 두 번째 호출이 sequence인수를 받지 못했기때문에 7을 message파라미터로 사용해버렸다. 이런 버그는 예외를 발생시키지 않으면 찾기 매우 어렵다. 완전히 없애려면 \*arg를 받는 함수를 확장할 때 키워드 전용(\*krewg)인수를 사용해야한다(B21참조)
+
+### 정리
+
+- def문에서 \*arg사용시 가변 개수의 위치 인수를 받을수있다
+- 제너레이터와 \*연산자를 같이 사용시 메모리 부족으로 프로그램망가짐가능
+- \*args를 받는 함수에 새 위치 파라미터를 추가하면 찾기 어려운 버그생성가능
+
+## 키워드 인수로 선택적인 동작을 제공하자 (B19)
+
+대부분의 프로그래밍 언어처럼 파이썬에서도 함수를 호출시 인수를 위치로 전달할 수 있다.
+
+```python
+def remainder(number, divisor):
+    return number % divisor
+
+assert remainder(20, 7) == 6
+```
+
+파이썬 함수의 위치 인수를 모두 키워드로 전달도 가능하다. 이때 인수의 이름을 함수 호출의 광호 안에 있는 할당문에서 사용한다.
+
+```python
+remainder(20, 7)
+remainder(20, divisor=7)
+remainder(number=20, divisor=7) #키워드 인수로 전달됨.
+remainder(divisor=7, number=20)
+```
+
+위치 인수는 반드시 키워드 인수 앞에서 먼저 지정되어야한다
+
+````python
+remainder(number=20,2) #말도안되는짓
+````
+
+키워드 인수의 유연성은 세 가지 중요한 이점이 있다.
+
+첫번째는 코드를 보는 사람이 함수 호출을 명확하게 이해할수있다
+
+두번째는 함수를 정의할 때 기본값을 설정할수있다.(덕분에 다들 기본값써서 간결하게 호출가능)
+
+아래와 같이 period값을 호출시 주어지지않아도 함수는 동작할수있다.
+
+```python
+def flow_rate(weight_diff, time_diff, period=1):
+    return (weight_diff / time_diff) * period
+```
+
+동적 기본 인수를 지정하려면 (B20참조)
+
+세번째는 기존의 호출 코드와 호환성을 유지하면서도 함수의 파라미터를 확장할 수 있는 강력한 수단이 된다는 점이다.(*args와 큰 차이)
+
+> 이러면 반대로 인수들이 깔끔해보이지 않는데 더 좋은 방법으로 키워드 전용 인수를 활용하자(B21참조)
+
+### 정리
+
+- 함수의 인수를 위치나 키워드로 지정가능
+- 위치 인수만으로는 이해하기 어려울때 키워드쓰면 목적명확
+- 키워드 인수에 기본값을 지정하면 호출이 쉬워짐
+- 선택적인 키워드 인수는 항상 위치가 아닌 키워드로 넘겨야 한다
+
+## 동적 기본 인수를 지정하려면 None과 docstring을 이용하자(B20)
+
+키워드 인수의 기본값으로 비정적타입을 사용해야 할 때가 있다.
+
+예를 들어 이벤트 발생시각까지 포함해 로깅 메세지를 출력한다고하자
+
+```python
+from time import sleep
+from datetime import datetime
+
+def log(message, when=datetime.now()):
+    print('%s: %s' % (when, message))
+
+log('Hi there!')
+sleep(0.1)
+log('Hi again!')
+
+```
+
+위 코드에 문제는 datetime.now는 함수를 정의할 때 딱 한번만 실행되므로 타임스탬프가 동일하게 출력된다. 기본 인수의값은 모듈이 로드될 때 한 번만 평가되며 프로그램 시작시 일어난다. 모듈이 로드된후 그때 딱 한번만 평가되고 기본 인수인 datetime.now를 다시 평가하지 않는다. 
+
+파이썬에서 우리가 기대한 결과가 나오게 하려면 기본값을 None으로 설정하고 docstring(문서화 문자열)으로 실제 동작을 문서화하는 게 관례다 (B49참조)
+
+코드에서 인수 값으로 None이 나타나면 알맞는 기본값을 할당하면 된다
+
+```python
+from time import sleep
+from datetime import datetime
+def log(message, when=None):
+    """Log a message with a timestamp.
+
+    Args:
+        message: Message to print.
+        when: datetime of when the message occurred.
+            Defaults to the present time.
+    """
+    when = datetime.now() if when is None else when
+    print('%s: %s' % (when, message))
+```
+
+기본 인수 값으로 None을 사용하는 방법은 인수가 수정가능(mutable)할 때 특히 중요하다.
+
+예를 들어 JSON데이터로 인코드된 값을 로드한다고 해보자. 데이터 디코딩이 실패하면 기본값으로 빈 딕셔너리를 반환하려고 한다.
+
+```python
+import json
+
+def decode(data, default={}):
+    try:
+        return json.loads(data)
+    except ValueError:
+        return default
+```
+
+위의 코드에는 datetime.now 예제와 같은 문제가 있다. 기본 인수 값은 (모듈이 로드될 때) 딱 한번만 평가되므로, 기본값으로 설정한 딕셔너리를 모든 decode 호출에서 공유한다. 이 문제가 나타는 오류를 보자
+
+```python
+foo = decode('bad data')
+foo['stuff'] = 5
+bar = decode('also bad')
+bar['meep'] = 1
+print('Foo:', foo)
+print('Bar:', bar)
+assert foo is bar
+```
+
+아마 각각 단일 키와 값을 담은 서로 다른 딕셔너리 두 개를 예상했을 것이다.
+
+하지만 하나를 수정하면 다른 하나도 수정되는 것처럼 보인다. 이런 문제의 원인은 foo와 bar 둘다 기본 파라미터와 같다는 점이다. 즉, 이 둘은 같은 딕셔너리 객체이다.
+
+```python
+assert foo is bar
+```
+
+키워드 인수의 기본값을 None으로 설정하고 함수의 docstring에 동작을 문서화해서 이 문제를 고친다.
+
+```python
+def decode(data, default=None):
+    """Load JSON data from a string.
+
+    Args:
+        data: JSON data to decode.
+        default: Value to return if decoding fails.
+            Defaults to an empty dictionary.
+    """
+    if default is None:
+        default = {}
+    try:
+        return json.loads(data)
+    except ValueError:
+        return default
+```
+
+위에 코드를 보면 알수있는것은 default=None이 모듈 로딩 때 객체 하나의 객체가됨. 그래서 decode(data, 1)이렇게 입력하면 1을 default=1이 그때 메모리에 할당하고, decode(data)를 하면 default=None으로 함수호출됨(메모리에 없음).
+
+```python
+foo = decode('bad data')
+foo['stuff'] = 5
+bar = decode('also bad')
+bar['meep'] = 1
+print('Foo:', foo)
+print('Bar:', bar)
+```
+
+### 정리
+
+- 기본 인수는 모듈 로드 시점에 함수 정의 과정에서 딱 한번만 평가된다. 따라서 {},[]같은 동적 값에는 이상하게 작동가능
+- 값이 동적인 키워드 인수에는 기본값으로 None을 사용하자. 그러고 나서 함수의 docstring에 실제 기본 동작을 문서화하자
+
+## 키워드 전용 인수로 명료성을 강요하자 (B21)
+
+키워드로 인수를 넘기는 방법은 파이썬 함수의 강력한 기능이다 (B19 참조)
+
+이 덕분에 쓰임새가 분명한 코드를 작성가능
+
+예를 들어 어떤 숫자를 다른 숫자를 나눈다고 해보자. 하지만 특별한 경우를 매우 주의해야한다. 때로는 ZeroDivisionError예외를 무시하고 무한대 값을 반환하고 싶을 수 있다. 어떨 때는 OverflowError예외를 무시하고 0을 반환하고 싶을수있다.
+
+```python
+def safe_division(number, divisor, ignore_overflow,
+                  ignore_zero_division):
+    try:
+        return number / divisor
+    except OverflowError: #산술 연산의 결과가 너무 커서 표현할 수 없을 때 발생합니다. 
+        if ignore_overflow:
+            return 0
+        else:
+            raise
+    except ZeroDivisionError: #영으로 나눌때 에러
+        if ignore_zero_division:
+            return float('inf')  #float는 소수점 존재 숫자, float('inf')는 양의 무한대를 나타내는 데이터를 나타내는법
+        else:
+            raise
+```
+
+위의 함수 사용은 함수 호출은 나눗셈에서 일어나는 float오버플로우를 무시하고 0을 반환한다.
+
+```python
+result = safe_division(1.0, 10**500, True, False)
+print(result)
+assert result is 0
+
+result = safe_division(1.0, 0, False, True)
+print(result)
+assert result == float('inf')
+```
+
+각각의 예시를 실행하면 assert가 뜨지않는다
+
+문제는 예외 무시 동작을 제어하는 두 불 인수의 위치를 혼동하기 쉽다. 따라서 키워드 인수를 사용하자.(가독성도 높아짐)
+
+```python
+def safe_division_b(number, divisor, ignore_overflow=False,
+                  ignore_zero_division=False):
+  #...
+```
+
+````python
+safe_division_b(1.0, 10**500, ignore_overflow=True)
+````
+
+위처럼 위치상관없이, 선택적인 동작이라서 함수를 호출하는 쪽에 키워드 인수로 의도를 명확하게 드러내라고 강요할 방법이 없다는점이 문제이다. 여전히 위치 인수로도 사용이 가능하기때문이다.
+
+이처럼 복잡한 함수를 작성할 때는 호출하는 쪽에서 의도를 명확히 드러내는 인수를 넘기도록 요구하는 것이 좋다.
+
+__파이썬3에서는 키워드 전용 인수로 함수를 정의해서 의도를 명확히 드러내도록 요구할수있다.(키워드 전용 인수는 키워드로만 넘길 뿐, 위치로는 절대 넘길 수 없다)__
+
+다음은 키워드 전용 인수로 safe_division_c 함수를 다시 정의한 버전이다. __인수 리스트에 있는 `*` 기호는 위치 인수의 끝과 키워드 전용 인수의 시작을 가르킨다.__
+
+```python
+def safe_division_c(number, divisor, *,
+                    ignore_overflow=False,
+                    ignore_zero_division=False):
+    try:
+        return number / divisor
+    except OverflowError:
+        if ignore_overflow:
+            return 0
+        else:
+            raise
+    except ZeroDivisionError:
+        if ignore_zero_division:
+            return float('inf')
+        else:
+            raise
+```
+
+이제 키워드 인수가 아닌 위치 인수를 사용하는 함수 호출은 동작못한다
+
+```python
+safe_division_c(1.0, 10**500, ignore_overflow=True)
+
+>>>
+TypeError: safe_division_c() takes 2 positional arguments but 4 were given
+```
+
+### 파이썬 2의 키워드 전용 인수
+
+인수 리스트에 `**` 연산자를 사용해 올바르지 않은 함수 호출을 할 때 TypeError를 일으키는 방법으로 같은 동작을 만들 수 있다. 가변 개수의 위치 인수 대신에 키어드 인수를 몇 개든 받을수있다는 점만 빼면  `**` 연산자는 `*` 연산자와 비슷하다(B 18 참조 )
+
+```python
+def print_args(*args, **kwargs):
+    print ('Positional:', args)
+    print ('Keyword:', kwargs)
+
+print_args(1, 2, foo='bar', stuff='meep')
+
+>>> 
+Positional: (1, 2)
+Keyword: {'foo': 'bar', 'stuff': 'meep'}
+```
+
+파이썬2에서는 safe_division이 **kwargs를 받게 만들어서 키워드 전용 인수를 받게 한다. 그런 다음 pop메서드로 kwargs딕셔너리에서 원하는 키워드 인수를 꺼낸다. 키가 없을 때의 기본값은 pop메서드의 두번째 인수로 지정한다. 마지막으로 kwargs에 더는 남아 있는 키워드가 없을을 환이하여 호출하는 쪽에서 올바르지 않는 인수를 넘기지 않게 한다.
+
+```python
+def safe_division_d(number, divisor, **kwargs):
+    ignore_overflow = kwargs.pop('ignore_overflow', False)
+    ignore_zero_div = kwargs.pop('ignore_zero_division', False)
+    if kwargs:
+        raise TypeError('Unexpected **kwargs: %r' % kwargs)
+    try:
+        return number / divisor
+    except OverflowError:
+        if ignore_overflow:
+            return 0
+        else:
+            raise
+    except ZeroDivisionError:
+        if ignore_zero_div:
+            return float('inf')
+        else:
+            raise
+
+assert safe_division_d(1.0, 10) == 0.1
+assert safe_division_d(1.0, 0, ignore_zero_division=True) == float('inf')
+assert safe_division_d(1.0, 10**500, ignore_overflow=True) is 0
+```
+
+이렇 구성하면 키워드 인수를 위로 넘기려 하면 파이썬 3와 마찬가지로 제대로 동작하지 않습니다.
+
+### 정리
+
+- 키워드 인수는 함수 호출의 의도를 더 명확하게 해준다
+- 불 플래그를 여러 개 받는 함수처럼 햇갈리기 휘운 함수는 키워드 전용 인수를 사용하자
+- 파이썬 3는 함수의 키워드 전용 인수 문법을 명시적으로 지원한다
+- 파이썬 2에선 **kwargs를 사용하고 TypeError에외를 직접 일으키는 방법으로 함수의 키워드 전용 인수를 흉내 낼수있다.
+
+
+
+
+
+
 
 (작성중)
-
-
-
-
-
-
 
 
 
