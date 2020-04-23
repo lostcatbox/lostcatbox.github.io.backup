@@ -175,14 +175,16 @@ print(average_grade)
 
 __`collections` 모듈의 namedtuple 타입이 정확히 이런 요구에 부합한다__
 
-namedtuple을 이용하면 작은 불변 데이터 클래스(immutable data class)를 쉽게 정의 할수있다
+namedtuple을 이용하면 작은 불변 데이터 클래스(immutable data class)를 쉽게 정의 할수있다.(불변의 데이터는 튜플의특징이고 클래스처럼 사용가능하게 만들어줌)
 
 ```python
 import collections
-Grade = collections.namedtuple('Grade', ('score', 'weight'))
+Grade = collections.namedtuple('Grade', ('score', 'weight'))  #Grade와 namedtuple의 Grade는 맞추는것을 권장 #score, weight가 튜플의 값에 이름이됨.
 ```
 
 불변 데이터 클래스는 위치 인수나 키워드 인수로 생성할 수 있다. 필드는 이름이 붙은 속성으로 접근할 수 있다. 이름이 붙은 속성이 있으면 나중에 요구 사항이 또 변해서 단순 데이터 컨테이너에 동작을 추가해야 할 때 namedtuple에서 직접 작성한 클래스로 쉽게 바꿀 수 있다.
+
+[자세히](https://thrillfighter.tistory.com/454)
 
 >#namedtuple의 제약
 >
@@ -197,6 +199,9 @@ Grade = collections.namedtuple('Grade', ('score', 'weight'))
 다음으로 성적들을 담은 단일 과목을 표현하는 클래스를 만들어보자
 
 ```python
+import collections
+Grade = collections.namedtuple('Grade', ('score', 'weight'))  #Grade와 namedtuple의 Grade는 맞추는것을 권장 #score, weight가 튜플의 값에 이름이됨.
+
 class Subject(object):
     def __init__(self):
         self._grades = []
@@ -207,7 +212,7 @@ class Subject(object):
     def average_grade(self):
         total, total_weight = 0, 0
         for grade in self._grades:
-            total += grade.score * grade.weight
+            total += grade.score * grade.weight #이렇게 클래스처럼 그 값에 접근가능함
             total_weight += grade.weight
         return total / total_weight
 ```
