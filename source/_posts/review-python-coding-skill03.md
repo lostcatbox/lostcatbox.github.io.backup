@@ -276,7 +276,77 @@ print(albert.average_grade())
 - 정식 클래스의 유연성이 필요 없다면 가벼운 불변 데이터 컨테이너에는 namedtuple을 사용하자
 - 내부 상태를 관리하는 딕셔너리가 복잡해지면 여러 헬퍼 클래스를 사용하는 방식으로 관리 코드를 바꾸자
 
+## 인터페이스가 간단하면 클래스 대신 함수를 받자 (B23)
 
+파이썬 내장 API의 상당수에는 함수를 넘겨서 동작을 사용자화하는 기능이 있다. API는 이런 후크(hook)를 이용해서 여러분의 작성한 코드를 실행 중에 호출한다. 
+
+예를 들어 list타입의 sort메서드는 정렬에 필요한 각 인덱스의 값을 결정하는 선택적인 key인수를 받는다. 다음코드에서는 lambda 표현식을 key후크로 넘겨서 이름 리스트를 길이로 정렬한다.
+
+```python
+names = ['Socrates', 'Archimedes', 'Plato', 'Aristotle']
+names.sort(key=lambda x: len(x))
+print(names)
+```
+
+다른 언어레서라면 후크를 추상 클래스로 정의할 것이라고 예상할 수있다. 하지만 파이썬의 후크 중 상당수는 인수와 반환 값을 잘 정의해놓은 단순히 상태가 없는 함수다. 함수는 클래스보다 설명하기 쉽고 정의하기도 간단해서 후크로 쓰기에 이상적이다. 함수가 후크로 동작하는 이유는 파이썬이 일급 함수(firse-class function)을 갖췄기 때문이다. 다시 말해, 언어에서 함수와 메서드를 다른 값처럼 전달하고 참조할 수 있기 때문이다.
+
+예를 들어 defaultdict 클래스의 동작을 사용자화한다고 해보자(B46참조)
+
+이 자료 구조는 찾을 수 없는 키에 접근할 때마다 호출될 함수를 받는다. defaultdict에 넘길 함수는 딕셔너리에서 찾을 수 없는 키에 대응할 기본값을 반환해야 한다. 다음은 키를 찾을 수 없을 때마다 로그를 남기고 기본값으로 0을 반환하는 후크를 정의한 코드다.
+
+```python
+from collections import defaultdict
+
+def log_missing():
+    print('Key added')
+    return 0
+```
+
+초깃값을 담은 딕셔너리와 원하는 증가 값 리스트로 log_missing 함수를 두번(각각 'red'와 'orange'일때)실행하여 로그를 출력하게 해보자
+
+```python
+current = {'green': 12, 'blue': 3}
+increments = [
+    ('red', 5),
+    ('blue', 17),
+    ('orange', 9),
+]
+result = defaultdict(log_missing, current)
+print('Before:', dict(result))
+for key, amount in increments:
+    result[key] += amount
+print('After: ', dict(result))
+
+
+
+>>>
+Before: {'green': 12, 'blue': 3}
+Key added
+Key added
+After:  {'green': 12, 'blue': 20, 'red': 5, 'orange': 9}
+```
+
+log_missing같은 함수를 넘기면 결정 동작과 부작용을 분리하므로 API를 쉽게 구축하고 테스트할 수 있다.
+
+예를 들어 기본값 후크를 defaultdict에 넘겨서 찾을 수 없는 키의 총 개수를 센다고 해보자. 이렇게 만드는 한 가지 방법은 상태 보존 클로저(B15)를 사용하는 것이다. 다음은 상태 보존 클러저를 기본값 후크로 사용하는 헬퍼 함수다.
+
+```python
+def increment_with_report(current, increments):
+    added_count = 0
+
+    def missing():
+        nonlocal added_count  # 상태 보존 클로저
+        added_count += 1
+        return 0
+
+    result = defaultdict(missing, current)
+    for key, amount in increments:
+        result[key] += amount
+
+    return result, added_count
+```
+
+> nonlocal + 변수 를 설정하면 지금 함수 밖에서 정의된 변수를 변경할수있다.(현재 위치에서 가장 가까운 지역변수불러옴)
 
 
 
