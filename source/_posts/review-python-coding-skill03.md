@@ -348,7 +348,7 @@ def increment_with_report(current, increments):
 
 > nonlocal + 변수 를 설정하면 지금 함수 밖에서 정의된 변수를 변경할수있다.(현재 위치에서 가장 가까운 지역변수불러옴)
 
-
+(작성중)
 
 
 
