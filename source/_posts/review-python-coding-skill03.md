@@ -292,6 +292,8 @@ print(names)
 
 예를 들어 defaultdict 클래스의 동작을 사용자화한다고 해보자(B46참조)
 
+> defaultdict은 말그대로 키에 해당하는 값을 입력하지 않았을때 default값을 대신 넣어주는 dic
+
 이 자료 구조는 찾을 수 없는 키에 접근할 때마다 호출될 함수를 받는다. defaultdict에 넘길 함수는 딕셔너리에서 찾을 수 없는 키에 대응할 기본값을 반환해야 한다. 다음은 키를 찾을 수 없을 때마다 로그를 남기고 기본값으로 0을 반환하는 후크를 정의한 코드다.
 
 ```python
@@ -311,7 +313,7 @@ increments = [
     ('blue', 17),
     ('orange', 9),
 ]
-result = defaultdict(log_missing, current)
+result = defaultdict(log_missing, current)  #첫번째 인자는 default값, 두번째는 사전줌
 print('Before:', dict(result))
 for key, amount in increments:
     result[key] += amount
@@ -326,7 +328,7 @@ Key added
 After:  {'green': 12, 'blue': 20, 'red': 5, 'orange': 9}
 ```
 
-log_missing같은 함수를 넘기면 결정 동작과 부작용을 분리하므로 API를 쉽게 구축하고 테스트할 수 있다.
+log_missing같은 함수를 넘기면 결정 동작과 부작용(작용하지않음)을 분리하므로 API를 쉽게 구축하고 테스트할 수 있다.
 
 예를 들어 기본값 후크를 defaultdict에 넘겨서 찾을 수 없는 키의 총 개수를 센다고 해보자. 이렇게 만드는 한 가지 방법은 상태 보존 클로저(B15)를 사용하는 것이다. 다음은 상태 보존 클러저를 기본값 후크로 사용하는 헬퍼 함수다.
 
@@ -348,7 +350,119 @@ def increment_with_report(current, increments):
 
 > nonlocal + 변수 를 설정하면 지금 함수 밖에서 정의된 변수를 변경할수있다.(현재 위치에서 가장 가까운 지역변수불러옴)
 
-(작성중)
+defaultdict는 missing 후크가 상태를 유지한다는 사실을 모르지만, increment_with_report 함수를 실행하면 튜플의 요소로 기대한 개수인 2를 얻는다. 이는 간단한 함수를 인터페이스용으ㅡ로 사용할 때 얻을 수 있는 또 다른 이점이다. 클로저 안에 상태를 숨기면 나중에 기능을 추가하기도 쉽다.
+
+```python
+result, count = increment_with_report(current, increments)
+print(count)
+assert count == 2
+print(result)
+>>>
+2
+defaultdict(<function increment_with_report.<locals>.missing at 0x1114f8cb0>, {'green': 12, 'blue': 20, 'red': 5, 'orange': 9})
+```
+
+상태 보존 후크용으로 클로저를 정의할 때 생기는 문제는 상태가 없는 함수의 예제보다 이해하기 어렵다는 점이다. 또 다른 방법은 보존할 상태를 캡슐화하는 작은 클래스를 정의하는 것이다.(???)
+
+```python
+class CountMissing(object):
+    def __init__(self):
+        self.added = 0
+
+    def missing(self):
+        self.added += 1
+        return 0
+```
+
+다른 언어에서라면 이제 CountMissing의 인터페이스를 수용하도록 defaultdict를 수정해야 한다고 생각할 것이다.(???) 하지만 파이썬에서는 일급 함수 덕분에 객체로 CountMissing.missing 메서드를 직접 참조해서 defaultdict의 기본값 후크로 넘길 수 있다. 메서드가 함수 인터페이스를 충족하는 건 자명하다.
+
+```python
+counter = CountMissing()
+result = defaultdict(counter.missing, current)  # Method reference
+for key, amount in increments:
+    result[key] += amount
+assert counter.added == 2
+print(result)
+```
+
+헬퍼(같은 로직반복시 따로때어내는것)  클래스로 상태 보존 클로저의 동작을 제공하는 방법이 앞에서 increment_with_report 함수를 사용한 방법보다 명확하다. 그러나 CountMissing 클래스 자체만으로는 용도가 무엇인지 바로 이해하기 어렵다. 누가 CountMissing 객체를 생성? 누가 missing메서드를 호출? 나중에 다른 공개 메서드를 클래스에 추가할 일이 있을까? defaultdict와 연계해서 사용한 예를 보기 전까지는 이 클래스가 수수께끼로 남는다.
+
+파이썬에서는 클래스에 \_\_call \_\_ 이라는 특별한 메서드를 정의해서 이런 상황을 명확하게 할 수 있다.  \_\_call \_\_ 메서드는 객체를 함수처럼 호출할 수 있게 해준다. 또한 내장 함수 callable이 이런 인스턴스에 대해서는 True를 반환하게 만든다. 
+
+```python
+class BetterCountMissing(object):
+    def __init__(self):
+        self.added = 0
+
+    def __call__(self):
+        self.added += 1
+        return 0
+
+counter = BetterCountMissing()
+counter()
+print(counter.added)
+counter()
+print(counter.added)
+callable(counter)
+
+>>>
+1
+2
+```
+
+다음은 BetterCountMissing 인스턴스를 defaultdict의 기본값 후크로 사용하여 딕셔너리에 없어서 새로 추가된 키의 개수를 알아내는 코드다.(추가로 계속 불러내면 어떻게 되는지 예제코드 넣었다.)
+
+```python
+counter = BetterCountMissing()
+result = defaultdict(counter, current)  # __call__이 필요함,  객체를 함수처럼 호출됨
+for key, amount in increments:
+    result[key] += amount
+assert counter.added == 2
+print(result)
+```
+
+이 예제가 CountMissing.missing 예제보다 명확하다.  \_\_call \_\_ 메서드는 (API 후크처럼) 함수 인수를 사용하기 적합한 위치에 클래스의 인스턴스를 사용할 수 있다는 사실을 드러낸다. 이 코드를 처음 보는 사람을 클래스의 주요 동작을 책임지는 진입점(entry point)으로 안내하는 역할도 한다. 클래스의 목적이 상태 보존 클로저로 동작하는 것이라는 강력한 힌트가 된다!
+
+무엇보다도  \_\_call \_\_ 을 사용할 때 defaultdict은 여전히 무슨일이 일어나는지도 모른다. defaultdict에 필요한건 기본값 후크용 함수뿐이다. 파이썬은 하고자 하는 작업에 따라 간단한 함수 인터페이스를 충족하는 다양한 방법을 제공한다.
+
+### 정리
+
+- 파이썬에서 컴포넌트 사이의 간단한 인터페이스용으로 클래스를 정의하고 인스턴스를 생성하는 대신에 함수만 써도 종종 충분하다.
+- 파이썬에서 함수와 메서드에 대한 참조는 일급이다. 즉, 다른 타입처럼 표현식에서 사용할 수 있다(???)
+-  \_\_call \_\_ 이라는 특별한 메서드는 클래스의 인스턴스를 일반 파이썬 함수처럼 호출할 수 있게 해준다
+- 상태를 보존하는 함수가 필요할 때 상태 보존 클로저를 정의하는 대신  \_\_call \_\_ 메서드를 제공하는 클래스를 정의하는 방안을 고려하자(B15참조)
+
+## 객체를 범용으로 생성하려면 @classmethod 다형성을 이용하자(B24)
+
+파이썬에서는 객체가 다형성을 지원할 뿐만 아니라 클래스도 다형성을 잘 지원한다.
+
+이게 무슨 의미? 장점은?
+
+다형성은 계층 구조에 속한 여러 클래스가 자체의 메서드를 독립적인 버전으로 구현하는 방식이다. 다형성을 이요하면 여러 클래스가 같은 인터페이스나 추상 기반 클래스를 충족하면서도 다른 기능을 제공할 수 있다. (B28 참조)
+
+예를 들어 맵리듀스(MapReduce)구현을 작성할 때 입력 데이터를 표현할 공통 클래스가 필요하다고 하자. 다음은 서브클래스에서 정의해야 하는 read 메서드가 있는 입력 데이터 클래스다.
+
+```python
+class InputData(object):
+    def read(self):
+        raise NotImplementedError
+```
+
+다음은 디스크에 있는 파일에서 데이터를 읽어오도록 구현한 InputData의 서브 클래스다.
+
+```python
+class PathInputData(InputData):
+    def __init__(self, path):
+        super().__init__()
+        self.path = path
+
+    def read(self):
+        return open(self.path).read()
+```
+
+
+
+
 
 
 
