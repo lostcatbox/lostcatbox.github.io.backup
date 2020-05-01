@@ -434,13 +434,13 @@ print(result)
 -  \_\_call \_\_ 이라는 특별한 메서드는 클래스의 인스턴스를 일반 파이썬 함수처럼 호출할 수 있게 해준다
 - 상태를 보존하는 함수가 필요할 때 상태 보존 클로저를 정의하는 대신  \_\_call \_\_ 메서드를 제공하는 클래스를 정의하는 방안을 고려하자(B15참조)
 
-## 객체를 범용으로 생성하려면 @classmethod 다형성을 이용하자(B24)
+## 객체를 범용으로 생성하려면 @classmethod 다형성을 이용하자(B24) (???)
 
 파이썬에서는 객체가 다형성을 지원할 뿐만 아니라 클래스도 다형성을 잘 지원한다.
 
 이게 무슨 의미? 장점은?
 
-다형성은 계층 구조에 속한 여러 클래스가 자체의 메서드를 독립적인 버전으로 구현하는 방식이다. 다형성을 이요하면 여러 클래스가 같은 인터페이스나 추상 기반 클래스를 충족하면서도 다른 기능을 제공할 수 있다. (B28 참조)
+다형성은 계층 구조에 속한 여러 클래스가 자체의 메서드를 독립적인 버전으로 구현하는 방식이다. 다형성을 이용하면 여러 클래스가 같은 인터페이스나 추상 기반 클래스를 충족하면서도 다른 기능을 제공할 수 있다. (B28 참조)
 
 예를 들어 맵리듀스(MapReduce)구현을 작성할 때 입력 데이터를 표현할 공통 클래스가 필요하다고 하자. 다음은 서브클래스에서 정의해야 하는 read 메서드가 있는 입력 데이터 클래스다.
 
@@ -462,9 +462,201 @@ class PathInputData(InputData):
         return open(self.path).read()
 ```
 
+PathInputData 같은 InputData 서브클래스(종속받음)가 몇 개든 있을 수 있고, 각 서브클래스에서는 처리할 바이트 데이터를 반환하는 표준 인터페이스인 read를 구현할 것이다. 다른 InputData 서브클래스는 네트워크에서 데이터를 읽어오거나 데이터의 압축을 해제하는 기능 등을 할수있다.
 
+표준 방식으로 입력 데이터를 처리하는 맵리듀스 작업 클래스에도 비슷한 추상 인터페이스가 필요하다.
 
+```python
+class Worker(object):
+    def __init__(self, input_data):
+        self.input_data = input_data
+        self.result = None
 
+    def map(self):
+        raise NotImplementedError
+
+    def reduce(self, other):
+        raise NotImplementedError
+```
+
+다음은 적용하려는 특정 맵리듀스 함수를 구현한 Worker의 구체 서브클래스다(간단한 줄바꿈 카운터)
+
+```python
+class LineCountWorker(Worker):
+    def map(self):
+        data = self.input_data.read()
+        self.result = data.count('\n')
+
+    def reduce(self, other):
+        self.result += other.result
+```
+
+이렇게 구현하면 잘 동작할 것처럼 보이지만 결국 큰 문제에 직면한다. 이 모든 코드 조각을 무엇으로 연결할 것인가? 적절히 인터페이스를 설계하고 추상화한 클래스들이지만 일단 객체를 생성한 후에나 유용하다. 무엇으로 객체를 만들고 맵리듀스를 조율할까?
+
+가장 간단한 방법은 헬퍼 함수로 직접 객체를 만들고 연결하는 것이다. 다음은 디렉터리의 내용을 나열하고 그 안에 있는 각 파일로 PathInputData인스턴스를 생성하는 코드다.
+
+```python
+import os
+
+def generate_inputs(data_dir):
+    for name in os.listdir(data_dir):
+        yield PathInputData(os.path.join(data_dir, name))
+
+```
+
+다음으로 generate_inputs 함수에서 반환한 InputData 인스턴스를 사용하는 LineCountWorker인스턴스를 생성한다.
+
+```python
+def create_workers(input_list):
+    workers = []
+    for input_data in input_list:
+        workers.append(LineCountWorker(input_data))
+    return workers
+```
+
+map 단계를 여러 스레드로 나눠서 이 Worker인스턴스들을 실행한다(B37참조). 그런 다음 reduce를 반복적으로 호출해서 결과를 최종값 하나로 합친다.
+
+```python
+from threading import Thread
+
+def execute(workers):
+    threads = [Thread(target=w.map) for w in workers]
+    for thread in threads: thread.start()
+    for thread in threads: thread.join()
+
+    first, rest = workers[0], workers[1:]
+    for worker in rest:
+        first.reduce(worker)
+    return first.result
+```
+
+마지막으로 단계별로 실행하려고 mapreduce 함수에서 모든 조각을 연결한다.
+
+```python
+def mapreduce(data_dir):
+    inputs = generate_inputs(data_dir)
+    workers = create_workers(inputs)
+    return execute(workers)
+```
+
+테스트용 입력 파일로 이 함수를 실행해보면 잘 동작한다.
+
+```python
+from tempfile import TemporaryDirectory
+import random
+
+def write_test_files(tmpdir):
+    for i in range(100):
+        with open(os.path.join(tmpdir, str(i)), 'w') as f:
+            f.write('\n' * random.randint(0, 100))
+
+with TemporaryDirectory() as tmpdir:
+    write_test_files(tmpdir)
+    result = mapreduce(tmpdir)
+
+print('There are', result, 'lines')
+```
+
+무엇이 문제일까? 큰 문제는 mapreduce 함수가 전혀 범용적이지 않다는 점이다. 다른 InputData나 Worker 서브클래스를 작성한다면 generate_inputs, create_workers, mapreduce 함수를 알맞게 다시 작성해야한다.
+
+이 문제는 결국 __객체를 생성하는 범용적인 방법의 필요성__으로 귀결된다. 다른 언어에서는 이 문제를 생성자 다형성으로 해결한다. 이 방식을 따르면 각 InputData 서브클래스에서 맵리듀스를 조율하는 헬퍼 메서드가 범용적으로 사용할 수 있는 특별한 생성자를 제공해야 한다. __문제는 파이썬이 단일 생성자 메서드 \_\_init\_\_ 만을 허용한다는 점이다. 결국 모든 InputData 서브클래스가 호환되는 생성자를 갖춰야 한다는 것 터무니없는 요구 사항이다.__
+
+__이 문제를 해결하는 가장 좋은 방법은 @classmethod 다형성을 이용하는 것이다.__ @classmethod 다형성은 생성된 객체가 아니라 전체 클래스에 적용된다는 점만 빼면 InputData.read에 사용한 인스턴스 메서드 다형성과 똑같다.
+
+이 발상을 맵리듀스 관련 클래스에 적용하자. 여기서는 공통 인터페이스를 사용해 새 InputData 인스턴스를 생성하는 범용 클래스 메서드로 InputData 클래스를 확장한다.
+
+```python
+class GenericInputData(object):
+    def read(self):
+        raise NotImplementedError
+
+    @classmethod
+    def generate_inputs(cls, config):
+        raise NotImplementedError
+```
+
+generate_inputs 메서드는 GenericInputData를  구현하는 서브클래스가 해석할 설정 파라미터들을 담은 딕셔너를 받는다. 다음 코드에서는 입력 파일들을 얻어올 디렉터리를 config로 알아낸다.
+
+```python
+class PathInputData(GenericInputData):
+    def __init__(self, path):
+        super().__init__()
+        self.path = path
+
+    def read(self):
+        return open(self.path).read()
+
+    @classmethod
+    def generate_inputs(cls, config):
+        data_dir = config['data_dir']
+        for name in os.listdir(data_dir):
+            yield cls(os.path.join(data_dir, name)) #cls()를 호출해서 클래스 인스턴스로 만듬
+```
+
+비슷하게 GenericWorker 클래스에 create_workers 헬퍼를 작성한다. 여기서는 input\_class 파라미터(GenericInputData의 서브클래스여야함)로 필요한 입력을 만들어낸다. cls()를 범용 생성자로 사용해서 GenericWorker를 구현한 서브클래스의 인스턴스를 생성한다.
+
+```python
+class GenericWorker(object):
+    def __init__(self, input_data):
+        self.input_data = input_data
+        self.result = None
+
+    def map(self):
+        raise NotImplementedError
+
+    def reduce(self, other):
+        raise NotImplementedError
+
+    @classmethod
+    def create_workers(cls, input_class, config):
+        workers = []
+        for input_data in input_class.generate_inputs(config):
+            workers.append(cls(input_data))  #cls()를 호출해서 클래스 인스턴스로 만듬
+        return workers
+```
+
+위의 input_class.generate_inputs호출이 바로 여기서 보여주려는 클래스 다형성다. 또한 create_workers가  \_\_init\_\_ 메서드를 직접 사용하지 않고 GenericWorker를 생성하는 또 다른 방법으로 cls를 호출함을 알 수 있다.
+
+GenericWorker를 구현할 서브클래스는 부모 클래스만 변경하면 된다.
+
+```python
+class LineCountWorker(GenericWorker):
+    def map(self):
+        data = self.input_data.read()
+        self.result = data.count('\n')
+
+    def reduce(self, other):
+        self.result += other.result
+```
+
+드디어 mapreduce함수를 완전히 범용적으로 재작성할 차례다
+
+```python
+def mapreduce(worker_class, input_class, config):
+    workers = worker_class.create_workers(input_class, config)
+    return execute(workers)
+```
+
+​	테스트용 파일로 새로운 작업 클래스 객체를 실행하면 이전에 구현한 것과 같은 결과가 나온다. 차이는 mapreduce함수가 범용적으로 동작하려고 더 많은 파라미터를 요구한다는 점이다
+
+```python
+with TemporaryDirectory() as tmpdir:
+    write_test_files(tmpdir)
+    config = {'data_dir': tmpdir}
+    result = mapreduce(LineCountWorker, PathInputData, config)
+print('There are', result, 'lines')
+```
+
+이제 GenericInputData와 GenericWorker의 다른 서브클래스를 원하는 대로 만들어도 글루 코드(glue code)를 작성할 필요가 없다.
+
+### 정리
+
+- 파이썬에서는 클래스별로 생성자를 한개 (\_\_init\_\_ 메서드)로만 만들 수 있다
+- 클래스에 필요한 다른 생성자를 정의하려면 @classmethod 를 이용하자
+- 구체 서브클래스들을 만들고 연결하는 범용적인 방법을 제공하려면 클래스 메서드 다형성을 이용하자.
+- ~~솔직히 하나도 모르겠다..그냥 느낌만 알고 실제 사용하려면 오래걸리겠지만 반드시 이해해야하는내용~~
+
+## super로 부모 클래스를 초기화하자(B25)
 
 
 
