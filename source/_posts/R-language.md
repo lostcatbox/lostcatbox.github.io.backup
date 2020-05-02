@@ -5,8 +5,6 @@ categories: [R]
 tags: [R, Univ, Basic]
 ---
 
-
-
 # R
 
 mac 에서 utf8관련오류
@@ -455,7 +453,7 @@ print('2 *', i,'=', 2*i,'\n')   #cat은 print와 유사하지만 다름, \n반�
 ### for 문 안에 if문 사용
 
 ```R
-for(i in 1:20) {
+for(i in 1:20) {w
 if(i%%2==0) { # 짝수인지 확인
 print(i)
 }

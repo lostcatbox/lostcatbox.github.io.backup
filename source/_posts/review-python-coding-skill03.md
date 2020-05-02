@@ -658,15 +658,192 @@ print('There are', result, 'lines')
 
 ## super로 부모 클래스를 초기화하자(B25)
 
+기존에는 자식 클래스에서 부모 클래스의 \_\_init\_\_ 메서드를 직접 호출하는 방법으로 부모 클래스를 초기화했다.
 
+```python
+class MyBaseClass(object):
+    def __init__(self, value):
+        self.value = value
 
+class MyChildClass(MyBaseClass):
+    def __init__(self):
+        MyBaseClass.__init__(self, 5)
 
+    def times_two(self):
+        return self.value * 2
 
+foo = MyChildClass()
+print(foo.times_two())
+```
 
+이 방법은 간단한 계층 구조에는 잘  동작하지만, 많은 경우 제대로 동작못한다.
 
+클래스가 다중 상속(보통은 피해야 할 방법이다.)(B26)의 영향을 받는다면 위의 방법인 슈퍼클래스의  \_\_init\_\_ 메서드를 직접 호출하는 행위는 예기치 못한 동작을 일으킬 수 있다.
 
+한 가지 문제는  \_\_init\_\_ 의 호출 순서가 모든 서브클래스에 걸쳐 명시되어 있지 않다는 점이다.
 
+예를 들어 인스턴스의 value 필드로 연산을 수행하는 부모 클래스 두 개를 정의해보자
 
+```python
+class TimesTwo(object):
+    def __init__(self):
+        self.value *= 2
+
+class PlusFive(object):
+    def __init__(self):
+        self.value += 5
+```
+
+다음 클래스는 한 가지 순서로 부모 클래스들을 정의한다.
+
+```python
+class OneWay(MyBaseClass, TimesTwo, PlusFive):
+    def __init__(self, value):
+        MyBaseClass.__init__(self, value)
+        TimesTwo.__init__(self)
+        PlusFive.__init__(self)
+```
+
+이 클래스의 인스턴스를 생성하면 부모 클래스의 순서와 일치하는 결과가 만들어진다.
+
+```python
+foo = OneWay(5)
+foo.value
+print('First ordering is (5 * 2) + 5 =', foo.value)
+
+>>>
+First ordering is (5 * 2) + 5 = 15
+
+```
+
+다음은 같은 부모 클래스들을 다른 순서로 정의한 클래스다.
+
+```python
+class AnotherWay(MyBaseClass, PlusFive, TimesTwo):
+    def __init__(self, value):
+        MyBaseClass.__init__(self, value)
+        TimesTwo.__init__(self)
+        PlusFive.__init__(self)
+```
+
+하지만 부모 클래스 생성자   TimesTwo.\_\_init\_\_ ,  PlusFive. \_\_init\_\_ 를 이전과 같은 순서로 호출한다. 이 클래스의 동작은 부모 클래스를 정의한 순서와 일치하지 않는다.(당연한거 아닌가,,)
+
+```python
+bar = AnotherWay(5)
+print('Second ordering still is', bar.value)
+
+>>>
+Second ordering still is 15
+```
+
+다른 문제는 다이아몬드 상속(diamond inheritance)이다. 다이아몬드 상속은 서브클래스가 계층 구조에서 같은 슈퍼클래스를 둔 서로 다른 두 클래스에서 상속받을 때 방생한다. 다이아몬드 상속은 공통 슈퍼클래스의 \_\_init\_\_ 메서드를 여러 번 실생하게 해서 예상치 못한 동작을 일으킨다. 예를 들어 MyBaseClass에서 상속받는 자식 클래스 두개를 정의해보자
+
+```python
+class TimesFive(MyBaseClass):
+    def __init__(self, value):
+        MyBaseClass.__init__(self, value)
+        self.value *= 5
+
+class PlusTwo(MyBaseClass):
+    def __init__(self, value):
+        MyBaseClass.__init__(self, value)
+        self.value += 2
+```
+
+다음으로 이 두 클래스 모두에서 상속받은 자식 클래스를 정의하여 MyBaseClass를 다이아몬드의 꼭대기로 만든다.
+
+```python
+class ThisWay(TimesFive, PlusTwo):
+    def __init__(self, value):
+        TimesFive.__init__(self, value)
+        PlusTwo.__init__(self, value)
+
+foo = ThisWay(5)
+print('Should be (5 * 5) + 2 = 27 but is', foo.value)
+```
+
+(5*5)+2=27이라고 생각하여 결과는 27예상된다. 하지만 두 번째 부모 클래스의 생성자 PlusTwo.\_\_init\_\_ 를 호출하는 코드가 있어서 MyBaseClass.\_\_init\_\_ 가 두 번째 호출될 때 self.value를 다시 5로 리셋된다.!(그래서 7이나왔잖어)
+
+파이썬 2.2에서는 이 문제를 해결하려고 super라는 내장 함수를 추가하고 메서드 해석 순서(MRO, Method Resolution Order)를 정의했다. MRO는 어떤 슈퍼클래스부터 초기화하는지를 정한다.(예를 들면 깊이 우선, 왼쪽에서 오른쪽으로). 또한 다이아몬드 계층 구조에 있는 공통 슈퍼클래스를 단 한 번만 실행하게 된다.
+
+다음 코드는 다이아몬드 클래스 구조지만 super(파이썬 2 스타일)로  부모 클래스를 초기화한다.
+
+```python
+class MyBaseClass(object):
+    def __init__(self, value):
+        self.value = value
+
+class TimesFiveCorrect(MyBaseClass):
+    def __init__(self, value):
+        super(TimesFiveCorrect, self).__init__(value)
+        self.value *= 5
+
+class PlusTwoCorrect(MyBaseClass):
+    def __init__(self, value):
+        super(PlusTwoCorrect, self).__init__(value)
+        self.value += 2
+```
+
+이제 다이아몬드의 꼭대기인MyBaseClass.\_\_init\_\_가 한 번만 실행된다. 다른 부모 클래스는 class 문으로 지정한 순서대로 실행된다.
+
+```python
+class GoodWay(TimesFiveCorrect, PlusTwoCorrect): #이 순서가 MRO 중요함!!!
+    def __init__(self, value):
+        super(GoodWay, self).__init__(value)
+        
+foo = GoodWay(5)
+print('Should be 5*(5+2)=35 and is', foo.value)
+
+before_pprint = pprint
+pprint(GoodWay.mro())
+```
+
+이 순서는 뒤에서부터 시작하는 것 같다. TimesFiveCorrect.\_\_init\_\_를 먼저 실행할 수 없을까? 그래서 결과가 (5*5)+2 = 27이 되도록!!
+
+정답은 '불가능하다', 이 순서는 이 클래스에 대해 MRO가 정의하는 순서와 일치한다. MRO순서는 mro라는 클래스 메서드로 알수 있다.(만약 GooWay에서 (PlusTwoCorrect,TimesFiveCorrect)이렇게 하면 mro순서가 바뀌므로 27만들기가능)
+
+```python
+from pprint import pprint
+pprint(GoodWay.mro())
+pprint = pprint
+
+>>>
+[<class '__main__.GoodWay'>,
+ <class '__main__.TimesFiveCorrect'>,
+ <class '__main__.PlusTwoCorrect'>,
+ <class '__main__.MyBaseClass'>,
+ <class 'object'>]
+```
+
+GoodWay(5)를 호출하면 이 생성자는 TimesFiveCorrect.\_\_init\_\_를 호출하고, 이는 PlusTwoCorrect.\_\_init\_\_ 를 호출하며, 이는 다시 MyBaseClass.\_\_init\_\_를 호출한다. 이런 호출이 다이아몬드의 꼭대기에 도달하면, 모든 초기화 메서드는 실체 \_\_init\_\_함수가 호출된 순서의 역순으로 실행된다. MyBaseClass.\_\_init\_\_는 5라는 값을 value에 할당하고, PlusTwoCorrect.\_\_init\_\_는 2를 더해서 value가 7이 된다. TimesFiveCorrect.\_\_init\_\_는 그 값을 5와 곱해서 value는 35가 된다.
+
+내장 함수 super는 제대로 동작하지만, 파이썬2 에서 여전히 주목할 만한 두 가지 문제가 있다.
+
+- 문법이 좀 장황하다. 현재 정의하는 클래스, self 객체, 메서드 이름(보통 \_\_init\_\_)과 모든 인수를 설정해야 한다. 이런 생성 방법은 파이썬을 처음 접하는 프로그래머에서 혼란을 준다
+- super를 호출하면서 현재 클래스의 이름을 지정해야 한다. 클래스의 이름을 변경(클래스 계층 구조를 개선할 때 아주 흔히 하는 조치다)하면 super를 호출하는 모든 코드를 수정해야한다.
+
+다행히 파이썬 3에서는 super를 인수 없이 호출하면 \_\_class\_\_와 self를 인수로 넘겨서 호출한 것으로 처리해서 이 문제를 해결한다. 파이썬 3에서는 항상 super를 사용해야한다. super는 명확하고 간결하며 항상 제대로 동작하기 때문이다.
+
+```python
+class Explicit(MyBaseClass):
+    def __init__(self, value):
+        super(__class__, self).__init__(value * 2) #__class__는 현재 Explicit #__class__는 파이썬3에만 정의되어있다. #이 코드에서는 self.value = value*2를 아래 적지않고 식까지 넘겨버렸네
+
+class Implicit(MyBaseClass):
+    def __init__(self, value):
+        super().__init__(value * 2)
+
+assert Explicit(10).value == Implicit(10).value
+```
+
+파이썬 3에서는 \_\_class\_\_ 변수를 사용한 메서드에서 현재 클래스를 올바르게 참조하도록 해주므로 위의 코드가 잘 동작한다. 하지만 파이썬 2에서는 \_\_class\_\_가 정의되어 있지 않아 제대로 동작하지 않는다. super의 인수로 self.\_\_class\_\_ 를 사용하면 될거라고 생각할 수있지만, 파이썬2의 super구현방식 때문에 제대로 동작하지 않는다.
+
+### 정리
+
+- 파이썬의 표준 메서드 해석 순서(MRO)는 슈퍼클래스의 초기화 순서와 다이아몬드 상속 문제를 해결한다.
+- 항상 내장 함수 super로 부모 클래스를 초기화하자.
+
+## 믹스인 유틸리티 클래스에만 다중 상속을 사용하자 (B26)
 
 
 
