@@ -7,6 +7,8 @@ tags: [R, Univ, Basic]
 
 
 
+# R
+
 mac 에서 utf8관련오류
 
 ```
@@ -351,5 +353,125 @@ my.iris
 write.csv(my.iris, "my_iris.csv", row.names=F) # .csv 파일에 저장하기
 ```
 
+# 조건문, 반복문, 함수
 
+## 조건문
 
+### if else
+
+```R
+job.type <- "A"
+if(job.type == "B") {
+  bonus <- 200 # 직무 유형이 B일 때 실행
+} else {
+  bonus <- 100} # 직무 유형이 B가 아닌 나머지 경우 실행 }
+print(bonus)
+
+job.type <- "B"
+bonus <- 100
+if(job.type == 'A') {
+bonus <- 200 # 직무 유형이 B일 때 실행
+}
+print(bonus)
+
+score <- 85
+if (score > 90)  #if에 else를 쓰기전에  elseif 를 사용하면 조건문 추가
+{ grade <- "A"
+} else if (score > 80) {
+grade <- "B"
+} else if (score > 70) {
+  grade <- "C"
+} else if (score > 60) {
+grade <- "D"
+} else {
+  grade <- "F"
+}
+print(grade)
+```
+
+> 1. if와 else 다음에 있는 중괄호 { }는 프로그래밍에서 코드블록이라고 부름 
+> 2. 여러 명령문을 하나로 묶어주는 역할
+>
+> ```R
+> old <- 20
+> if (old>25) {print("통과")}
+> else {print("비통광")}
+> #위에 코드처럼 짜면 불가능함.. else가 바로 나오면안되므로
+> 
+> old <- 20
+> if (old>25) {print("통과")
+>   } else {print("비통광")}
+> #위에처럼... else가 맨 앞안됨
+> ```
+
+```R
+a <- 10
+b <- 20
+if(a>5 & b>5) { # and 사용
+print (a+b)
+}
+if(a>5 | b>30) { # or 사용
+print (a*b)
+}
+```
+
+- 논리합(OR): “+” 나 “또는”, R에서는 “|”  >>>>or
+- 논리곱(AND): “·” 나 “그리고”, R에서는 “&” >>>>>and
+
+###  ifelse문
+
+```R
+a <- 10
+b <- 20
+if (a>b) {
+c <- a
+} else {
+c <- b
+}
+print(c)
+a <- 10
+b <- 20
+c <- ifelse(a>b, a, b)  #R에서의 조건문 표현법 (알아만두기..라고하심..하지만 훨편해보임)
+print(c)
+```
+
+## 반복문
+
+### for문
+
+```R
+for(i in 1:5) {
+print(i)  #print는 줄당하나
+}
+for(i in 1:5) {
+  cat(i)  #cat은 여러 결과값을 한줄에 출력
+}
+
+for(i in 1:9) {
+print('2 *', i,'=', 2*i,'\n')   #cat은 print와 유사하지만 다름, \n반드시기억
+}
+```
+
+### for 문 안에 if문 사용
+
+```R
+for(i in 1:20) {
+if(i%%2==0) { # 짝수인지 확인
+print(i)
+}
+}
+
+sum <- 0
+for(i in 1:100) {
+sum <- sum + i # sum에 i 값을 누적
+}
+print(sum)
+>>>
+5050
+```
+
+>```R
+>/ 나눗셈
+>%% 나머지
+>%/% 몫
+>```
