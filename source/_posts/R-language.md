@@ -74,11 +74,7 @@ Inf 양의 무한대, -Inf 음의 무한대
 
 ![스크린샷 2020-04-19 오후 1.10.55](https://tva1.sinaimg.cn/large/007S8ZIlgy1gdyylu3oevj317u0t8198.jpg)
 
-### 데이터 프레임
 
-![스크린샷 2020-04-19 오후 2.56.19](https://tva1.sinaimg.cn/large/007S8ZIlgy1gdz1axf3cqj317u0tgk4j.jpg)
-
-![스크린샷 2020-04-19 오후 2.55.44](https://tva1.sinaimg.cn/large/007S8ZIlgy1gdz1b510ecj317q0u0n92.jpg)
 
 ### 백터 변수 만들기
 
@@ -220,4 +216,140 @@ colnames(x)[2] #열의 2번째 이름
 
 
 ```
+
+## 데이터 프레임와 매트릭스
+
+### 데이터 프레임
+
+- 숫자형 벡터, 문자형 벡터 등 서로 다른 형태의 데이터를 2차원 데이터테이블 형태로 묶을 수있는 자료구조
+- 외관상으로 매트릭스와 차이가 없지만 매트릭스는 동일한 자료형인 것만 가능, 데이터 프레임은 서로 다른 형태 가능
+
+![스크린샷 2020-05-02 오후 6.44.15](https://tva1.sinaimg.cn/large/007S8ZIlgy1gee8xrdm5oj30ow0f2gr4.jpg)
+
+![스크린샷 2020-04-19 오후 2.56.19](https://tva1.sinaimg.cn/large/007S8ZIlgy1gdz1axf3cqj317u0tgk4j.jpg)
+
+![스크린샷 2020-04-19 오후 2.55.44](https://tva1.sinaimg.cn/large/007S8ZIlgy1gdz1b510ecj317q0u0n92.jpg)
+
+### 데이터세트
+
+R에서 제공하는 실습용 데이터셋
+
+```R
+library(help=datasets)  # 데이터 세트의 목록 보기
+data()  #위와 동일 역할
+
+data(iris) #quakes 데이터 호출
+iris  # 150 그루의 붓꽃에 대해 4개 분야의 측정 데이터와 품종 정보를 결합하여 만든
+데이터셋
+
+head(iris, n=10) #위로부터 10개
+tail(iris, n=8)  #아래로부터 8개
+
+#데이터 세트 구조 보기
+names(iris) #변수이름 출력
+dim(iris) # raw갯수 column갯수 출력
+nrow(iris) # 행의 개수 출력
+ncol(iris) # 열의 개수 출력
+colnames(iris) # 열 이름 출력, names( )와 결과 동일
+head(iris) # 데이터셋의 앞부분 일부 출력
+tail(iris) # 데이터셋의 뒷부분 일부 출력
+
+str(iris) # 데이터프레임 상세정보(구조)
+iris[,5] # 5열 데이터 보기
+unique(iris[,5]) # 품종의 종류 보기(중복 제거)
+table(iris[,"Species"]) # 품종의 종류별 행의 개수 세기
+unique(iris[,5]) #위와 동일 값
+
+#매트릭스와 데이터프레임에서 사용하는 함수
+colSums(iris[,-5]) # 열별 합계 #5열은 숫자형 데이터가 아니므로 제외시킴
+colMeans(iris[,-5]) # 열별 평균 #5열은 숫자형 데이터가 아니므로 제외시킴
+rowSums(iris[,-5]) # 행별 합계 #5열은 숫자형 데이터가 아니므로 제외시킴
+rowMeans(iris[,-5]) # 행별 평균 #5열은 숫자형 데이터가 아니므로 제외시킴
+
+#데이터 세트 요약 보기
+summary(iris)
+summary(iris$Petal.Width) #특정 변수 출력
+
+#데이터 세트 저장하고 일기
+write.table(iris, "../iris.txt", sep=",")  #변수와 변수사이의 값에대해 ,찍음
+
+x <- read.csv("../iris.txt", header=T)
+
+x<- read.csv(file.choose(), header=T)
+```
+
+### 이외의 필요한 정보
+
+```R
+# 행과 열 방향 전환
+z <- matrix(1:20, nrow=4, ncol=5)
+z
+t(z)  #이때 바뀜 t함수
+
+#조건에 맞는 행과 열의 값 추출 (subset은 데이터프레임에서 잘먹힘)
+IR.1 <- subset(iris, Species=="setosa")  #subset은 부분집합!
+IR.1
+IR.2 <- subset(iris, Sepal.Length>5.0 &
+Sepal.Width>4.0)
+IR.2
+IR.2[, c(2,4)]
+
+#매트릭스와 데이터프레임에 산술연산(행 열 갯수 같아야함)
+a <- matrix(1:20,4,5)
+b <- matrix(21:40,4,5)
+a
+b
+2*a # 매트릭스 a에 저장된 값들에 2를 곱하기
+b-5
+2*a + 3*b
+a+b
+b-a
+b/a
+a*b
+a <- a*3
+b <- b-5
+a+b # a+b 값 당연히 출력물 다름
+
+#매트릭스와 데이터프레임의 자료구조 변환
+## 매트릭스를 데이터프레임으로 변환
+st <- data.frame(state.x77)
+head(st)
+class(st)
+## 데이터프레임을 매트릭스로 변환
+iris.m <- as.matrix(iris[,1:4])  #1열에서 4열까지만 숫자이므로 #만약 그대로하면 factor로 들어감
+head(iris.m)
+class(iris.m)
+```
+
+### 자료 구조 확인
+
+```R
+class(iris) # iris 데이터셋의 자료구조 확인
+class(state.x77) # state.x77 데이터셋의 자료구조 확인 #미국 50개주 통계자료
+is.matrix(iris) # 데이터셋이 매트릭스인지를 확인하는 함수
+is.data.frame(iris) # 데이터셋이 데이터프레임인지를 확인하는 함수
+is.matrix(state.x77)
+is.data.frame(state.x77)
+
+#매트릭스와 데이터프레임 차이
+iris[,"Species"] # 결과=벡터. 매트릭스와 데이터프레임 모두 가능
+iris[,5] # 결과=벡터. 매트릭스와 데이터프레임 모두 가능
+iris["Species"] # 결과=데이터프레임. 데이터프레임만 가능
+iris[5] # 결과=데이터프레임. 데이터프레임만 가능 #,가 없으므로 열 로 인식
+iris$Species # 결과=벡터. 데이터프레임만 가능
+```
+
+## 파일 데이터 읽기/쓰기
+
+```R
+setwd("../Users/user_name/uinv_lecture/R language/") # 기본 작업 폴더 지정
+air <- read.csv("airquality.csv", header=T) # .csv 파일 읽기
+head(air)
+
+my.iris <- subset(iris, Species="Setosa")# Setosa 품종 데이터만 추출
+my.iris
+write.csv(my.iris, "my_iris.csv", row.names=F) # .csv 파일에 저장하기
+```
+
+
 
