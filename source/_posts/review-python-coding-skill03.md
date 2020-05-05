@@ -843,25 +843,67 @@ assert Explicit(10).value == Implicit(10).value
 - 파이썬의 표준 메서드 해석 순서(MRO)는 슈퍼클래스의 초기화 순서와 다이아몬드 상속 문제를 해결한다.
 - 항상 내장 함수 super로 부모 클래스를 초기화하자.
 
-## 믹스인 유틸리티 클래스에만 다중 상속을 사용하자 (B26)
+## 믹스인 유틸리티 클래스에만 다중 상속을 사용하자 (B26)(???)
 
 파이썬은 다중 상속을 다루기 쉽게 하는 기능을 내장한 객체 지향 언어다(B25). 하지만 다중 상속은 아예 안 하는  게 좋다.
 
 다중 상속으로 얻는 편리함과 캡슐화가 필요하다면 대신 믹스인(mix-in)을 작성하는 방안을 고려하자. 믹스인이란 클래스에서 제공해야 하는 추가적인 메서드만 정의하는 작은 클래스를 말한다. 믹스인 클래스는 자체의 인스턴스 속성(attribute)을 정의하지 않으며  \_\_init\_\_ 생성자를 호출하도록 요구하지도 않는다.
 
-파이썬에서는 타입과 상관없이 객체의 현재 상태를 간단하게 조사할 수 있어서 믹스인을 쉽게 작성할 수있다. 동적 조사(dynamic inspection)를 이용하면 많은 클래스에 적용할 수 있는 범용 기능을 믹스인에 한 번만 작성하면 된다. 믹스인들을 조합하고 계층으로 구성하면 반복 코드를 최소화하고 재사용성을 극대화할 수 있다.
+__파이썬에서는 타입과 상관없이 객체의 현재 상태를 간단하게 조사할 수 있어서 믹스인을 쉽게 작성할 수있다. 동적 조사(dynamic inspection)를 이용하면 많은 클래스에 적용할 수 있는 범용 기능을 믹스인에 한 번만 작성하면 된다.__ 믹스인들을 조합하고 계층으로 구성하면 반복 코드를 최소화하고 재사용성을 극대화할 수 있다.
 
 예를 들어 파이썬 객체를 메모리 내부 표현에서 직렬화(serialization)용 딕셔너리로 변환하는 기능이 필요하다고 해보자. 이 기능을 모든 클래스에서 사용할 수 있게 범용으로 작성하는 건 어떨까?
 
 다음은 상속받는 모든 클래스에 추가될 새 공개 메서드로 이 기능을 구현하는 믹스인이다.
 
 ```python
+from pprint import pprint
+
 class ToDictMixin(object):
     def to_dict(self):
-        return self._traverse_dict(self.__dict__)
+        return self._traverse_dict(self.__dict__) #클래스의 네임스페이스를 반환함(클래스.__dict__)
 ```
 
 세부 구현은 직관적이며 hasattr을 사용한 동적 속성 접근, isinstance를 사용한 동적 타입 검사, 인스턴스 딕셔너리 \_\_dict\_\_를 이용한다.
+
+__클래스 네임스페이스 개념도 알아야함([자세히](https://wikidocs.net/1743))__
+
+> - hasattr(object, name)
+>
+>   object안에 name에 해당하는 attribute가 있으면 True
+>
+> - isinstance(mylist, list)
+>
+>   mylist가 list임을 알아봅니다 이렇게 class, str, int, float가능
+>
+> ```python
+> class foobar():
+>     data = [1,2,3,4]
+>     def __init__(self, val):
+>         self.val = val
+>         
+> x = foobar
+> y = foobar(['a','b'])
+> z = foobar([1,2])
+> 
+> hasattr(x, 'data')
+> >>>
+> True
+> 
+> hasattr(x, 'val')
+> >>>
+> false
+> 
+> delattr(x, 'data') #attr삭제가능
+> hasattr(x, 'data')
+> >>>
+> false
+> 
+> 
+> #isinstance 사용예시
+> simclass = CSimple()
+> isinstance(simclass, CSimple)
+> 
+> ```
 
 ```python
 #위에 클래스 안에 이어서   
@@ -900,11 +942,132 @@ class BinaryTree(ToDictMixin):
 tree = BinaryTree(10,
     left=BinaryTree(7, right=BinaryTree(9)),
     right=BinaryTree(13, left=BinaryTree(11)))
+print(tree.to_dict())
+```
+
+믹스인의 가장 큰 장점은 범용 기능을 교체할 수 있게 만들어서 요할 때 동작을 오버라이드할 수 있다는 점이다.
+
+예를 들어 다음은 부모 노드에 대한 참조를 저장하는 BinaryTree의 서브클래스다. 이 순환 참조(circular reference)는 ToDictMixin.to_dict의 기본 구현이 무한 루프에 빠지게 만든다.(???)
+
+```python
+class BinaryTreeWithParent(BinaryTree):
+    def __init__(self, value, left=None,
+                 right=None, parent=None):
+        super().__init__(value, left=left, right=right)
+        self.parent = parent
+```
+
+해결책은 BinaryTreeWithParent 클래스에서 ToDictMixin._traverse 메서드를 오버라이드해서 믹스인이 순환에 빠지지 않도록 필요한 값만 처리하게 하는 것이다. 다음은 _traverse 메서드를 오버라이드해서 부모를 탐색하지 않고 부모의 숫자 값만 꺼내오게 만든 예제다.
+
+```python
+#위에 클래스와 잇기. 오버라이드    
+    def _traverse(self, key, value):
+        if (isinstance(value, BinaryTreeWithParent) and
+                key == 'parent'):
+            return value.value  # 순환 방지
+        else:
+            return super()._traverse(key, value)
+```
+
+순환 참조 속성을 따라가지 않으므로 BinaryTreeWithParent.to_dict를 호출하는 코드는 문제 없이 동작한다.
+
+```python
+root = BinaryTreeWithParent(10)
+root.left = BinaryTreeWithParent(7, parent=root)
+root.left.right = BinaryTreeWithParent(9, parent=root.left)
 orig_print = print
 print = pprint
-print(tree.to_dict())
+print(root.to_dict())
 print = orig_print
 ```
+
+BinaryTreeWithParent._traverse를 정의한 덕분에BinaryTreeWithParent타입의 속성이 있는 클래스라면 무엇이든 자동으로  ToDictMixin으로 동작할수 있게 됫다.
+
+```python
+class NamedSubTree(ToDictMixin):
+    def __init__(self, name, tree_with_parent):
+        self.name = name
+        self.tree_with_parent = tree_with_parent
+
+my_tree = NamedSubTree('foobar', root.left.right)
+orig_print = print
+print = pprint
+print(my_tree.to_dict())  # No infinite loop
+print = orig_print
+```
+
+믹스인을 조합할 수 있다.
+
+예를 들어 어떤 클래스에도 동작하는 범용 JSON 직렬화를 제공하는 믹스인이 필요하다고 해보자. 이 믹스인은 클래스에 to_dict메서드(ToDictMixin 클래스에서 제공할 수도 있고 그렇지 않을 수도 있다.)가 있다고 가정하고 만들면 된다. 
+
+```python
+import json
+
+class JsonMixin(object):
+    @classmethod
+    def from_json(cls, data):
+        kwargs = json.loads(data)
+        return cls(**kwargs)
+
+    def to_json(self):
+        return json.dumps(self.to_dict())
+```
+
+JsonMixin 클래스가 어떻게 인스턴스 메서드와 클래스 메서드를 둘다 정의하는 지 주목하자. 믹스인을 이용하면 이 두 종류의 동작을 추가 할 수 있다. 이 예제에서 JsonMixin의 요구 사항은 클래스에 to_dict 메서드가 있고 해당 클래스의 \_\_init\_\_메서드에서 키워드 인수를 받는다는 것뿐이다(B19참조)
+
+이 믹스인을 이용하면 짧은 반복 코드로 JSON으로 직렬화하고  JSON에서 역직렬화하는 유틸리티 클래스의 계층 구조를 간단하게 생성할 수 있다.
+
+예를 들어 다음은 데이터센터 토폴로지를 구성하 부분들을 표현하는 데이터 클래스의 계층이다
+
+```python
+class DatacenterRack(ToDictMixin, JsonMixin):
+    def __init__(self, switch=None, machines=None):
+        self.switch = Switch(**switch)
+        self.machines = [
+            Machine(**kwargs) for kwargs in machines]
+
+class Switch(ToDictMixin, JsonMixin):
+    def __init__(self, ports=None, speed=None):
+        self.ports = ports
+        self.speed = speed
+
+class Machine(ToDictMixin, JsonMixin):
+    def __init__(self, cores=None, ram=None, disk=None):
+        self.cores = cores
+        self.ram = ram
+        self.disk = disk
+```
+
+이 클래스들을 JSON으로 직렬화하고  JSON에서 역직렬화하는 방법은 간단하다. 여기서는 데이터가 직렬화와 역질렬화를 통해 원래 상태가 되는지 검증한다.
+
+```python
+serialized = """{
+    "switch": {"ports": 5, "speed": 1e9},
+    "machines": [
+        {"cores": 8, "ram": 32e9, "disk": 5e12},
+        {"cores": 4, "ram": 16e9, "disk": 1e12},
+        {"cores": 2, "ram": 4e9, "disk": 500e9}
+    ]
+}"""
+
+deserialized = DatacenterRack.from_json(serialized)
+roundtrip = deserialized.to_json()
+assert json.loads(serialized) == json.loads(roundtrip)
+```
+
+이런 믹스인을 사용할 때는 클래스가 객체 상속 계층의 상위에서 이미 JsonMinxin을 상속받고 있어도 괜찮다. 결과로 만들어지는 클래스는 같은 방식으로 동작할 것이다.
+
+### 정리
+
+- 믹스인 클래스로 같은 결과를 얻을 수 있다면 다중 상속을 사용하지 말자
+- 인스턴스 수준에서 동작을 교체할 수 있게 만들어서 믹스인 클래스가 요구할 때 클래스별로 원하는 동작을 하게 하자
+- 간단한 동작들로 복잡한 기능을 생성하려면 믹스인을 조합하자.
+
+## 공개 속성보다는 비공개 속성을 사용하자 (B27)
+
+
+
+
 
 
 
