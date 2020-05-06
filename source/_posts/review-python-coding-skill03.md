@@ -1065,12 +1065,408 @@ assert json.loads(serialized) == json.loads(roundtrip)
 
 ## 공개 속성보다는 비공개 속성을 사용하자 (B27)
 
+파이썬에는 클래스 속성의 가시성(visibility)이 공개(public)와 비공개(private) 두 유형밖에 없다.
 
+```python
+class MyObject(object):
+    def __init__(self):
+        self.public_field = 5
+        self.__private_field = 10
 
+    def get_private_field(self):
+        return self.__private_field
+```
 
+공개 속성은 어디서든 객체에 점 연산자(.)를 사용하여 접근할 수 있다.
 
+```python
+foo = MyObject()
+assert foo.public_field == 5
+```
 
+비공개 필드는 속성 이름 앞에 밑줄 두개를 붙여 지정한다. 같은 클래스에 속한 메서드에서만 비공개 필드에 직접 접근할 수 있다
 
+```python
+assert foo.get_private_field() == 10 #접근확인
+```
 
+하지만 클래스 외부에서 직접 비공개 필드에 접근하면 예외가 일어난다.
 
-(작성중)
+```python
+try:
+    foo.__private_field
+except:
+    logging.exception('Expected')
+else:
+    assert False
+```
+
+클래스 메서드도 같은 class 블록에 선언되어 있으므로 비공개 속성에 접근할 수 있다.
+
+```python
+class MyOtherObject(object):
+    def __init__(self):
+        self.__private_field = 71
+
+    @classmethod
+    def get_private_field_of_instance(cls, instance):
+        return instance.__private_field
+
+bar = MyOtherObject()
+assert MyOtherObject.get_private_field_of_instance(bar) == 71
+```
+
+__비공개 필드라는 용어에서 예상할 수 있듯이 서브클래스에서는 부모 클래스의 비공개 필드에 접근할 수 없다.__
+
+```python
+try:
+    class MyParentObject(object):
+        def __init__(self):
+            self.public_field = 5
+            self.__private_field = 71
+    
+    class MyChildObject(MyParentObject):
+        def get_private_field(self):
+            return self.__private_field
+    
+    baz = MyChildObject()
+    baz.get_private_field()
+except:
+    logging.exception('Expected')
+else:
+    assert False
+```
+
+비공개 속성의 동작은 간단하게 속성 이름을 변환하는 방식으로 구현된다. 파이썬 컴파일러는 MyChildObject.get\_private\_field 같은 메서드에서 비공개 속성에 접근하는 코드를 발견하면 \_\_private\_field를 \_MyChildObject\_\_private_field에 접근하는 코드로 변환한다.(모든 비공개 속성)
+
+이 예제에서보면 \_\_private\_field가 MyParentObject.\_\_init\_\_ 에만 정의되어있으므로 비공개 속성의 실제 이름은 \_MyParentObject\_\_private\_field가 된다. 자식 클래스에서 부모의 비공개 속성에 접근하는 동작은 단순히 변환된 속성 이름이 일치하지 않아서 실패하는 것이다.
+
+이 체계를 이해하면 접근 권한을 확인하지 않고서도 서브클래스나 외부 클래스에서 어떤 클래스의 비공개 속성이든 쉽게 접근할 수 있다.
+
+```python
+assert baz._MyParentObject__private_field == 71
+```
+
+객체의 속성 딕셔너리를 들여다보면 실제로 비공개 속성이 변환 후의 이름으로 저장되어있음을 알 수 있다.
+
+```python
+print(baz.__dict__) #반드시 해보기
+>>>
+{'_MyParentObject__private_field': 71, 'public_field': 5}
+```
+
+비공개 속성용 문법이 가시성을 엄격하게 강제하지 않는 이유는 뭘까? 가장 간단한 답은 파이썬에서 자주 인용되는 '우리 모두 성인이라는 사실에 동의합니다'라는 좌우명에 있다. 파이썬 프로그래머들은 개방으로 얻는 장점이 폐쇄로 얻는 단점보다 크다고 믿는다.
+
+이외에도 속성에 접근하는 것처럼 언어 기능을 가로채는 기능(B32 참조)이 있으면 마음만 먹으면 언제든지 객체의 내부를 조작할 수 있다. 이렇게 할 수 있다면 파이썬이 비공개 속성에 접하는 것을 막는 게 무슨 가치가 있을까?
+
+파이썬 프로그래머들은 무분별하게 객체의 내부에 접근하는 위험을 최소화하려고 스타일 가이드(B2 참조)에 정의된 명명 관례를 따른다. \_protected\_field처럼 앞에 밑줄 한 개를 붙인 필드를 보호(protected) 필드로 취급해서 클래스의 외부 사용자들이 신중하게 다뤄야 함을 의미한다.
+
+하지만 파이썬을 처음 접하는 많은 프로그래머가 서브클래스나 외부에서 접근하면 안되는 내부 API를 피공개 필드로 나타낸다.
+
+```python
+class MyClass(object):
+    def __init__(self, value):
+        self.__value = value
+
+    def get_value(self):
+        return str(self.__value)
+
+foo = MyClass(5)
+assert foo.get_value() == '5'
+```
+
+이 접근 방식은 잘못되었다. 누군가는 클래스에 새 동작을 추가하거나 기존 메서드의 결함을 해결(위의 코드에서는 MyClass.get_value가 항상 문자열을 반환하는 방법을 사용한다.)하려고 서브클래스를 만들기 마련이다. 비공개 속성을 선택하면 서브클래스의 오버라이드(override)와 확장(extension)을 다루기 어렵고 불안정하게 만들 뿐이다. 나중에 만들 서브클래스에서 꼭 필요하면 여전히 비공개 필드에 접근할 수 있다.
+
+```python
+class MyIntegerSubclass(MyClass):
+    def get_value(self):
+        return int(self._MyClass__value) #이런식으로 접근하면 가능하긴하지....
+
+foo = MyIntegerSubclass(5)
+assert foo.get_value() == 5
+```
+
+하지만 나중에 클래스의 계층이 변경되면 MyIntegerSubClass 같은 클래스는 비공개 참조가 더는 유효하지 않게 되어 제대로 동작하지 않는다
+
+MyIntegerSubClass 클래스의 직계 부모인 MyClass에 MyBaseClass라는 또 다른 부모 클래스를 추가했다고 하자.
+
+```python
+class MyBaseClass(object):
+    def __init__(self, value):
+        self.__value = value
+
+    def get_value(self):
+        return self.__value
+
+class MyClass(MyBaseClass):
+    def get_value(self):
+        return str(super().get_value())
+
+class MyIntegerSubclass(MyClass):
+    def get_value(self):
+        return int(self._MyClass__value) #동작안됨. 계층구조바꿈... 동작하려면 return int(self._MyBaseClass__value)이여야함
+```
+
+이제 \_\_value 속성을 MyClass 클래스가 아닌 MyBaseClass에서 할당한다. 그러면 MyIntegerSubclass에 있는 비공개 변수 참조인 self.\_MyClass\_\_value가 동작하지 않는다.
+
+```python
+try:
+    foo = MyIntegerSubclass(5)
+    foo.get_value()
+except:
+    logging.exception('Expected')
+else:
+    assert False
+```
+
+일반적으로 보호 속성을 사용해서 서브클래스가 더 많은 일을 할 수 있게 하는 편이 낫다. 각각의 보호 필드를 문서화해서 서브클래스에서 내부 API 중 어느 것을 쓸 수 있고 어느 것을 그대로 둬야 하는지 설명하자. 이렇게 하면 자신이 작성한 코드를 미래에 안전하게 확장하는 지침이 되는 것처럼 다른 프로그래머에게도 조언이 된다.
+
+```python
+class MyClass(object):
+    def __init__(self, value):
+        # 사용자가 객체에 전달한 값을 저장한다. (This stores the user-supplied value for the object.)
+        # 문자열로 강제할 수 있는 값이여야 하며, (It should be coercible to a string. Once assigned for)
+        # 객체에 할당하고 나면 불변으로 취급해야 한다.(the object it should be treated as immutable.)
+        self._value = value
+
+    def get_value(self):
+        return str(self._value)
+```
+
+비공개 속성을 사용할지 진지하게 고민할 시점은 서브클래스와 이름이 충돌할 염려가 있을 때뿐이다. 이 문제는 자식 클래스가 서로 모르는 사이에 부모 클래스에서 이미 정의한 속성을 정의할 때 일어난다.
+
+```python
+class ApiClass(object):
+    def __init__(self):
+        self._value = 5
+
+    def get(self):
+        return self._value
+
+class Child(ApiClass):
+    def __init__(self):
+        super().__init__()
+        self._value = 'hello'  # 충돌하는 변수
+
+a = Child()
+print(a.get(), 'and', a._value, 'should be different')
+
+>>>
+hello and hello should be different
+```
+
+주로 클래스가 공개 API의 일부일 때 문제가 된다. 서브클래스는 직접 제어할 수 없으니 문제를 고치려고 리팩토링할 수 없다. 이런 충돌은 속성 이름이 value처럼 아주 일반적일 때 일어날 확률이 특히 높다. 이런 상황이 일어날 위험을 줄이려면 부모 클래스에서 비공개 속성을 사용해서 자식 클래스와 속성 이름이 겹치지 않게 하면 된다.
+
+```python
+class ApiClass(object):
+    def __init__(self):
+        self.__value = 5
+
+    def get(self):
+        return self.__value
+
+class Child(ApiClass):
+    def __init__(self):
+        super().__init__()
+        self._value = 'hello'  # OK!
+
+a = Child()
+print(a.get(), 'and', a._value, 'are different')
+```
+
+### 정리
+
+- 파이썬 컴파일러는 비공개 속성을 엄격하게 강요하지 않는다
+- 서브클래스가 내부 API와 속성에 접근하지 못하게 막기보다는 처음부터 내부 API와 속성으로 더 많은 일을 할 수 있게 설계하자
+- __비공개 속성에 대한 접근을 강제로 제어하지 말고 보호 필드를 문서화해서 서브클래스에 필요한 지침을 제공하자__
+- 직접 제어할 수 없는 서브클래스와 이름이 충돌하지 않게 할 때만 비공개 속성을 사용하는 방안을 고려하자.
+
+## 커스텀 컨테이너 타입은 collections.abc의 클래스를 상속받게 만들자 (B28)
+
+파이썬 프로그래밍의 대부분은 데이터를 담은 클래스들을 정의하고 이 객체들이 연계되는 방법을 명시하는 일이다. 모든 파이썬 클래스는 일종의 컨테이너로, 속성과 기능을 함께 캡슐화한다. 파이썬은 데이터 관리용 내장 컨테이너 타입(리스트, 튜플, 세트, 딕셔너리)도 제공한다. 
+
+시퀀스(sequence)처럼 쓰임새가 간단한 클래스를 설계할 때는 파이썬의 내장 list 타입에서 상속받으려고 하는 게 당연하다. 
+
+예를 들어 멤버의 빈도를 세는 메서드를 추가로 같춘 커스텀 리스트 타입을 생성한다고 해보자.
+
+```python
+class FrequencyList(list):
+    def __init__(self, members):
+        super().__init__(members)
+
+    def frequency(self):
+        counts = {}
+        for item in self:
+            counts.setdefault(item, 0)
+            counts[item] += 1
+        return counts
+```
+
+list에서 상속받아 서브클래스를 만들었으므로 list의 표준 기능을 모두 갖춰서 파이썬 프로그래머에게 익숙한 시맨틱(semantic)을 유지한다. 그리고 추가한 메서드로 필요한 커스텀 동작을 더할 수 있다.
+
+```python
+foo = FrequencyList(['a', 'b', 'a', 'c', 'b', 'a', 'd'])
+print('Length is', len(foo))
+foo.pop()
+print('After pop:', repr(foo))
+print('Frequency:', foo.frequency())
+```
+
+이제 list의 서브클래스는 아니지만 인덱스로 접근할 수 있게 히서 list처럼 보이는 객체를 제공하고 싶다고 해보자. 예를 들어 바이너리트리 클래스에 (list나 tuple 같은) 시퀀스 시맨틱을 제공한다고 하자
+
+```python
+class BinaryNode(object):
+    def __init__(self, value, left=None, right=None):
+        self.value = value
+        self.left = left
+        self.right = right
+```
+
+이 클래스가 시퀀스 타입처럼 동작하게 하려면 어떻게 해야 할까? 파이썬은 특별한 이름을 붙인 인스턴스 메서드로 컨테이너 동작을 구현한다.
+
+```python
+bar = [1, 2, 3]
+bar[0]
+
+```
+
+위와 같이 시퀀스의 아이템을 인덱스로 접근하면 다음과 같이 해석된다.
+
+```python
+bar.__getitem__(0)
+```
+
+BinaryNode 클래스가 시퀀스처럼 동작하게 하려면 객체의 트리를 깊이 우선으로 탐색하는 \_\_getitem\_\_ 을 구현하면 된다.
+
+```python
+class IndexableNode(BinaryNode):
+    def _search(self, count, index):
+        found = None
+        if self.left:
+            found, count = self.left._search(count, index)
+        if not found and count == index:
+            found = self
+        else:
+            count += 1
+        if not found and self.right:
+            found, count = self.right._search(count, index)
+        return found, count
+        # Returns (found, count)
+
+    def __getitem__(self, index):
+        found, _ = self._search(0, index)
+        if not found:
+            raise IndexError('Index out of range')
+        return found.value
+
+```
+
+이 바이너리 트리는 평소처럼 생성하면 된다.
+
+```python
+tree = IndexableNode(
+    10,
+    left=IndexableNode(
+        5,
+        left=IndexableNode(2),
+        right=IndexableNode(
+            6, right=IndexableNode(7))),
+    right=IndexableNode(
+        15, left=IndexableNode(11)))
+```
+
+트리 탐색은 물론이고 list처럼 접근할 수도 있다.
+
+```python
+print('LRR =', tree.left.right.right.value)
+print('Index 0 =', tree[0])
+print('Index 1 =', tree[1])
+print('11 in the tree?', 11 in tree)
+print('17 in the tree?', 17 in tree)
+print('Tree is', list(tree))
+
+>>>
+
+```
+
+문제는 \_\_getitem\_\_ 을 구현하는 것만으로는 기대하는 시퀀스 시맨틱을 모두 제공하지 못한다는 점이다
+
+```python
+len(tree)
+
+>>>
+TypeError
+```
+
+내장 함수 len을 쓰려면 커스텀 시퀀스 타입에 맞게 구현한 \_\_len\_\_ 이라는 또 다른 특별한 메서드가 필요하다.
+
+```python
+class SequenceNode(IndexableNode):
+    def __len__(self):
+        _, count = self._search(0, None)
+        return count
+      
+      
+tree = SequenceNode(
+    10,
+    left=SequenceNode(
+        5,
+        left=SequenceNode(2),
+        right=SequenceNode(
+            6, right=SequenceNode(7))),
+    right=SequenceNode(
+        15, left=SequenceNode(11))
+)
+
+print('Tree has %d nodes' % len(tree))
+
+>>>
+Tree has 7 nodes
+```
+
+불행히도 아직은 부족하다. 파이썬 프로그래머들이 list나 tuple 같은 시퀀스 타입에서 기대할 count와 index 메서드가 빠졌다. 커스텀 컨테이너 타입을 정의하는 일은 보기보다 어렵다.
+
+파이썬 세계의 이런 어려움을 피하려고 내장 collections.abc 모듈은 각 컨테이너 타입에 필요한 일반적인 메서드를 모두 제공하는 추상 기반 클래스들을 정의한다. 이 추상 기반 클래스들에서 상속받아 서브클래스를 만들다가 깜빡 잊고 필수 메서드를 구현하지 않으면, 모듈이 뭔가 잘못되었다고 알려준다.
+
+```python
+try:
+    from collections.abc import Sequence
+    
+    class BadType(Sequence):
+        pass
+    
+    foo = BadType()
+except:
+    logging.exception('Expected')
+else:
+    assert False
+```
+
+앞에서 다룬 SequenceNode처럼 추상 기반 클래스가 요구하는 메서드를 모두 구현하면 별도로 작업하지 않아도 클래스가 index와 count 같은 부가적인 메서드를 모두 제공한다.
+
+```python
+class BetterNode(SequenceNode, Sequence):
+    pass
+
+tree = BetterNode(
+    10,
+    left=BetterNode(
+        5,
+        left=BetterNode(2),
+        right=BetterNode(
+            6, right=BetterNode(7))),
+    right=BetterNode(
+        15, left=BetterNode(11))
+)
+
+print('Index of 7 is', tree.index(7))
+print('Count of 10 is', tree.count(10))
+```
+
+Set와 MutableMapping처럼 파이썬의 관례에 맞춰 구현해야 하는 특별한 메서드가 많은 더 복잡한 타입을 정의할 때 이런 추상 기반 클래스를 사용하는 이점은 더욱 커진다.
+
+### 정리
+
+- 쓰임새가 간단할 때는 list나 dict 같은 파이썬의 컨테이너 타입에서 직접 상속받게 하자
+- 커스텀 컨테이너 타입을 올바르게 구현하는 데 필요한 많은 메서드에 주의해야 한다.
+- 커스텀 컨테이너 타입이 collections.abc에 정의된 인터페이스에서 상속받게 만들어서 클래스가 필요한 인터페이스, 동작과 일치하게 하자
