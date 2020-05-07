@@ -1,5 +1,5 @@
 ---
-title: review-python-coding-skill04
+title: 파이썬 코딩의 스킬 리뷰 4
 date: 2020-05-07 11:23:51
 categories: [Python]
 tags: [Review, Tip, Skill]
