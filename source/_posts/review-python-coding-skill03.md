@@ -1285,9 +1285,13 @@ print(a.get(), 'and', a._value, 'are different')
 
 파이썬 프로그래밍의 대부분은 데이터를 담은 클래스들을 정의하고 이 객체들이 연계되는 방법을 명시하는 일이다. 모든 파이썬 클래스는 일종의 컨테이너로, 속성과 기능을 함께 캡슐화한다. 파이썬은 데이터 관리용 내장 컨테이너 타입(리스트, 튜플, 세트, 딕셔너리)도 제공한다. 
 
-시퀀스(sequence)처럼 쓰임새가 간단한 클래스를 설계할 때는 파이썬의 내장 list 타입에서 상속받으려고 하는 게 당연하다. 
+> 컨테이너란?
+>
+> 컨테이너라는 개념은 1개 이상의 데이터를 하나의 변수에 할당하는 것입니다. ['a', 1, 'b'] #a,b,1 데이터들이  담김
 
-예를 들어 멤버의 빈도를 세는 메서드를 추가로 같춘 커스텀 리스트 타입을 생성한다고 해보자.
+시퀀스(sequence)처럼 쓰임새가 간단한 클래스를 설계할 때는 파이썬의 내장 list 타입에서 상속받으려고 하는 게 당연하다.
+
+예를 들어 멤버의 빈도를 세는 메서드를 추가로 갖춘 커스텀 리스트 타입을 생성한다고 해보자.
 
 ```python
 class FrequencyList(list):
@@ -1298,6 +1302,7 @@ class FrequencyList(list):
         counts = {}
         for item in self:
             counts.setdefault(item, 0)
+            print(counts)
             counts[item] += 1
         return counts
 ```
@@ -1306,11 +1311,14 @@ list에서 상속받아 서브클래스를 만들었으므로 list의 표준 기
 
 ```python
 foo = FrequencyList(['a', 'b', 'a', 'c', 'b', 'a', 'd'])
+foo.frequency() #테스트 가능
 print('Length is', len(foo))
 foo.pop()
-print('After pop:', repr(foo))
+print('After pop:', repr(foo)) #str대신 객체에 공식적인 문자열 출력
 print('Frequency:', foo.frequency())
 ```
+
+> 요약해보면, repr() 은 __repr__ 메소드를 호출하고, str() 이나 print 는 __str__ 메소드를 호출하도록 되어있는데, __str__ 은 객체의 비공식적인(informal)( 사용자가 보기 쉬운 형태로 보여줄 때) 문자열을 출력할 때 사용하고, __repr__ 은 공식적인(official)(해당 객체를 인식할 수 있는 공식적인 문자열로 나타내 줄 때 ) 문자열을 출력할 때 사용한다.
 
 이제 list의 서브클래스는 아니지만 인덱스로 접근할 수 있게 히서 list처럼 보이는 객체를 제공하고 싶다고 해보자. 예를 들어 바이너리트리 클래스에 (list나 tuple 같은) 시퀀스 시맨틱을 제공한다고 하자
 
@@ -1327,7 +1335,6 @@ class BinaryNode(object):
 ```python
 bar = [1, 2, 3]
 bar[0]
-
 ```
 
 위와 같이 시퀀스의 아이템을 인덱스로 접근하면 다음과 같이 해석된다.
@@ -1336,14 +1343,14 @@ bar[0]
 bar.__getitem__(0)
 ```
 
-BinaryNode 클래스가 시퀀스처럼 동작하게 하려면 객체의 트리를 깊이 우선으로 탐색하는 \_\_getitem\_\_ 을 구현하면 된다.
+BinaryNode 클래스가 시퀀스처럼 동작하게 하려면 객체의 트리를 깊이 우선으로 탐색하는 \_\_getitem\_\_ 을 구현하면 된다.(그냥 리스트를 구현한다 생각하자)
 
 ```python
 class IndexableNode(BinaryNode):
     def _search(self, count, index):
         found = None
         if self.left:
-            found, count = self.left._search(count, index)
+            found, count = self.left._search(count, index) #found가 None값이 반환되버리면 이제 아래걸로 넘어가겠지!
         if not found and count == index:
             found = self
         else:
@@ -1386,7 +1393,12 @@ print('17 in the tree?', 17 in tree)
 print('Tree is', list(tree))
 
 >>>
-
+LRR = 7
+Index 0 = 2
+Index 1 = 5
+11 in the tree? True
+17 in the tree? False
+Tree is [2, 5, 6, 7, 10, 11, 15]
 ```
 
 문제는 \_\_getitem\_\_ 을 구현하는 것만으로는 기대하는 시퀀스 시맨틱을 모두 제공하지 못한다는 점이다
@@ -1395,7 +1407,7 @@ print('Tree is', list(tree))
 len(tree)
 
 >>>
-TypeError
+TypeError: object of type 'IndexableNode' has no len()
 ```
 
 내장 함수 len을 쓰려면 커스텀 시퀀스 타입에 맞게 구현한 \_\_len\_\_ 이라는 또 다른 특별한 메서드가 필요하다.
