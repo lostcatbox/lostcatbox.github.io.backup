@@ -7,7 +7,7 @@ tags: [Review, Tip, Skill]
 
 # 메타클래스와 속성
 
-메타클래스는 파이썬의 기능 목록에서 자주 언급되지만, 실제로 메타클래스가 무엇을 하는지 이해하는 사람은 소수다. 메티클래스(metaclass)라는 이름은 클래스 위에 있고 클래스를 넘어선다는 개념을 암시한다. 즉, 메타클래스를 이용하면 파이썬의 class 문을 가로채서 클래스가 정의될 때마다 특별한 동작을 제공할 수 있다.
+메타클래스는 파이썬의 기능 목록에서 자주 언급되지만, 실제로 메타클래스가 무엇을 하는지 이해하는 사람은 소수다. 메티클래스(metaclass)라는 이름은 클래스 위에 있고 클래스를 넘어선다는 개념을 암시한다. 즉, 메타클래스를 이용하     면 파이썬의 class 문을 가로채서 클래스가 정의될 때마다 특별한 동작을 제공할 수 있다.
 
 메타클래스 못지 않게 설명하기 어렵지만 강력한 기능은 속성 접근을 동적으로 사용자화하는 파이썬의 내장 기능이다. 파이썬의 객체 지향 구조와 함께 이용하면 이 기능들은 간단한 클래스를 복잡한 클래스로 쉽게 바꿔주는 훌륭한 도구가 된다.
 
@@ -183,7 +183,7 @@ class MysteriousResistor(Resistor):
 
     @ohms.setter
     def ohms(self, ohms):
-        self._ohms = ohms
+        self._ohms = ohms   #__init__ 실행될때도 실행됨.
 ```
 
 이와 같은 코드는 아주 이상한 동작을 만든다.
@@ -206,7 +206,7 @@ __최선의 정책은 @property.setter 메서드에서만 관련 객체의 상�
 - @property 메서드에서 최소 놀람 규칙(rule of least surprise)을 따르고 이상한 부작용은 피하자
 - @property 메서드가 빠르게 동작하도록 만들자. 느리거나 복잡한 작업은 일반 메서드로 하자.
 
-## 속성을 리팩토링하는 대신 @property를 고려하자
+## 속성을 리팩토링하는 대신 @property를 고려하자 (B30)
 
 내장 @property 데코레이터(decorator)를 이용하면 더 간결한 방식으로 인스턴스의 속성에 접근하게 할 수 있다(B29 참조). 고급 기법이지만 흔히 사용하는 @property 사용법 중 하나는 단순 숫자 속성을 즉석에서 계산하는 방식으로 변경하는 것이다. 호출하는 쪽을 변경하지 않고도 기존에 클래스를 사용한 곳이 새로운 동작을 하게 해주므로 매우 유용한 기법이다. 또한 시간이 지나면서 인터페이스를 개선할 때 중요한 임시방편이 된다. 
 
@@ -282,7 +282,95 @@ print(bucket)
 
 이 구현에서 문제는 양동이의 할당량이 어떤 수준에서 시작하는지 모른다는 점이다. 양동이는 0이 될 때까지 진행 기간 동안 할당량이 줄어든다. 0이 되면 deduct가 항상 False를 반환한다. 이때 deduct를 호출하는 쪽이 중단된 이유가 Bucket의 할당량이 소진되어서인지 아니면 처음부터 Bucket에 할당량이 없어서인지 알 수 있다면 좋을 것이다.
 
-문제를 해결하려면 클래스에서 기간 동안 발생한 max_quota와 quota_consumed의 변경을 추적하도록 수정하면 된다.
+문제를 해결하려면 클래스에서 기간 동안 발생한 max_quota와quota_consumed의 변경을 추적하도록 수정하면 된다.
+
+```python
+class Bucket(object):
+    def __init__(self, period):
+        self.period_delta = timedelta(seconds=period)
+        self.reset_time = datetime.now()
+        self.max_quota = 0
+        self.quota_consumed = 0
+
+    def __repr__(self):
+        return ('Bucket(max_quota=%d, quota_consumed=%d)' %
+                (self.max_quota, self.quota_consumed))
+```
+
+이 새 속성들을 이용해 실시간으로 현재 할당량의 수준을 계산하려고 @property 메서드를 사용한다.
+
+```python
+    @property
+    def quota(self):
+        return self.max_quota - self.quota_consumed
+```
+
+quota속성이 할당을 받는 순간에 fill과 deduct에서 사용하는 이 클래스의 현재 인터페이스와 일치하는 특별한 동작을 하게 만든다.
+
+```python
+    @quota.setter
+    def quota(self, amount):
+        delta = self.max_quota - amount
+        if amount == 0:
+            # Quota being reset for a new period
+            self.quota_consumed = 0
+            self.max_quota = 0
+        elif delta < 0:
+            # Quota being filled for the new period
+            assert self.quota_consumed == 0
+            self.max_quota = amount
+        else:
+            # Quota being consumed during the period
+            assert self.max_quota >= self.quota_consumed
+            self.quota_consumed += delta
+```
+
+앞에서 본 데모 코드를 다시 실행하면 같은 결과가 나온다.
+
+```python
+bucket = Bucket(60)
+print('Initial', bucket)
+fill(bucket, 100)
+print('Filled', bucket)
+
+if deduct(bucket, 99):
+    print('Had 99 quota')
+else:
+    print('Not enough for 99 quota')
+
+print('Now', bucket)
+
+if deduct(bucket, 3):
+    print('Had 3 quota')
+else:
+    print('Not enough for 3 quota')
+
+print('Still', bucket)
+
+>>>
+Initial Bucket(max_quota=0, quota_consumed=0)
+Filled Bucket(max_quota=100, quota_consumed=0)
+Had 99 quota
+Now Bucket(max_quota=100, quota_consumed=99)
+Not enough for 3 quota
+Still Bucket(max_quota=100, quota_consumed=99)
+```
+
+가장 좋은 점은 Bucket.quota를 사용하는 코드는 변경하거나 Bucket 클래스가 변경된 사실을 몰라도 된다는 점이다. Bucket의 사용법은 제대로 동작하며 max_quota 와 quota_consumed에 직접 접근할 수 있다.
+
+필자가 특별이 @property를 좋아하는 이유는 시간이 지날수록 더 좋은 데이터 모델로 발전시킬 수 있기 때문이다. 위에 Bucket 예제를 보면서 속으로 'fill'과 'deduct'는 처음부터 인스턴스 메서드로 구현했어야 했다.라고 생각했을 것이다 여러분의 생각이 맞는다고 해도 (B22참조) 실제로 객체가 형편없이 정의한 인터페이스로 시작하거나 아무 기능이 없는 데이터 컨테이너로 동작하는 상황이 많다. 이런 상황은 시간이 지나면서 코드가 증가하고, 영역이 넓어지고, 여러 개발자가 기여하면서도 아무도 장기 예방책을 고려하지 않는 경우가 발생한다.
+
+@property는 실전 코드에서 만날 수 있는 문제를 해결하는 데 보탬이 되는 도구다. 하지만 과용하지말자. @property 메서드를 계속 확장하고 있다면, 코드의 부족한 설계를 계속 수정할 게 아니라 클래스를 새롭게 리팩토링할 시점이 된 것이다.
+
+### 정리
+
+- 기존의 인스턴스 속성에 새 기능을 부여하려면 @property를 사용하자
+- @property를 사용하면 점점 나은 데이터 모델로 발전시키자
+- @property를 너무 많이 사용한다면 클래스와 이를 호출하는 모든 곳을 리팩토링하는 방안을 고려하자
+
+## 재사용 가능한 @property 메서드에는 디스크랩터를 사용하자
+
+
 
 
 
