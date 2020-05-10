@@ -473,3 +473,85 @@ print(sum)
 >%% 나머지
 >%/% 몫
 >```
+
+### iris에서 꽃잎의 길이에 따른 분류 작업
+
+```R
+data(iris)
+norow <- nrow(iris) # iris의 행의 수 
+mylabel <- c( ) # 비어있는 벡터 선언 
+for(i in 1:norow) { 
+  if (iris$Petal.Length[i] <= 1.6) { # 꽃잎의 길이에 따라 레이블 결정 
+    mylabel[i] <- "L"
+    } else if (iris$Petal.Length[i] >= 5.1) {
+             mylabel[i] <- "H" } else {
+             mylabel[i] <- "M"
+    } 
+}
+
+print(mylabel)                #레이블출력
+newds <- data.frame(iris$Petal.Length, mylabel) # 꽃잎의 길이와 레이블 결합 head(newds) # 새로운 데이터셋 내용 출력
+```
+
+### while문
+
+- while문은 어떤 조건이 만족하는 동안 코드블록을 수행하고, 해당 조건이 거짓일 경 우 반복을 종료하는 명령문
+
+```R
+sum <- 0
+i <- 1
+while(i <=100) {
+    sum <- sum + i 
+    i <- i + 1
+} 
+print(sum)
+# sum에 i 값을 누적 # i 값을 1 증가시킴
+```
+
+### break
+
+```R
+sum <- 0 
+for(i in 1:10) {
+    sum <- sum + i
+    if (i>=5) break 
+  }
+sum
+```
+
+### next
+
+```R
+sum <- 0 
+for(i in 1:10) {
+  if (i%%2==0) next
+  sum <- sum + i 
+}
+sum
+```
+
+### apply() 함수 (꼭 알아두기)
+
+- 반복 작업이 필요한 경우에는 반복문을 적용
+
+- 반복 작업의 대상이 매트릭스나 데이터프레임의 행(row) 또는 열(column)인 경우는 for문이나 while문 대신에 apply() 함수를 이용할 수 있음
+
+- apply() 함수의 문법
+
+  ```
+  apply(데이터셋, 행/열방향 지정, 적용 함수)
+  ```
+
+예시 
+
+(mean()함수는 평균구하는 함수)
+
+```R
+apply(iris[,1:4], 1, mean) # row 방향으로 함수 적용 #1이 행방향
+apply(iris[,1:4], 2, mean) # col 방향으로 함수 적용  #2는 열방향
+```
+
+
+
+
+
