@@ -368,11 +368,231 @@ Still Bucket(max_quota=100, quota_consumed=99)
 - @property를 사용하면 점점 나은 데이터 모델로 발전시키자
 - @property를 너무 많이 사용한다면 클래스와 이를 호출하는 모든 곳을 리팩토링하는 방안을 고려하자
 
-## 재사용 가능한 @property 메서드에는 디스크랩터를 사용하자
+## 재사용 가능한 @property 메서드에는 디스크랩터를 사용하자(B31)
 
+파이썬에 내장된 @property의 큰 문제점은 재사용성이다.(B29 참조)
 
+즉, @property로 데코레이트하는 메서드를 같은 클래스에 속한 여러 속성에 사용하지 못한다. 또한 관련 없는 클래스에서도 재사용할 수 없다.
 
+```python
+class Homework(object):
+    def __init__(self):
+        self._grade = 0
 
+    @property
+    def grade(self):
+        return self._grade
+
+    @grade.setter
+    def grade(self, value):
+        if not (0 <= value <= 100):
+            raise ValueError('Grade must be between 0 and 100')
+        self._grade = value
+```
+
+@property를 사용하면 이 클래스를 쉽게 사용할 수 있다.
+
+```python
+galileo = Homework()
+galileo.grade = 95
+print(galileo.grade)
+```
+
+학생들의 시험 성적을 매긴다고 해보자. 시험은 여러 과목으로 구성되어 있고 과목별로 점수가 있다.
+
+```python
+class Exam(object):
+    def __init__(self):
+        self._writing_grade = 0
+        self._math_grade = 0
+
+    @staticmethod
+    def _check_grade(value):
+        if not (0 <= value <= 100):
+            raise ValueError('Grade must be between 0 and 100')
+```
+
+이 코드는 금방 장황해진다. 시험 영역마다 새 @property와 관련 검증이 필요하다.
+
+```python
+    @property
+    def writing_grade(self):
+        return self._writing_grade
+
+    @writing_grade.setter
+    def writing_grade(self, value):
+        self._check_grade(value)
+        self._writing_grade = value
+
+    @property
+    def math_grade(self):
+        return self._math_grade
+
+    @math_grade.setter
+    def math_grade(self, value):
+        self._check_grade(value)
+        self._math_grade = value
+```
+
+이런 방법은 범용으로 사용하기에도 좋지 않다. 과제와 시험 이외의 항목에도 이 백분율 검증을 재사용하고 싶다면 @property와 \_check\_grade를 반복적으로 작성해야 한다.(당연히 각각 속성값을 세팅하는데 그 속성을 검사하려면 위와같은 과정말곤없다)
+
+> [@staticmethod와 @classmethod 차이 구별](https://hamait.tistory.com/635) 해야함
+>
+> @staticmethod를 하면 클래스에서 공통으로 쓰는것을 목표로 함수 파라미터에서 self를 쓰지 않아도됨
+
+파이썬에서 이런 작업을 할 때 더 좋은 방법은 디스크립터를 사용하는 것이다. 디스크립터 프로토콜(descriptor protocol)은 속성에 대한 접근을 언어에서 해석할 방법을 정의한다. 디스크립터 클래스는 반복 코드 없이도 성적 검증 동작을 재사용할 수 있게 해주는 \_\_get\_\_ 과 \_\set\_\_ 메서드를 제공할 수 있다. 이런 목적으로는 디스크립터가 믹스인(B26 참조)보다도 좋은 방법이다. 디스크립터를 이용하면 한 클랫의 서로 다른 많은 속성에 같은 로직을 재사용할 수 있기 때문이다.
+
+이번에는 Grade 인스턴스를 클래스 속성으로 포함하는 새로운 Exam 클래스를 정의한다. Grade 클래스는 디스크립터 프로토콜을 구현한다. Grade 클래스의 동작원리를 설명하기 전에 코드에서 Exam 인스턴스에 있는 이런 디스크립터 속성에 접근할 때 파이썬이 무슨 일이 하는지 이해해야 한다.
+
+```python
+class Grade(object):
+    def __get__(*args, **kwargs):
+        pass
+
+    def __set__(*args, **kwargs):
+        pass
+
+class Exam(object):
+    # Class attributes
+    math_grade = Grade()
+    writing_grade = Grade()
+    science_grade = Grade()
+```
+
+다음과 같이 프로퍼티를 할당한다고 하자
+
+```python
+exam = Exam()
+exam.writing_grade = 40
+```
+
+위의 코드는 다음과 같이 해석된다
+
+```python
+#위의 코드는 다음과 같이 해석된다
+Exam.__dict__['writing_grade'].__set__(exam, 40)
+
+#이번에는 다음과 같이 프로퍼티를 얻어온다고 하자
+print(exam.writing_grade)
+
+#위의 코드는 다음과 같이 해석된다.
+print(Exam.__dict__['writing_grade'].__get__(exam, Exam))
+```
+
+이렇게 동작하게 만드는 건 object의 \_\_getattribute\_\_ 메서드다(B32 참조).  간단히 말하면 Exam인스턴스에 writing_grade 속성이 없으면 파이썬은 대신 Exam 클래스의 속성을 이용한다. 이 클래스의 속성이 \_\_get\_\_ 과 \_\_set\_\_ 메서드를 갖춘 객체라면 파이썬은 디스크립터 프로토콜을 따른다고 가정한다.
+
+다음은 이런 동작과 Homework 클래스에서 @property를 성적 검증에 사용한 방법을 이해하고 Grade 디스크립터를 그럴듯하게 구현해본 첫 번째 시도다
+
+```python
+class Grade(object):
+    def __init__(self):
+        self._value = 0
+
+    def __get__(self, instance, instance_type):
+        return self._value
+
+    def __set__(self, instance, value):
+        if not (0 <= value <= 100):
+            raise ValueError('Grade must be between 0 and 100')
+        self._value = value
+```
+
+불행히도 위의 코드는 잘못 구현되어 있어서 제대로 동작하지 않을 것이다. 한 Exam 인스턴스에 있는 여러 속성에 접근하는 것은 기대한 대로 동작한다.
+
+```python
+class Exam(object):
+    math_grade = Grade()
+    writing_grade = Grade()
+    science_grade = Grade()
+    
+first_exam = Exam()
+first_exam.writing_grade = 82
+first_exam.science_grade = 99
+print('Writing', first_exam.writing_grade)
+print('Science', first_exam.science_grade)
+    
+>>>
+Writing 82
+Science 99
+```
+
+하지만 여러 Exam 인스턴스의 이런 속성에 접근하면 기대하지 않은 동작을 하게 된다
+
+```python
+second_exam = Exam()
+second_exam.writing_grade = 75
+print('Second', second_exam.writing_grade, 'is right')
+print('First ', first_exam.writing_grade, 'is wrong')
+
+>>>
+Second 75 is right
+First 75 is wrong
+```
+
+이 문제를 해결하려면 각 Exam 인스턴스별로 값을 추적하는 Grade 클래스가 필요하다. 여기서는 딕셔너리에 각 인스턴스의 상태를 저장하는 방법으로 값을 추적한다.
+
+```python
+class Grade(object):
+    def __init__(self):
+        self._values = {}
+
+    def __get__(self, instance, instance_type):
+        if instance is None: return self
+        return self._values.get(instance, 0)
+
+    def __set__(self, instance, value):
+        if not (0 <= value <= 100):
+            raise ValueError('Grade must be between 0 and 100')
+        self._values[instance] = value
+```
+
+이 구현은 간단하면서도 잘 동작하지만 여전히 문제점이 하나 남아있다. 바로 메모리 누수다. \_values 딕셔너리는 프로그램의 수명 동안 \_\_set\_\_ 에 전달된 모든 Exam 인스턴스의 참조를 저장하낟. 결국 인스턴스의 참조 개수가 절대로 0이 되지 않아 가비지 컬렉터가 정리하지 못하게 한다
+
+파이썬의 내장 모듈 weakref를 사용하면 이 문제를 해결할 수 있다. 이 모듈은 \_values에 사용한 간단한 딕셔너리를 대체할 수 있는 WeakKeyDictionary라는 특별한 클래스를 제공한다. WeakKeyDictionary 클래스 고유의 동작은 런타임에 마지막으로 남은 Exam인스턴스의 참조를 갖고 있다는 사실을 알면 키 집합에서 Exam 인스턴스를 제거하는 것이다. 파이썬이 대신 참조를 관리해주고 모든 Exam 인스턴스가 더는 사용되지 않으면 \_values 딕셔너리가 비어있게 한다
+
+```python
+from weakref import WeakKeyDictionary
+
+class Grade(object):
+    def __init__(self):
+        self._values = WeakKeyDictionary()
+    def __get__(self, instance, instance_type):
+        if instance is None: return self
+        return self._values.get(instance, 0)
+
+    def __set__(self, instance, value):
+        if not (0 <= value <= 100):
+            raise ValueError('Grade must be between 0 and 100')
+        self._values[instance] = value
+```
+
+다음과 같은 Grade 디스크립터 구현을 사용하면 모두 기대한 대로 동작한다.
+
+```python
+class Exam(object):
+    math_grade = Grade()
+    writing_grade = Grade()
+    science_grade = Grade()
+
+first_exam = Exam()
+first_exam.writing_grade = 82
+second_exam = Exam()
+second_exam.writing_grade = 75
+print('First ', first_exam.writing_grade, 'is right')
+print('Second', second_exam.writing_grade, 'is right')
+
+>>>
+First 82 is right
+Second 75 is right
+```
+
+### 정리
+
+- 직접 디스크립터 클래스를 정의하여 @property 메서드의 동작과 검증을 재사용하자
+- WeakKeyDictionary를 사용하여 디스크립터 클래스가 메모리 누수를 일으키지 않게 하자
+- \_\_getattribute\_\_ 가 디스크립터 프로토콜을 사용하여 속성을 얻어오고 설정하는 원리를 정확히 이해하려는 함정에 빠지지 말자.
+
+## 지연 속성에는 \_\_getattr\_\_, \_\_getattribute\_\_, \_\_setattr\_\_을 사용하자 (B 32)
 
 
 
