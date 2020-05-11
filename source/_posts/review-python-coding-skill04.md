@@ -406,7 +406,7 @@ class Exam(object):
         self._writing_grade = 0
         self._math_grade = 0
 
-    @staticmethod
+    @staticmethod  #중요.
     def _check_grade(value):
         if not (0 <= value <= 100):
             raise ValueError('Grade must be between 0 and 100')
@@ -440,7 +440,7 @@ class Exam(object):
 >
 > @staticmethod를 하면 클래스에서 공통으로 쓰는것을 목표로 함수 파라미터에서 self를 쓰지 않아도됨
 
-파이썬에서 이런 작업을 할 때 더 좋은 방법은 디스크립터를 사용하는 것이다. 디스크립터 프로토콜(descriptor protocol)은 속성에 대한 접근을 언어에서 해석할 방법을 정의한다. 디스크립터 클래스는 반복 코드 없이도 성적 검증 동작을 재사용할 수 있게 해주는 \_\_get\_\_ 과 \_\set\_\_ 메서드를 제공할 수 있다. 이런 목적으로는 디스크립터가 믹스인(B26 참조)보다도 좋은 방법이다. 디스크립터를 이용하면 한 클랫의 서로 다른 많은 속성에 같은 로직을 재사용할 수 있기 때문이다.
+파이썬에서 이런 작업을 할 때 더 좋은 방법은 디스크립터를 사용하는 것이다. 디스크립터 프로토콜(descriptor protocol)은 속성에 대한 접근을 언어에서 해석할 방법을 정의한다. 디스크립터 클래스는 반복 코드 없이도 성적 검증 동작을 재사용할 수 있게 해주는 \_\_get\_\_ 과 \_\_set\_\_ 메서드를 제공할 수 있다. 이런 목적으로는 디스크립터가 믹스인(B26 참조)보다도 좋은 방법이다. 디스크립터를 이용하면 한 클래스의 서로 다른 많은 속성에 같은 로직을 재사용할 수 있기 때문이다.
 
 이번에는 Grade 인스턴스를 클래스 속성으로 포함하는 새로운 Exam 클래스를 정의한다. Grade 클래스는 디스크립터 프로토콜을 구현한다. Grade 클래스의 동작원리를 설명하기 전에 코드에서 Exam 인스턴스에 있는 이런 디스크립터 속성에 접근할 때 파이썬이 무슨 일이 하는지 이해해야 한다.
 
@@ -479,7 +479,7 @@ print(exam.writing_grade)
 print(Exam.__dict__['writing_grade'].__get__(exam, Exam))
 ```
 
-이렇게 동작하게 만드는 건 object의 \_\_getattribute\_\_ 메서드다(B32 참조).  간단히 말하면 Exam인스턴스에 writing_grade 속성이 없으면 파이썬은 대신 Exam 클래스의 속성을 이용한다. 이 클래스의 속성이 \_\_get\_\_ 과 \_\_set\_\_ 메서드를 갖춘 객체라면 파이썬은 디스크립터 프로토콜을 따른다고 가정한다.
+이렇게 동작하게 만드는 건 object의 \_\_getattribute\_\_ 메서드다(B32 참조).  간단히 말하면 Exam인스턴스에 writing_grade 속성이 없으면(당연히 self.인것만 인스턴스 속성들이므로) 파이썬은 대신 Exam 클래스의 속성을 이용한다. 이 클래스의 속성이 \_\_get\_\_ 과 \_\_set\_\_ 메서드를 갖춘 __객체__라면 파이썬은 디스크립터 프로토콜을 따른다고 가정한다.
 
 다음은 이런 동작과 Homework 클래스에서 @property를 성적 검증에 사용한 방법을 이해하고 Grade 디스크립터를 그럴듯하게 구현해본 첫 번째 시도다
 
@@ -518,6 +518,8 @@ Science 99
 
 하지만 여러 Exam 인스턴스의 이런 속성에 접근하면 기대하지 않은 동작을 하게 된다
 
+(당연하다. 각 속성의 각각 Grade의 객체지만 그 각각의 객체를 Exam의 인스턴스에 따라 분리안했으므로 결국 self_values의 값은 한개밖에없다.)(즉, math\_grade.\_value로 있으므로 second 클래스 인스턴스에서도 math\_grade.\_value로 은 값을 가르킴. !)
+
 ```python
 second_exam = Exam()
 second_exam.writing_grade = 75
@@ -529,7 +531,9 @@ Second 75 is right
 First 75 is wrong
 ```
 
-이 문제를 해결하려면 각 Exam 인스턴스별로 값을 추적하는 Grade 클래스가 필요하다. 여기서는 딕셔너리에 각 인스턴스의 상태를 저장하는 방법으로 값을 추적한다.
+문제는 한 Grade 인스턴스가 모든 Exam 인스턴스의 writing_grade 클래스 속성으로 공유된다는 점이다. 이 속성에 대응하는 Grade인스턴스는 프로그램에서 Exam 인스턴스를 생성할 때마다 생성되는 게 아니라 Exam 클래스를 처음 정의할 떄 한 번 생성되기때문이다.
+
+이 문제를 해결하려면 __각 Exam 인스턴스별로 값을 추적하는 Grade 클래스가 필요하다.__ 여기서는 딕셔너리에 각 인스턴스의 상태를 저장하는 방법으로 값을 추적한다.
 
 ```python
 class Grade(object):
@@ -546,9 +550,9 @@ class Grade(object):
         self._values[instance] = value
 ```
 
-이 구현은 간단하면서도 잘 동작하지만 여전히 문제점이 하나 남아있다. 바로 메모리 누수다. \_values 딕셔너리는 프로그램의 수명 동안 \_\_set\_\_ 에 전달된 모든 Exam 인스턴스의 참조를 저장하낟. 결국 인스턴스의 참조 개수가 절대로 0이 되지 않아 가비지 컬렉터가 정리하지 못하게 한다
+이 구현은 간단하면서도 잘 동작하지만 여전히 문제점이 하나 남아있다. 바로 메모리 누수다. \_values 딕셔너리는 프로그램의 수명 동안 \_\_set\_\_ 에 전달된 모든 Exam 인스턴스의 참조를 저장한다. 결국 인스턴스의 참조 개수가 절대로 0이 되지 않아 가비지 컬렉터가 정리하지 못하게 한다
 
-파이썬의 내장 모듈 weakref를 사용하면 이 문제를 해결할 수 있다. 이 모듈은 \_values에 사용한 간단한 딕셔너리를 대체할 수 있는 WeakKeyDictionary라는 특별한 클래스를 제공한다. WeakKeyDictionary 클래스 고유의 동작은 런타임에 마지막으로 남은 Exam인스턴스의 참조를 갖고 있다는 사실을 알면 키 집합에서 Exam 인스턴스를 제거하는 것이다. 파이썬이 대신 참조를 관리해주고 모든 Exam 인스턴스가 더는 사용되지 않으면 \_values 딕셔너리가 비어있게 한다
+파이썬의 내장 모듈 weakref를 사용하면 이 문제를 해결할 수 있다. 이 모듈은 \_values에 사용한 간단한 딕셔너리를 대체할 수 있는 WeakKeyDictionary라는 특별한 클래스를 제공한다. WeakKeyDictionary 클래스 고유의 동작은 런타임에 마지막으로 남은 Exam인스턴스의 참조를 갖고 있다는 사실을 알면 키 집합에서 Exam 인스턴스를 제거하는 것이다. 파이썬이 대신 참조를 관리해주고 모든 Exam 인스턴스가 더는 사용되지 않으면 \_values 딕셔너리가 비어있게 한다 (???)
 
 ```python
 from weakref import WeakKeyDictionary
@@ -594,7 +598,194 @@ Second 75 is right
 
 ## 지연 속성에는 \_\_getattr\_\_, \_\_getattribute\_\_, \_\_setattr\_\_을 사용하자 (B 32)
 
+파이썬의 언어 후크(language hook)를 이용하면 시스템들을 연계하는 범용 코드를 쉽게 만들수 있다.
 
+예를 들어 데이터베이스의 로우(row)를 파이썬 객체로 표현한다고 하자. 데이터베이스에는 스키마 세트가 있다. 그러므로 로우에 대응하는 객체를 사용하는 코드는 데이터베이스 형태도 알아야 한다. 하지만 파이썬에서는 객체와 데이터베이스를 연결하는 코드에서 로우의 스키마를 몰라도된다. 코드를 범용으로 만들면 된다.
 
+어떻게 가능할까? 사용하기전에 앞에서 배운 정의부터 해야하는 일반 인스턴스 속성, @property 메서드, 디스크립터로는 이렇게 할 수 없다. 파이썬은 \_\_getattr\_\_ 라는 특별한 메서드로 이런 동적 동작을 가능하게 한다. 클래스에 \_\_getattr\_\_ 메서드를 정의하면 __객체의 인스턴스 딕셔너리에서 속성을 찾을 수없을 때마다 이 메서드가 호출된다.__
 
+```python
+class LazyDB(object):
+    def __init__(self):
+        self.exists = 5
+
+    def __getattr__(self, name):
+        value = 'Value for %s' % name
+        setattr(self, name, value)
+        return value
+```
+
+이제 존재하지 않는 속성인 foo에 접근해보자. 그러면 파이썬이 \_\_getattr\_\_ 메서드를 호출하게 되고 이어서 인스턴스 딕셔너리 \_\_dict\_\_를 변경하게된다.
+
+```python
+data = LazyDB()
+
+data.__dict__
+print('Before:', data.__dict__)
+print('foo:   ', data.foo)
+print('After: ', data.__dict__)
+```
+
+다음 코드에서는 \_\_getattr\_\_이 실제로 호출되는 시점을 보여주려고 LazyDB로깅을 추가한다. 무한 반복을 피하려고 super().\_\_getattr\_\_()로 실제 프로퍼티 값을 얻어오는 부분을 눈여겨보자
+
+```python
+class LoggingLazyDB(LazyDB):
+    def __getattr__(self, name):
+        print('Called __getattr__(%s)' % name)
+        return super().__getattr__(name)
+
+data = LoggingLazyDB()
+print('exists:', data.exists)
+print('foo:   ', data.foo)
+print('foo:   ', data.foo)
+```
+
+exists 속성은 인스턴스 딕셔너리에 있으므로 \_\_getattr\_\_이 절대 호출되지 않는다. foo 속성은 원래는 인스턴스 딕셔너리에 없으므로 처음에는 \_\_getattr\_\_ 이 호출된다. 하지만 foo에 대응하는 \_\_getattr\_\_호출은 setattr을 호출하며, setattr은 인스턴스 딕셔너리에 foo를 저장한다. 따라서 foo에 두번째 접근할 떄는 \_\_getattr\_\_ 호출이 되지 않는다
+
+이런 동작은 스키마리스 데이터(schemaless data)(구조가 정해지지 않은 데이터)에 지연 접근하는 경우에 특히 도움이 된다. \_\_getattr\_\_이 프로퍼티 로딩이라는 어려운 작업을 한 번만 실행하면 다음 접근부터는 기존 결과를 가져온다
+
+데이터베이스 시스템에서 트랜잭션도 원한다고 하자. 사용자가 다음 번에 속성에 접근할 때는 대응하는 데이터베이스의 로우가 여전히 유효한지, 트랜잭션이 여전히 열려 있는지 알고 싶다고 해보자. \_\_getattr\_\_ 후크는 기존 속서에 빠르게 접근하려고 객체의 인스턴스 딕셔너리를 사용할 것이므로 이 작업에는 믿고 쓸 수가 없다.
+
+__파이썬에는 이런 쓰임새를 고려한 \_\_getattribute\_\_라는 또 다른 후크가 있다. 이 특별한 메서드는 객체의 속성에 접근할 때마다 호출되며, 심지어 해당 속성이 속성 딕셔너리에 있을 때도 호출된다.__ 이런 동작 덕분에 속성에 접근할 때마다 전역 트랜잭션 상태를 확인하는 작업 등에 쓸 수 있다. 여기서 \_\_getattribute\_\_가 호출될 때마다 로그를 남기려고 ValidationDB를 정의한다.
+
+```python
+class ValidatingDB(object):
+    def __init__(self):
+        self.exists = 5
+
+    def __getattribute__(self, name):
+        print('Called __getattribute__(%s)' % name)
+        try:
+            return super().__getattribute__(name)
+        except AttributeError:
+            value = 'Value for %s' % name
+            setattr(self, name, value)
+            return value
+
+data = ValidatingDB()
+print('exists:', data.exists)
+print('foo:   ', data.foo)
+print('foo:   ', data.foo)
+
+>>>
+Called __getattribute__(exists)
+exists: 5
+Called __getattribute__(foo)
+foo:    Value for foo
+Called __getattribute__(foo)
+foo:    Value for foo
+```
+
+> 트랜잭션은 작업의 완전성을 보장해주는것이다. 즉, 논리적인 작업 셋을 모두 완벽하게 처리하거나 또는 처리하지 못할 경우에는 원 상태로 복구해서 작업의 일부만 적용된는 현상이 발생하지 않게 만들어주는 기능이다. 단위임!
+
+동적으로 접근한 프로퍼티가 존재하지 않아야 하는 경우에는 AttributeError를 일으켜서  \_\_getattr\_\_ ,  \_\_getattribute\_\_ 에 속성이 없는 경우의 파이썬 표준 동작이 일어나게 한다.
+
+```python
+try:
+    class MissingPropertyDB(object):
+        def __getattr__(self, name):
+            if name == 'bad_name':
+                raise AttributeError('%s is missing' % name)
+            value = 'Value for %s' % name
+            setattr(self, name, value)
+            return value
+
+    data = MissingPropertyDB()
+    data.foo  # Test this works
+    data.bad_name
+except:
+    logging.exception('Expected')
+else:
+    assert False
+```
+
+파이썬 코드로 범용적인 기능을 구현할 때 종종 내장 함수 hasattr로 프로퍼티가 있는지 확인하고 내장 함수 getattr로 프로퍼티 값을 가져온다. 이 함수들도 \_\_getattr\_\_ 을 호출하기 전에 인스턴스 딕셔너리에서 속성 이름을 찾는다.
+
+```python
+data = LoggingLazyDB()
+print('Before:     ', data.__dict__)
+print('foo exists: ', hasattr(data, 'foo'))
+print('After:      ', data.__dict__)
+print('foo exists: ', hasattr(data, 'foo'))
+
+data = ValidatingDB()
+print('foo exists: ', hasattr(data, 'foo'))
+print('foo exists: ', hasattr(data, 'foo'))
+```
+
+이제 파이썬 객체에 값을 할당할 때 지연 방식으로 데이터를 데이터베이스에 집어넣고 싶다고 해보자. 이 작업은 임의의 속성 할당을 가로채는 \_\_setattr\_\_ 언어 후크로 할 수 있다. \_\_getattr\_\_ 과 \_\_getattribute\_\_ 로 속성을 추출하는 것과는 다르게 별도의 메서드 두 개가 필요하지 않다. \_\_setattr\_\_ 메서드는 인스턴스의 속성이 할당을 받을 때마다 직접 혹은 내장 함수 setattr을 통해 호출된다.
+
+```python
+class SavingDB(object):
+    def __setattr__(self, name, value):
+        # Save some data to the DB log
+        super().__setattr__(name, value)
+```
+
+다음 코드에서는 SavingDB의 로깅용 서브클래스를 정의한다. \_\_setattr\_\_ 메서드는 속성에 값을 할당할 때마다 호출된다.
+
+```python
+class LoggingSavingDB(SavingDB):
+    def __setattr__(self, name, value):
+        print('Called __setattr__(%s, %r)' % (name, value))
+        super().__setattr__(name, value)
+
+data = LoggingSavingDB()
+print('Before: ', data.__dict__)
+data.foo = 5
+print('After:  ', data.__dict__)
+data.foo = 7
+print('Finally:', data.__dict__)
+```
+
+ \_\_getattribute\_\_ 와  \_\_setattr\_\_ 을 사용할 때 부딪히는 문제는 객체의 속성에 접근할 때마다 (심지어 원하지 않을 때도) 호출된다는 점이다. 
+
+예를 들어 객체의 속성에 접근하면 실제로 연관 딕셔너리에서 키를 찾게 하고 싶다고 해보자
+
+```python
+class BrokenDictionaryDB(object):
+    def __init__(self, data):
+        self._data = data
+
+    def __getattribute__(self, name):
+        print('Called __getattribute__(%s)' % name)
+        return self._data[name]
+```
+
+그러려면 위와 같이 \_\_getattribute\_\_ 메서드에서 self._data에 접근해야한다. 하지만 실제로 시도해보면 파이썬이 스택의 한계에 도달할 때까지 재귀 호출을 하게 되어 결국 프로그램이 중단된다.
+
+```
+try:
+    data = BrokenDictionaryDB({'foo': 3})
+    data.foo
+except:
+    logging.exception('Expected')
+else:
+    assert False
+```
+
+문제는  \_\_getattribute\_\_ 가 self._data에 접근하면  \_\_getattribute\_\_가 다시 실행되고, 다시 self.\_data에 접근한다는 점이다. 해결책은 인스턴스에서 super().\_\_getattribute\_\_메서드로 인스턴스 속성 딕셔너리에서 값을 얻어오는 것이다. 이렇게 하면 재귀 호출을 피할 수 있다.
+
+```python
+class DictionaryDB(object):
+    def __init__(self, data):
+        self._data = data
+
+    def __getattribute__(self, name):
+        data_dict = super().__getattribute__('_data')
+        return data_dict[name]
+
+data = DictionaryDB({'foo': 3})
+print(data.foo)
+```
+
+마찬가지 이유로 객체의 속성을 수정하는 \_\_setattr\_\_ 메서드에서도 super().\_\_setattr\_\_ 을 사용해야 한다.
+
+### 정리
+
+- 객체의 속성을 지연 방식으로 로드하고 저장하려면  \_\_getattr\_\_ 와  \_\_setattr\_\_을 사용하자.
+-  \_\_getattr\_\_ 은 존재하지 않는 속성에 접근할 떄 한번만 호출되는 반면에  \_\_getattribute\_\_ 는 속성에 접근할 때마다 항상 호출된다
+-  \_\_getattribute\_\_ 와  \_\_setattr\_\_ 에서 인스턴스 속성에 직접 접근할 때 super()(즉, object 클래스의 메서드)를 사용하여 무한 재귀가 일어나지 않게 하자.
+
+## 메타클래스로 서브클래스를 검증하자 (B 33)
 
