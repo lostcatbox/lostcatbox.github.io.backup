@@ -915,10 +915,10 @@ class Deserializable(Serializable):
     @classmethod
     def deserialize(cls, json_data):
         params = json.loads(json_data)
-        return cls(*params['args'])
+        return cls(*params['args'])  #무슨 문법?
 ```
 
-Deserializable을 이용하면 간단한 불변 객체들을 범용적인 방식으로 쉽게 직렬화하고 역질렬화할수있다.
+Deserializable을 이용하면 간단한 불변 객체들을 범용적인 방식으로 쉽게 직렬화하고 역직렬화할수있다.
 
 ```python
 class BetterPoint2D(Deserializable):
@@ -944,7 +944,7 @@ After:      BetterPoint2D(5, 3)
 <class '__main__.BetterPoint2D'>
 ```
 
-이 방법의 문제는 직렬화된 데이터에 대응하는 타입(Point2D, BetterPoint2D)을 미리 알고 있을 때만 동작한다는 점이다. 이상적으로는 JSON으로 직렬화되는 클래스를 많이 갖추고 그중 어떤 클래스든 대응하는 파이썬 객체로 역직렬화하는 공통 함수를 하나만 두려고 할 것이다
+이 방법의 문제는 직렬화된 데이터에 __대응하는 타입(Point2D, BetterPoint2D)__을 미리 알고 있을 때만 동작한다는 점이다. __이상적으로는__ JSON으로 직렬화되는 클래스를 많이 갖추고 그중 어떤 클래스든 대응하는 파이썬 객체로 __역직렬화하는 공통 함수를 하나만__ 두려고 할 것이다
 
 이렇게 만들려면 직렬화할 객체의 클래스 이름을 JSON데이터에 포함하면 된다.
 
@@ -965,7 +965,7 @@ class BetterSerializable(object):
             ', '.join(str(x) for x in self.args))
 ```
 
-다음으로 클래스 이름을 해당 클래스의 객체 생성자에 매핑하고 이 매핑을 관리한다. 범용 deserialize 함수는 register\_class 에 넘긴 클래스가 어떤 것이든 제대로 동작한다.
+다음으로 클래스 이름을 해당 클래스의 객체 생성자에 매핑하고 이 매핑을 관리한다. __범용 deserialize 함수__는__register\_class 에 넘긴 클래스가 어떤 것이든 제대로 동작한다.__
 
 ```python
 registry = {}
@@ -977,7 +977,7 @@ def deserialize(data):
     params = json.loads(data)
     name = params['class']
     target_class = registry[name]
-    return target_class(*params['args'])
+    return target_class(*params['args'])  #무슨 문법???
 ```
 
 deserialize가 항상 제대로 동작함을 보장하려면 추후에 역직렬화할 법한 모든 클래스에 register\_class 를 호출 해야 한다.
@@ -989,7 +989,7 @@ class EvenBetterPoint2D(BetterSerializable):
         self.x = x
         self.y = y
 
-register_class(EvenBetterPoint2D)
+register_class(EvenBetterPoint2D) #반드시 해줘야 registry dic에서 검색후 역직렬화가능
 ```
 
 이제 어떤 클래스를 담고 있는지 몰라도 임의의  JSON문자열을 역직렬화할 수 있다.
@@ -1059,6 +1059,11 @@ print('Before:    ', v3)
 data = v3.serialize()
 print('Serialized:', data)
 print('After:     ', deserialize(data))
+
+>>>
+Before:     Vector3D(10, -7, 3)
+Serialized: {"class": "Vector3D", "args": [10, -7, 3]}
+After:      Vector3D(10, -7, 3)
 ```
 
 메타클래스를 이용해 클래스를 등록하면 상속 트리가 올바르게 구축되어 있는 한 클래스 등록을 놓치지 않는다. 앞에서 본 것처럼 직렬화에 잘 동작하며 데이터베이스 객체 관계 매핑(ORM), 플러그인 시스템, 시스템 후크에도 적용할 수 있다.
