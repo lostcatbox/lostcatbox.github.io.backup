@@ -789,3 +789,315 @@ print(data.foo)
 
 ## 메타클래스로 서브클래스를 검증하자 (B 33)
 
+메타클래스를 응용하는 가장 간단한 사례는 클래스를 올바르게 정의했는지 검증하는 것이다. 복잡한 클래스 계층을 만들 떄 스타일을 강제하거나 메서드를 오버라이드하도록 요구하거나 클래스 속성 사이에 철저한 관계를 두고 싶을 수도 있다. 메타클래스는 서브클래스가 정의될 때마다 검증 코드를 실행하는 신뢰할 만한 방법을 제공하므로 이럴 때 사용할 수 있다.
+
+보통 클래스 검증 코드는 클래스의 객체가 생성될 때 \_\_init\_\_ 메서드에서 실행된다.(B28 참조). 메타클래스를 검증용으로 사용하면 오류를 더 빨리 일으킬 수 있다.
+
+서브클래스 검증용으로 메타클래스를 정의하는 방법을 알아보기 전에 메타클래스가 표준 객체에는 어떻게 동작하는 지 알아야한다. 메타클래스는 type을 상속하여 정의한다. 메타클래스는 기본으로 자체의 \_\_new\_\_ 메서드에서 연관된 class 문의 콘텐츠를 받는다. 여기서 타입이 실제로 생성되기 전에 클래스 정보를 수정할 수 있다.
+
+```python
+class Meta(type):
+    def __new__(meta, name, bases, class_dict):
+        orig_print = __builtins__.print
+        print = pprint
+        print((meta, name, bases, class_dict))
+        print = orig_print
+        return type.__new__(meta, name, bases, class_dict)
+      
+class MyClass(object, metaclass=Meta):
+    stuff = 123
+
+    def foo(self):
+        pass
+```
+
+메타클래스는 클래스의 이름, 클래스가 상속하는 부모 클래스, class 본문에서 정의한 모든 클래스 속성에 접근할 수 있다.
+
+```python
+>>>
+(<class '__main__.Meta'>,
+ 'MyClass',
+ (<class 'object'>,),
+ {'__module__': '__main__',
+  '__qualname__': 'MyClass',
+  'foo': <function MyClass.foo at 0x109aaa320>,
+  'stuff': 123})
+```
+
+__클래스가 정의되기 전__에 클래스의 모든 파라미터를 검증하려면 Meta.\_\_new\_\_ 메서드에 기능을 추가하면 된다.
+
+예를 들어 여러 면으로 이루어진 다각형을 어떤 타입이든 표현하고 싶다고 하자. 이렇게 하려면 특별한 검증용 메타클래스를 정의한 후 다각형 클래스 계층의 기반 클래스에 사용하면 된다. 이때 기반 클래스에는 같은 검증을 적용하지 말아야 한다는 점을 유의하기 바란다.
+
+```python
+class ValidatePolygon(type):
+    def __new__(meta, name, bases, class_dict):
+        # 추상 Polygon class는 검증하지 않음
+        print
+        if bases != (object,):  #???
+            if class_dict['sides'] < 3:
+                raise ValueError('Polygons need 3+ sides')
+        return type.__new__(meta, name, bases, class_dict)  #type. 대신 super().해도상관없지!
+
+class Polygon(object, metaclass=ValidatePolygon):
+    sides = None  # 서브클래스에서 설정함
+
+    @classmethod
+    def interior_angles(cls):
+        return (cls.sides - 2) * 180
+
+class Triangle(Polygon):
+    sides = 3  #클래스메서드로 정의했었으니까 cls.sides값은 3이됨
+
+print(Polygon.interior_angles())  #이때는 bases == (object,)임 (부모클래스가 object임)
+print(Triangle.interior_angles()) #이때는 bases != (object,)임 (부모클래스가 Polygon임)(__main__.Polygon)
+```
+
+면이 세개 미만인 다각형을 정의하려고 하면 검증 코드가 class 문의 본문이 끝나자마자 class 문을 실패하게 만든다. 즉, 이런 클래스를 정의하면 프로그램이 실행을 시작하지도 못한다.
+
+```python
+try:
+    print('Before class')
+    class Line(Polygon):
+        print('Before sides')
+        sides = 1
+        print('After sides')
+    print('After class')
+except:
+    logging.exception('Expected')
+else:
+    assert False
+```
+
+### 정리
+
+- 서브클래스 타입의 객체를 생성하기에 앞서 서브클래스가 정의 시점부터 제대로 구성되었음을 보장하려면 메타클래스를 사용하자
+- 파이썬2와 3는 메타클래스 문법이 다르다
+- 메타클래스의 \_\_new\_\_ 메서드는 class 문의 본문 전체가 처리된 후에 실행된다.
+
+## 메타클래스로 클래스의 존재를 등록하자 (B34)
+
+메타클래스를 사용하는 또 다른 일반적인 사례는 프로그램에 있는 타입을 자동으로 등록하는 것이다. 등록(registration)은 간단한 식별자(identifier)를 대응하는 클래스에 매핑하는 역방향 조회(reverse lookup)를 수행할 때 유용하다.
+
+예를 들어 파이썬 객체를 직렬화한 표현을 JSON으로 구현한다고 해보자. 객체를 얻어와서 JSON 문자열로 변환할 방법이 필요하다. 다음은 생성자 파라미터를 저장하고 JSON 딕셔너리로 변환하는 기반 클래스를 범용적으로 정의한 것이다.
+
+```python
+import json
+
+class Serializable(object):
+    def __init__(self, *args):
+        self.args = args #아래 코드에서 super().__init__(x,y)했으므로 튜플값으로 args = (5, 3) 가 되었고 따라서 self.args = (5, 3)이다.
+
+    def serialize(self):
+        return json.dumps({'args': self.args})
+```
+
+이 클래스를 이용하면 Point2D처럼 간단한 불변 자료 구조를 문자열로 쉽게 직렬화할 수 있다.
+
+```python
+class Point2D(Serializable):
+    def __init__(self, x, y):
+        super().__init__(x, y)
+        self.x = x
+        self.y = y
+
+    def __repr__(self):
+        return 'Point2D(%d, %d)' % (self.x, self.y)
+
+point = Point2D(5, 3)
+print('Object:    ', point)
+print('Serialized:', point.serialize())
+```
+
+이제 이 JSON 문자열을 역직렬화해서  JSON이 표현하는 Point2D 객체를 생성해야 한다. 이번에는 Serializable 부모 클래스에 있는 데이터를 역직렬화하는 또 다른 클래스를 정의한다.
+
+```python
+class Deserializable(Serializable):
+    @classmethod
+    def deserialize(cls, json_data):
+        params = json.loads(json_data)
+        return cls(*params['args'])
+```
+
+Deserializable을 이용하면 간단한 불변 객체들을 범용적인 방식으로 쉽게 직렬화하고 역질렬화할수있다.
+
+```python
+class BetterPoint2D(Deserializable):
+    def __init__(self, x, y):
+        super().__init__(x, y)
+        self.x = x
+        self.y = y
+
+    def __repr__(self):
+        return 'BetterPoint2D(%d, %d)' % (self.x, self.y)
+
+point = BetterPoint2D(5, 3)
+print('Before:    ', point)
+data = point.serialize()
+print('Serialized:', data)
+after = BetterPoint2D.deserialize(data)
+print('After:     ', after)
+print(type(after))
+
+Before:     BetterPoint2D(5, 3)
+Serialized: {"args": [5, 3]}
+After:      BetterPoint2D(5, 3)
+<class '__main__.BetterPoint2D'>
+```
+
+이 방법의 문제는 직렬화된 데이터에 대응하는 타입(Point2D, BetterPoint2D)을 미리 알고 있을 때만 동작한다는 점이다. 이상적으로는 JSON으로 직렬화되는 클래스를 많이 갖추고 그중 어떤 클래스든 대응하는 파이썬 객체로 역직렬화하는 공통 함수를 하나만 두려고 할 것이다
+
+이렇게 만들려면 직렬화할 객체의 클래스 이름을 JSON데이터에 포함하면 된다.
+
+```python
+class BetterSerializable(object):
+    def __init__(self, *args):
+        self.args = args
+
+    def serialize(self):
+        return json.dumps({
+            'class': self.__class__.__name__,
+            'args': self.args,
+        })
+
+    def __repr__(self):
+        return '%s(%s)' % (
+            self.__class__.__name__,
+            ', '.join(str(x) for x in self.args))
+```
+
+다음으로 클래스 이름을 해당 클래스의 객체 생성자에 매핑하고 이 매핑을 관리한다. 범용 deserialize 함수는 register\_class 에 넘긴 클래스가 어떤 것이든 제대로 동작한다.
+
+```python
+registry = {}
+
+def register_class(target_class):
+    registry[target_class.__name__] = target_class
+
+def deserialize(data):
+    params = json.loads(data)
+    name = params['class']
+    target_class = registry[name]
+    return target_class(*params['args'])
+```
+
+deserialize가 항상 제대로 동작함을 보장하려면 추후에 역직렬화할 법한 모든 클래스에 register\_class 를 호출 해야 한다.
+
+```python
+class EvenBetterPoint2D(BetterSerializable):
+    def __init__(self, x, y):
+        super().__init__(x, y)
+        self.x = x
+        self.y = y
+
+register_class(EvenBetterPoint2D)
+```
+
+이제 어떤 클래스를 담고 있는지 몰라도 임의의  JSON문자열을 역직렬화할 수 있다.
+
+```python
+point = EvenBetterPoint2D(5, 3)
+print('Before:    ', point)
+data = point.serialize()
+print('Serialized:', data)
+after = deserialize(data)
+print('After:     ', after)
+
+>>>
+```
+
+이 방법의 문제는 register\_class 를 호출하는 일을 깜빡 잊을 수 있다는 점이다
+
+```python
+class Point3D(BetterSerializable):
+    def __init__(self, x, y, z):
+        super().__init__(x, y, z)
+        self.x = x
+        self.y = y
+        self.z = z
+
+# Forgot to call register_class! Whoops!
+```
+
+이는 등록을 잊은 클래스의 객체를 런타임에 역직렬화하려 할 때 코드가 중단되는 원인이 된다.
+
+```python
+try:
+    point = Point3D(5, 9, -4)
+    data = point.serialize()
+    deserialize(data)
+except:
+    logging.exception('Expected')
+else:
+    assert False
+```
+
+BetterSerializable를 상속해서 서브클래스를 만들더라도 class 문의 본문 이후에 register\_class 를 호출하지 않으면 실제로 모든 기능을 사용하진 못한다. 이 방법은 오류가 일어날 가능성이 높으며, 특히 초보 프로그래머에게는 어렵다. 파이썬 3의 클래스 데코레이터를 이용할 때도 이런 누락이 있을 수 있다.
+
+프로그래머가 의도한 대로 BetterSerializable을 사용하고 모든 경우에 register\_class가 호출된다고 확신할 수 있다면 어떨까? 메타클래스를 이용하면 서브클래스가 정의될 때 (B33 참조)class 문을 가로채는 방법으로 이렇게 만들 수 있다. 메타클래스로 클래스 본문이 끝나자마자 새 타입을 등록하면 된다.
+
+```python
+class Meta(type):
+    def __new__(meta, name, bases, class_dict):
+        cls = type.__new__(meta, name, bases, class_dict)
+        register_class(cls)
+        return cls
+
+class RegisteredSerializable(BetterSerializable, metaclass=Meta):
+    pass
+```
+
+RegisteredSerializable의 서브클래스를 정의할 때  register\_class 가 호출되어 deserialize가 항상 기대한 대로 동작할 것이라고 확신할 수 있다.
+
+```python
+class Vector3D(RegisteredSerializable):
+    def __init__(self, x, y, z):
+        super().__init__(x, y, z)
+        self.x, self.y, self.z = x, y, z
+
+v3 = Vector3D(10, -7, 3)
+print('Before:    ', v3)
+data = v3.serialize()
+print('Serialized:', data)
+print('After:     ', deserialize(data))
+```
+
+메타클래스를 이용해 클래스를 등록하면 상속 트리가 올바르게 구축되어 있는 한 클래스 등록을 놓치지 않는다. 앞에서 본 것처럼 직렬화에 잘 동작하며 데이터베이스 객체 관계 매핑(ORM), 플러그인 시스템, 시스템 후크에도 적용할 수 있다.
+
+### 정리
+
+- 클래스 등록은 모듈 방식의 파이썬 프로그램을 만들 떄 유용한 패턴이다
+- 메타클래스를 이용하면 프로그램에서 기반 클래스로 서브클래스를 만들 때마다 자동으로 등록 코드를 실행할 수 있다
+- 메타클래스를 이용해 클래스를 등록하면 등록 호출을 절대 빠뜨리지 않으므로 오류를 방지할 수 있다.
+
+## 메타클래스로 클래스 속성에 주석을 달자 (B 35)
+
+
+
+
+
+
+
+
+
+
+
+# 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
