@@ -1194,17 +1194,3 @@ After:  'Euclid' {'_first_name': 'Euclid'}
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
