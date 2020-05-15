@@ -29,13 +29,13 @@ tags: [Review, Tip, Skill]
 
 파이썬다운것은 다음과같다
 
-```
+```python
 >>>import this #이거하면 답나옴
 ```
 
 ## 사용중인 파이썬 버전알기
 
-```
+```python
 $ python --version 
 
 #python 안에서
@@ -134,7 +134,7 @@ __파이썬 2__는 각각 str, unicode를 8비트, 유니코드 문자를 저장
 >
 > str을 encode하면 byte형이 되고 byte형을 decode하면 str이 됩니다.
 >
-> ```
+> ```python
 >   >>> s = 'Vi er så glad for å høre og lære om Python!'
 >   >>> b = s.encode('utf-8')
 >   >>> b
@@ -152,9 +152,10 @@ __파이썬 2__는 각각 str, unicode를 8비트, 유니코드 문자를 저장
 
 파이썬 3에서는 먼저 str이나 bytes를 입력으로 받고 str을 반환하는 메서드가 필요하다
 
-```
+```python
 def to_str(bytes_or_str):
     if isinstance(bytes_or_str, bytes):
+        print("bytes타입이였다")
         value = bytes_or_str.decode('utf-8')
     else:
         value = bytes_or_str
@@ -163,7 +164,7 @@ def to_str(bytes_or_str):
 
 그리고 str이나 bytes를 받고 bytes를 반환하는 메서드도 필요하다.
 
-```
+```python
 def to_str(bytes_or_str):
     if isinstance(bytes_or_str, str):
         value = bytes_or_str.encode('utf-8')
@@ -186,28 +187,30 @@ def to_str(bytes_or_str):
 
 - 두번째는 파이썬 3에서 내장 함수 open이 반환하는 파일 핸들을 사용하는 연상은 기본적으로 UTF-8 인코딩을 사용한다는 것이다. (파이썬2는 바이너리 인코딩을 사용). 
 
-  ```
+  ```python
   with open('~/cat/cats.bin', 'w') as f:
       f.write(os.urandom(10))
+      #type(os.urandom(10))은 bytes임
       
   >>> TypeError
-  ```
-
+```
   
 
-  문제의 이유는 파이썬 3의 open에 새 encoding인수가 추가되었고 이 파라미터의 기본값은 'utf-8'이다. 따라서 파일 핸들을 사용하는 read나 write 연산은 바이너리 데이터를 담은 bytes인스턴스가 아니라 유니코드 문자를 담은 str 인스턴스를 기대한다.
-
-  위 코드가 문제없이 동작할려면 데이터를 바이너리 쓰기 모드로 오픈해야한다('wb')
-
-  ```
+  
+문제의 이유는 파이썬 3의 open에 자동으로 새 encoding인수가 추가되었고 이 파라미터의 기본값은 'utf-8'이다. 따라서 파일 핸들을 사용하는 read나 write 연산은 바이너리 데이터를 담은 bytes인스턴스가 아니라 유니코드 문자를 담은 str 인스턴스를 기대한다.
+  
+위 코드가 문제없이 동작할려면 데이터를 바이너리 쓰기 모드로 오픈해야한다('wb')
+  
+  ```python
   with open('~/cat/cats.bin', 'wb') as f:
       f.write(os.urandom(10))
       
-  >>> TypeError
+  >>> 
+Success
   ```
 
   __즉, 바이너리 데이터를 파일에서 읽거나 쓸 때는 파일을 바이너리 모드로 오픈한다!__
-
+  
   
 
 ## 복잡한 표현식 대신 헬퍼 함수를 작성하자
@@ -224,14 +227,16 @@ def to_str(bytes_or_str):
 
 
 
-```
+```python
 from urllib.parse import parse_qs
+
 my_values = parse_qs('red=5&blue=0&green=',
                       keep_blank_values=True)
                       
 print(repr(my_values))   # (repr , str유사)
 
->>>{'red': ['5'], 'blue': ['0'], 'green': ['']}
+>>>
+{'red': ['5'], 'blue': ['0'], 'green': ['']}
 
 #파라미터는 존재하지만 값이 비어있을수있다. get메서드를 사용하면 더 보기편하다
 print('Red:    ', my_values.get('red'))
@@ -243,7 +248,7 @@ print('Red:    ', my_values.get('red'))
 
 이때 사용하는 트릭은 __빈 문자열, 빈 리스트, 0이 모두 암시적으로 False로 평가되는점"__이다. 
 
-```
+```python
 # Example 3
 # For query string 'red=5&blue=0&green='
 
@@ -268,7 +273,7 @@ Opacity: 0
 
 따라서 아래처럼 간결하게 표현가능하다
 
-```
+```python
 green = my_values.get('green', [''])
 if green[0]:
     green = int(green[0])
@@ -279,7 +284,7 @@ print('Green:   %r' % green)
 
 이는 반복되면 메서드이므로 헬퍼 함수를 만들어 버리는게 재사용성이 올라간다.
 
-```
+```python
 def get_first_int(values, key, default=0):
     found = values.get(key, [''])
     if found[0]:
@@ -303,7 +308,7 @@ slice대상은 내장 타입인 list, str, bytes를 기본으로 \_\_getitem\_\_
 
 슬라이싱 문법의 기본 형태는 somelist[start:end]이며, 범위는 start포함 end비포함이다. ()
 
-```
+```python
 >>>
 a = ['red', 'orange', 'yellow', 'green', 'blue', 'purple']
 odds = a[:2]
@@ -326,7 +331,7 @@ evens = a[-0:]
 
 리스트는 새로 할당된 값에 맞춰 늘어나거나 줄어든다.
 
-```
+```python
 >>>
 a
 
@@ -349,7 +354,7 @@ print(b)
 
 위에서 즉 한 데이터에 b = a 라고했을때 a가 가르키는 저장위치에 b도 태그로 붙었다라고 볼수있다. 따라서 a와 b는 같은 데이터를 가르키므로 a를 바꾸면 b도 출력되는 데이터가 바뀌는 것을 확인할수있다.
 
-```
+```python
 In [29]: print('Before', a)
     ...: a[:] = [101,102,103]
 Before [101, 102, 103]
@@ -372,7 +377,7 @@ Out[34]: [101, 102, 103]
 
 즉, stride는 매 n번째 아이템을 가져오는 것이다.
 
-```
+```python
 In [40]: a = ['red', 'orange', 1, 2, 3, 4, 5, 'blue', 'purple']
 
 In [41]: odds = a[::2] #편하게 짝수번째 아이템들만 가져올수있다
@@ -385,7 +390,7 @@ Out[42]: ['red', 1, 3, 5, 'purple']
 
 예를 들면 파이썬에서 바이트 문자열을 역순으로 만드는 일반적인 방법은 스트라이드 -1로 문자열을 슬라이스하는 것이다.
 
-```
+```python
 In [43]: x = b'mongoose' #byte 데이터로 지정은 b'~~'임
 
 In [44]: y = x[::-1]
@@ -396,7 +401,7 @@ Out[45]: b'esoognom'
 
 위의 코드는 바이트 문자열이나 아스키 문자에서는 잘 동작하지만, UTF-8 바이트 문자열로 인코드된 유니코드 문자에는 원하는 대로 동작하지 않는다.
 
-```
+```python
 In [46]: w = '고양이'
 
 In [47]: x = w.encode('utf-8')
@@ -412,14 +417,14 @@ UnicodeDecodeError                        Traceback (most recent call last)
 
 슬라이스 stride 응용
 
-```
+```python
 a[2::2]
 a[-2::-2] #마지막 두번째부터 거꾸로 2간격으로
 ```
 
 하지만 이렇게 start, end, stride까지 써버리면 코드읽는사람이 햇갈릴수있으므로 하나씩쓰자
 
-```
+```python
 b = a[::2]
 c = b[1:-1]
 ```
@@ -436,7 +441,7 @@ c = b[1:-1]
 
 이를 __list comprehension__ 이라고한다
 
-```
+```python
 >>>
 a = [1,2,3,4,5,6,7,8,9,10]
 squares = [x**2 for x in a]
@@ -451,7 +456,7 @@ print(squares)
 
 하지만 map과 달리 list comprehension을 사용하면 조건을 걸고 바로 걸러내서 출력할수있다 
 
-```
+```python
 >>>
 even_squares = [x**2 for x in a if x%2==0]
 
@@ -460,7 +465,7 @@ even_squares = [x**2 for x in a if x%2==0]
 
 물론 내장함수 filter를 mmap과 연계해서 사용해도 같은 결과지만 복잡하다
 
-```
+```python
 In [62]: alt = list(map(lambda x: x**2, filter(lambda x: x%2==0, a)))
 
 In [63]: print(alt)
@@ -471,7 +476,7 @@ In [63]: print(alt)
 
 쓰자! 알고리즘을 작성할 떄 파생되는자료 구조를 쉽게 생성가능
 
-```
+```python
 >>>
 chile_ranks = {'ghost': 1, 'habanero': 2, 'cayenne': 3}
 rank_dict = {rank: name for name, rank in chile_ranks.items()}
@@ -489,7 +494,7 @@ print(chile_len_set)
 
 리스트안에 리스트 내용들을 하나의 평평한 리스트로 나타내는 예시, 표현식은 왼쪽에서 오른쪽으로 실행됨
 
-```
+```python
 >>>
 matrix = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
 flat = [x for row in matrix for x in row]
@@ -500,7 +505,7 @@ print(flat)
 
 행렬의 각 셀에 있는 값의 제곱구함
 
-```
+```python
 >>>
 squared = [[x**2 for x in row] for row in matrix]
 print(squared)
@@ -510,7 +515,7 @@ print(squared)
 
 다른 루프를 넣는다면 리스트 컴프리헨션이 여러 줄로 구별해야할정도로 길어짐
 
-```
+```python
 >>>
 my_lists = [
     [[1, 2, 3], [4, 5, 6]],
@@ -524,7 +529,7 @@ print(flat)
 
 이번엔 일반 루프문으로 같은 결과가능, 들여쓰기로 위에보다는 이해가 쉽다
 
-```
+```python
 flat = []
 for sublist1 in my_lists:
     for sublist2 in sublist1:
@@ -536,7 +541,7 @@ print(flat)
 
 예를 들어 숫자로 구성된 리스트에서 4보다 큰 짝수 값만 가지고 온다면 다음 두 리스트 컴프리헨션은 동일하다.
 
-```
+```python
 >>>
 a = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 b = [x for x in a if x > 4 if x % 2 == 0]
@@ -550,7 +555,7 @@ print(c)
 
 조건은 루프의 각 레벨에서 for 표현식 뒤에 설정할 수 있다. 합이 10이상이고 3으로 나누어 떨어지는 숫자를 셀로 구한다고 하자
 
-```
+```python
 >>>
 filterd = [[x for x in row if x%3==0] for row in matrix if sum(row)>10]
 print(filterd)
@@ -568,7 +573,7 @@ print(filterd)
 
 에를 들어 파일을 읽어 각 줄에 있는 글자수를 리스트로 반환하고 싶다면
 
-```
+```python
 value = [len(x) for x in open('/~/~/cats.txt')]
 print(value)
 
@@ -583,7 +588,7 @@ print(value)
 
 위에 예제와 비슷하지만 제너레이터 표현식은 즉시 이터레이터로 평가되므로 더는 진행되지 않는다
 
-```
+```python
 it = (len(x) for x in open('/~/~/cats.txt'))
 print(it)
 
@@ -592,7 +597,7 @@ print(it)
 
 필요할 때 제너레이터 표현식에서 다음 출력을 생성하려면 내장함수 next로 반환받은 이터레이터를 한 번에 전진시키면 된다.
 
-```
+```python
 >>>
 print(next(it))
 print(next(it))
@@ -605,7 +610,7 @@ print(next(it))
 >
 > __이터레이터__는 여러개의 요소를 가지는 컨테이너(리스트, 튜플, 셋, 사전, 문자열)에서 각 요소를 하나씩 꺼내 어떤 처리를 수행하는 간편한 방법을 제공하는 객체입니다.!(즉, 요소하나씩만 빼오므로 메모리 부담이없다.)
 >
-> ```
+> ```python
 > In [73]: s = 'abc'
 > 
 > In [74]: it = iter(s)   #이터레이터 객체로 만듬
@@ -631,13 +636,12 @@ print(next(it))
 
 예시는 앞의 제너레이터 표현식이 반환한 이터레이터를 다른 제너레이터 표현식의 입력으로 사용한 예다.
 
-```
+```python
 >>>
 roots = ((x, x**0.5) for x in it) #it은 이터레이터
 print(next(roots))
 
 (15, 3.872983346207417) #왜냐면 다음 it에서 나오는 것이 아이템 15였기때문
-
 ```
 
 이처럼 만약 큰 입력 스트림에 동작하는 기능을 결합하는 방법을 찾을 때는 제너레이터 표현식이 최선의 도구다. 
@@ -656,7 +660,7 @@ print(next(roots))
 
 이는 리스트에서 현재 아이템의 인덱스(위치)를 알고 싶은 경우가 있을 때 range을 사용하면 편리하다.
 
-```
+```python
 >>>
 flavor_list = ['vanilla', 'chocolate', 'pecan', 'strawberry']
 for flavor in flavor_list:
@@ -688,7 +692,7 @@ enumerate는 지연 제너레이터(lazy generator)로 이터레이터를 감싼
 
 
 
-```
+```python
 >>>
 for i, flavor in enumerate(flavor_list):
     print('%d: %s' % (i + 1, flavor))
@@ -718,7 +722,7 @@ tip: enumerate의 두번째 파라미터는 세기 시작할 숫자를 지정할
 
 ("map과 filter 대신 리스트 컴프리헨션을 사용하자" 참조)
 
-```
+```python
 >>>
 names = ['Cecilia', 'Lise', 'Marie']
 letters = [len(n) for n in names]
@@ -727,7 +731,7 @@ print(letters)
 
 현재 예시에서는 파생 리스트의 아이템과 소스 리스트의 아이템은 서로의 인덱스로 연관되어 있다. 따라서 두 리스트를 병렬로 순회하려면 소스 리스트인 names의 길이만큼 순회하면 된다.
 
-```
+```python
 >>>
 longest_name = None
 max_letters = 0
@@ -747,7 +751,7 @@ Cecilia
 
 루프의 인덱스 i로 배열에 접근하는 동작이 두번 일어난다. enumerate를 사용하면 조금 개선가능하다
 
-```
+```python
 >>>
 for i, name in enumerate(names):
     count = letters[i]
@@ -764,7 +768,7 @@ zip 제너레이터는 각 이터레이터로부터 다음 값을 담은 튜플 
 
 zip 제너레이터를 사용한 코드는 다중 리스트에서 인덱스로 접근하는 코드보다 휠씬 명료하다.
 
-```
+```python
 >>>
 longest_name = None
 max_letters = 0
@@ -791,7 +795,7 @@ __내장 함수 zip을 사용할때는 두가지 문제점 존재__
 
 파이썬의 루프에는 다른 프로그래밍 언어에는 없는 추가적인 기능이 있다. 루프에서 반복되는 내부 블록 바로 다음에 else 블로을 둘 수 있는 기능이다.
 
-```
+```python
 >>>
 for i in range(3):
     print('Loop %d' % i)
@@ -809,7 +813,7 @@ for구문이 종료되면 else가 실행되는것처럼보인다.(if/else구문�
 
 처음 접하면 for/else에서 for문이 실행되지 않으면 else가 실행된다고 생각할텐데 이 생각은 틀렸다
 
-```
+```python
 >>>
 for i in range(3):
     print('Loop %d' % i)
@@ -829,7 +833,7 @@ Loop 1
 
 예를 들어 두 숫자가 서로소(공약수가하나임)인지를 판별한다고 하자.
 
-```
+```python
 >>>
 a = 4
 b = 9
@@ -857,7 +861,7 @@ Coprime
 
   루프가 실패로 끝나면 기본 결과(True)반환한다
 
-  ```
+  ```python
   >>>
   def coprime(a, b):
       for i in range(2, min(a, b) + 1):
@@ -872,7 +876,7 @@ Coprime
 
   뭔가를 찾았으면 즉시 break로 루프를 중단한다.
 
-  ```
+  ```python
   >>>
   def coprime2(a, b):
       is_coprime = True
@@ -911,7 +915,7 @@ __try/finally__ 를 사용하면 된다.
 
 ("재사용 가능한 try/finally 동작을 만들려면 contextlib와 with문을 고려하자" 참조)
 
-```
+```python
 import logging
 from pprint import pprint
 from sys import stdout as STDOUT
@@ -941,7 +945,7 @@ __except: try블록에서 예외가 발생하면 실행됨(else는 실행안됨!
 
 예를 들어 문자열에서 JSON 딕셔너리 데이터를 로드하여 그 안에 든 키의 값을 반환한다고 하자.
 
-```
+```python
 import json
 
 def load_json_key(data, key):
@@ -981,7 +985,7 @@ finally블록은 파일 핸들을 정리하는 데 사용한다.
 
 [참고](https://docs.python.org/ko/3/library/json.html)
 
-```
+```python
 import json
 UNDEFINED = object()
 
