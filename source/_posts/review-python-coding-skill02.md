@@ -140,14 +140,57 @@ __위에 예시는 None에 특별한 의미가 있을 떄 파이썬 코드에서
 
 > 클로저 [자세히](https://whatisthenext.tistory.com/112)
 >
-> 전역변수, 지역변수
+> 클로저 [자세히2](https://yes90.tistory.com/50)
+>
+> ```python
+> def say_words(msg):
+>     def say_sentence():
+>         return "와 msg변수 살아있다: %s" %(msg,)
+>     return say_sentence   #즉 내장함수가 반환됨, 지역변수 msg도 살아있음.. 이게 클로저
+> 
+> a = say_words("출출하다")
+> print(dir(a)) #dir(a) : 객체(a)가 자체적으로 가지고 있는 변수나 함수를 보여준다. 가장 큰 단위의 조사라고 보면 된다.
+> print(type(a.__closure__)) #dir()이라는 내장함수가 변수나 함수를 보여준다고 했으니까, 변수인지 함수인지 타입을 찍어보자.
+> print(a.__closure__) #cell이 뭔가 찾아보니 여러 범위(scope)에서 참조할 수 있는 값을 저장할 수 있는 객체라고 한다.
+> print(dir(a.__closure__[0])) #마지막에 cell_contents를 숨기고 있었다.
+> print(a.__closure__[0].cell_contents) #클로져인 출출하다가 출력됨
+> 
+> >>>
+> ['__annotations__', '__call__', '__class__', '__closure__', '__code__', '__defaults__', '__delattr__', '__dict__', '__dir__', '__doc__', '__eq__', '__format__', '__ge__', '__get__', '__getattribute__', '__globals__', '__gt__', '__hash__', '__init__', '__init_subclass__', '__kwdefaults__', '__le__', '__lt__', '__module__', '__name__', '__ne__', '__new__', '__qualname__', '__reduce__', '__reduce_ex__', '__repr__', '__setattr__', '__sizeof__', '__str__', '__subclasshook__']
+> <class 'tuple'>
+> (<cell at 0x10b763890: str object at 0x10b766210>,)
+> ['__class__', '__delattr__', '__dir__', '__doc__', '__eq__', '__format__', '__ge__', '__getattribute__', '__gt__', '__hash__', '__init__', '__init_subclass__', '__le__', '__lt__', '__ne__', '__new__', '__reduce__', '__reduce_ex__', '__repr__', '__setattr__', '__sizeof__', '__str__', '__subclasshook__', 'cell_contents']
+> 출출하다
+> ```
+>
+> **클로저의** **목적**: 전역변수 사용 빈도를 줄이기 위함
+>
+> 즉, 전통적인 프로그래밍에서 한 변수를 특정 함수의 종료 여부와 관계없이 여러 함수에서 사용하려면 보통 변수를 전역변수로 선언한다. 그러나 전역변수를 무작정 생성하다 보면 간섭현상(side effect)가 발생하기 쉽다.전역 변수를 사용하면 프로그래밍 자체는 쉬워지나, 사용 빈도수가 높아지면 간섭현상이 생기면서 프로그램에 문제가 생겼을 때 디버깅 하기가 어려워진다. 함수 클로저를 만들기 위해선 내가 함수 클로저로 만들고 싶은 함수를 다른 함수로 감싸면 된다. 이때 함수 클로저를 감싸주는 함수의 반환형은 함수 클로저가 된다
+>
+> __전역변수, 지역변수__
 >
 > - **전역변수**: 함수 밖, 전역 이름공간에 정의된 변수
 > - **지역변수**: 함수 안, 지역 이름공간에 정의된 변수
 > - 지역변수는 그 변수가 정의된 함수 안에서만 읽을 수 있다.
 > - 전역변수는 프로그램 어디서든 읽을 수 있다. 단, 함수 안에서 전역변수에 새로운 값을 대입할 수는 없다.
 >
+> 햇갈리지말아야할것
+>
+> ```python
+> #cat함수의 스코프 차이로 발생하는 것, cat2 스코프에서는 변수가 정의되어버림 (값변경x)
+> def cat():
+>     rhdiddl = True
+>     def cat2():
+>         rhdiddl = False
+>     return cat2(), rhdiddl
+>         
+> a= cat()
+> print(a)
+> (None, True)
 > 
+> #함수안에 for, if 문이 끝나서  변수 변경은 해당함수 스코프 안에있으므로 변수 값 변경으로 처리됨.
+> 
+> ```
 
 숫자 리스트를 정렬할 때 특정 그룹의 숫자들이 먼저 오도록 우선순위를 매기려고 한다.
 
@@ -226,7 +269,7 @@ __새로 정의되는 변수의 스코프는 그 할당을 포함하고 있는 �
 
 __(즉, 새로 정의된 변수는 정의되었던 스코프밖을 나가지못함, 지금은 found=True가 helper함수 밖을 나가지 못함 )__
 
-즉, sort_priority2함수의 반환 값이 잘못된이유는 found변수는 helper 클로저에서 True로 할당되도록 설계하려고 햇으나, 실제로 클로저 할당은 sort_priority2에서  일어나느 할당이 아닌 helper함수아 안ㅇ데서 일어나는 새 변수 정의가 되어버렸기때문이다.
+즉, sort_priority2함수의 반환 값이 잘못된이유는 found변수는 helper 클로저에서 True로 할당되도록 설계하려고 햇으나, 실제로 클로저 할당은 sort_priority2에서  일어나는 할당이 아닌 helper함수에서 일어나는 새 변수 정의가 되어버렸기때문이다.
 
 이런 점은 초보자들을 놀라게한다. ('스코프 버그'라고함)
 
@@ -277,13 +320,13 @@ nonlocal을 사용할 때 복잡해지기 시작하면 헬퍼 클래스로 상�
 
 코드는 약간 더 길지만 이해하기는 훨씬 쉽다("인터페이스가 간단하면 클래스 대신 함수를 받자"에서 \_\_call\_\_ 이라는 특별한 메서를 자세히 설명한다.) (???)
 
-```
+```python
 class Sorter(object):
     def __init__(self, group):
         self.group = group
         self.found = False
 
-    def __call__(self, x):
+    def __call__(self, x):   #클래스 호출할경우 동작 함수정의
         if x in self.group:
             self.found = True
             return (0, x)
@@ -302,15 +345,11 @@ nonlocal지원안함.. pass
 
 found = [False]로 줘서 수정가능한 helper함수안에 found[0] = Ture를 하면 탐색이 일어나므로 변경은 가능....
 
-### 중요한 참고 사항
-
-[클로저 자세히](https://yes90.tistory.com/50)
-
 #### list 본체 정렬
 
 - reverse : 리스트를 거꾸로 뒤집는다. desc 정렬이 아님
 
-```
+```python
 >>> a = [1, 10, 5, 7, 6]
 >>> a.reverse()
 >>> a
@@ -332,7 +371,7 @@ found = [False]로 줘서 수정가능한 helper함수안에 found[0] = Ture를 
 
 - __sort의 key 옵션, key 옵션에 지정된 함수의 결과에따라 정렬, 아래는 원소의 길이__
 
-```
+```python
 >>> m = '나는 파이썬을 잘하고 싶다'
 >>> m = m.split()
 >>> m
@@ -416,7 +455,7 @@ print(result[:3])
 
   __내장 함수 next를 호출할 때마다 이터레이터는 제너레이터가 다음 yield 표현식으로 진행하게 한다.__
   
-   제너레이터에서 yield에 전달한 값을 이터레이터가 호출하는 쪽으로 반환한다.
+   제너레이터에서 yield에 전달한 값을 이터레이터86가 호출하는 쪽으로 반환한다.
   
   동일결과를 내는 제너레이터 함수
   
@@ -457,7 +496,7 @@ print next(my_result) #이때 호출됨
 
 아래 함수는 파일에서 입력을 한 번에 한 줄씩 읽어서 한 번에 한 단어씩 출력을 내어주는 제너레이터다. 이 함수가 동작할 때 사용하는 메모리는 입력 한 줄의 최대 길이까지다.
 
-```
+```python
 def index_file(handle):
     offset = 0
     for line in handle:
@@ -492,10 +531,10 @@ with open ('파일경로/rhdiddl.txt', 'r') as f:
 
 ### 정리
 
-- 제너레이터에서 반환한 이터레이터는 제너레이터 함수의 본문에 있는 yield 표현식에 전달된 값들의 집합이다.(???)
+- 제너레이터에서 반환한 이터레이터는 제너레이터 함수의 본문에 있는 yield 표현식에 전달된 값들의 집합이다.
 - 제너레이터는 모든 입력과 출력을 메모리에 저장하지 않으므로 입력값의 양을 알기 어려울 때도 연속된 출력을 만들 수 있다.
 
-## 인수를 순회할 때는 방어적으로 하자(B17) (???)
+## 인수를 순회할 때는 방어적으로 하자(B17)
 
 파라미터로 객체의 리스트를 받는 함수에서 리스트를 여러 번 순회해야 할 때가 종종있다.
 
@@ -509,7 +548,7 @@ with open ('파일경로/rhdiddl.txt', 'r') as f:
 
 그러고 나서 각 도시의 방문자 수를 전체 방문자 수로 나누어 각 도시가 전체에서 차지하는 비중을 알아낸다.
 
-```
+```python
 def normalize(numbers):
     total = sum(numbers)  #여기서도 numbers호출
     result = []
@@ -525,14 +564,14 @@ def normalize(numbers):
 
 나중에 같은 함수를 재사용하여 더 큰 데이터 세트인 전 세계의 여행자 수를 계산할 수 있기 때문에 리스트보다 제너레이터로구현한다
 
-```
+```python
 def read_visits(data_path):
     with open(data_path) as f:
         for line in f:
             yield int(line)
 ```
 
-```
+```python
 it = read_visits('my_numbers.txt')
 percentages = normalize(it)
 print(percentages)
@@ -542,7 +581,7 @@ print(percentages)
 
 이미 StopIteration 예외를 일으킨 이터레이터나 제너레이터를 순회하면 어떤 결과도 얻을수없다. 아래 참조하자
 
-```
+```python
 it = read_visits('my_numbers.txt')
 print(list(it))   #정상 데이터리스트
 print(list(it))  #결과는 빈 리스트가 나와버림
@@ -567,7 +606,7 @@ def normalize_copy(numbers):
 
 이런 이터레이터를 복사하면 프로그램의 메모리가 고갈되어 동작을 멈출 수도있다.
 
-이런 문제를 피하는 한가지 방법은 호출될 떄마다 새 이터레이터를 반환하는 함수를 받게 만드는 것이다
+이런 문제를 피하는 한가지 방법은 호출될 때마다 새 이터레이터를 반환하는 함수를 받게 만드는 것이다
 
 ```python
 def normalize_func(get_iter):
@@ -595,7 +634,7 @@ print(percentages)
 
 파이썬은 `for x in foo`  같은 문장을 만나면 실제로는 iter(foo)를 호출한다. 그러면 내장 함수 iter는 특별한 메서드인 foo.\_\_iter\_\_ 를 호출한다.  \_\_iter\_\_ 메서드는 (\_\_next\_\_ 라는 특별한 메서드를 구현하는) 이터레이터 객체를 반환해야 한다. 마지막으로 for 루프는 이터레이터를 모두 소진할 때까지 (그래서 StopIteration 예외가 발생할 때까지) 이터레이터 객체에 내장 함수 `next` 를 계속 호출한다. [자세히](https://dojang.io/mod/page/view.php?id=2406)
 
-```
+```python
 #__iter__ 써보자
 class Counter:
     def __init__(self, stop):
@@ -627,7 +666,7 @@ for i in Counter(3):
 
 다음은 여행자 데이터를 담은 파일을 읽는 이터러블(iterable:순회가능)컨테이너 클래스다
 
-```
+```python
 class ReadVisits(object):  #object는 필요없지안나???
     def __init__(self, data_path):
         self.data_path = data_path
@@ -639,7 +678,7 @@ class ReadVisits(object):  #object는 필요없지안나???
 
 새로 정의한 컨테이너 타입은 원래의 함수에 수정을 가하지 않고 넘겨도 제대로 동작한다.
 
-```
+```python
 visits = ReadVisits("rhdiddl.txt")
 percentages = normalize(visits)
 print(percentages)
@@ -655,7 +694,7 @@ normalize를 쓸수있는 이유는 normalize의 sum메서드가 새 이터레�
 
 프로토콜에 따르면 내장 함수 iter에 이터레이터를 넘기면 이터레이터 자체가 반환된다. 반면 iter에 컨테이너 타입을 넘기면 매번 새 이터레이터 객체가 반환된다. 따라서 이 동작으로 입력값을 테스트해서 이터레이터면 TypeError를 일으켜 거부하게 만들면 된다.
 
-```
+```python
 def normalize_defensive(numbers):
     if iter(numbers) is iter(numbers):  # 이터레이터 거부
         raise TypeError('Must supply a container')
@@ -667,9 +706,9 @@ def normalize_defensive(numbers):
     return result
 ```
 
-normalize_defensive는 normalize_copy처럼 입력 이터레이터 전체를 복사하고 싶지 앉지만, 입력 데이터를 여러번 순회해야 할 때, 사용하면 좋다. 이 함수는 list와 ReadVisits를 입력으로 받으면 입력이 컨테이너이므로 기대한 대로 동작한다. 이터레이터 프로토콜을 따르면 어떤 컨테이너 타입에 대해서도 제대로 동작할 것이다.
+normalize_defensive는 normalize_copy처럼 입력 이터레이터 전체를 복사하고 싶지 않지만, 입력 데이터를 여러번 순회해야 할 때, 사용하면 좋다. 이 함수는 list와 ReadVisits를 입력으로 받으면 입력이 컨테이너이므로 기대한 대로 동작한다. 이터레이터 프로토콜을 따르면 어떤 컨테이너 타입에 대해서도 제대로 동작할 것이다.
 
-```
+```python
 visits = [15, 35, 80]
 normalize_defensive(visits)  # No error
 visits = ReadVisits(path)
@@ -680,7 +719,7 @@ normalize_defensive(visits)  # No error
 
 >  이 함수를 사용할때 그냥 이터레이터가 들어오면 순환하지 못하므로 그것을 방지하기위해 if절로 구별함
 
-```
+```python
 it = iter(visits)
 normalize_defensive(it)
 
@@ -695,7 +734,7 @@ TypeError
 - 입력 인수를 여러번 순회하는 함수를 작성할 때 주의하자. 입력인수가 이터레이터라면 이상하게 동작(한번만 호출되고 사라지므로)해서 값 잃어버림
 - 파이썬의 이터레이터 프로토콜은 컨테이너와 이터레이터가 내장함수 iter, next와 for 루프 및 관련 표현식과 상호작용하는 방법을 정의한다
 -  \_\_iter\_\_ 메서드를 제너레이터로 구현하면 자신만의 이터러블 컨테이너 타입을 쉽게 정의할 수있다
-- 어떤 값에 iter를 두번 호출했을때 같은 결과(위치까지같고, 변한게없음)가 나오고 내장 함수 next로 전진시킬 수 있다면 그 값은 컨테이너가 아닌 이터레이터다.
+- 어떤 값에 iter를 두번 호출했을때 같은 결과(id,위치까지같고, 변한게없음)가 나오고 내장 함수 next로 전진시킬 수 있다면 그 값은 컨테이너가 아닌 이터레이터다.
 
 ## 가변 위치 인수로 깜끔하게 보이게 하자(B18)
 
