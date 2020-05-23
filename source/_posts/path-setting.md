@@ -1,5 +1,5 @@
 ---
-title: 환경변수 활용법
+title: 환경변수 사용법
 date: 2020-02-13 18:02:48
 categories: [Linux]
 tags: [Basic, Linux]
@@ -9,38 +9,51 @@ tags: [Basic, Linux]
 
 환경변수에 등록된 경로는, 컴퓨터의 어떤 경로에서라도 접근(=실행) 할 수 있다.
 
-```
-환경변수 확인
-$ echo $PATH   ($변수명 하면 호출됨)
+[~~]에서 [ ]은 위치를 알려줌, 실제 입력시에는 해당값만을 입력.
 
-$ echo AAA #AAA에 대한 환경변수값 확인
+```python
+#현재위치 절대 경로 출력
+pwd
 
-$ ls -la
+
+# 환경변수 확인
+echo $[PATH]   ($변수명 하면 호출됨)  #echo는 문자열 print로 생각하자.
+
+echo [AAA] #AAA에 대한 환경변수값 확인
+
+ls -la  #권한도 확인.
 .bash_profile 이라는 숨김 파일이 있는지 확인한다.
 
 없을경우 생성
-$ touch .bash_profile
+touch .bash_profile
 
 있을 경우 파일 오픈
-$ vi .bash_profile  -> vi를 통해 오픈
-$ open .bash_profile  -> 에디터를 통해 오픈
+vi .bash_profile  -> vi를 통해 오픈
+open .bash_profile  -> 에디터를 통해 오픈
 ```
 
-## 환경 변수 경로 의미
+## 전역 환경 변수 경로 추가(export)
 
-```
-export PATH=${PATH}  #$앞의 {PATH}의 경우 상위 Path
+```python
+export [환경변수] = [환경변수내용] 
 
-# 그리고 그 뒤에 다른 Path가 필요할 경우 {PATH}뒤에 : 적어서 경로를 이어줍니다.
+export PATH=/추가할 경로1:/추가할 경로2:/경로3:$PATH  # :로 구분하며 계속 추가가능, 또한 $PATH가 마지막에 붙은 이유는 기존에 앞에있던 $PATH변수명으로 지정되었던 값들도 유지해주는것, 여기서 마지막에 :$PATH가 붙지않았다면 기존에 있던 $PATH값은 유지되지않음 
+export PATH=$PATH:/Users/lostcatbox #예시
+  
 export PATH="/Users/wefw/wgwe/erge/:$PATH" #기존의 PATH변수에있던 값들앞에 앞에 쓴 새로운 경로추가함
+```
 
+위에 예시처럼 PATH에다가 추가하면 셀은 항상 저기 경로에 있는 파일들을 현재 경로와 상관없이 실행할수있도록되어있다
+
+```
+python3 # 하면 파이썬 실행되는것처럼
 ```
 
 리눅스 환경은 `.bash_profile`,`.bashrc`에 설정해놓으면 되는데 
 
 zsh를 쓰는 나의 환경에서는 iterms를 껏다 키면 $PATH 가 초기화되어 계속
 
-```
+```python
 source ~/.bash_profile
 source ~/.bashrc
 ```
@@ -53,8 +66,6 @@ source ~/.bashrc
 > zsh은 기존 linux, mac 시스템이 사용하는 ~/.bash_profile 파일의 설정을 따르지 않고
 > ~/.zshrc 파일의 설정을 따릅니다.
 > 따라서 기존 linux, mac 시스템에서 .bash_profile 파일에 등록한것과 같이 아래 형태로 환경변수를 정의하면 됩니다.
-
-
 
 ## oh-my-zsh
 
@@ -71,8 +82,8 @@ source ~/.bashrc
 ### zsh에 bash파일들에 있는 환경변수 자동추가하기
 
 이미 .bash_profile 과 .bashrc 에 설정해놓은 path를 사용하기위해
-source ~/.bash_profile
-source ~/.bashrc
+`source ~/.bash_profile`
+`source ~/.bashrc`
 를 실행시키도록 설정했다
 
 ```
