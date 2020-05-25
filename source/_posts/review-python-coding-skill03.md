@@ -732,6 +732,7 @@ class AnotherWay(MyBaseClass, PlusFive, TimesTwo):
 bar = AnotherWay(5)
 print('Second ordering still is', bar.value)
 
+
 >>>
 Second ordering still is 15
 ```
