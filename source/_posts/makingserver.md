@@ -1,5 +1,5 @@
 ---
-title: makingserver
+title: 개인서버 만들기
 date: 2020-05-26 22:38:27
 categories: [Server]
 tags: [Network, Server, Tip, Basic]

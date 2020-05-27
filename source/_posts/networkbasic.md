@@ -1,5 +1,5 @@
 ---
-title: networkbasic
+title: 네트워크 기본지식
 date: 2020-05-07 12:47:12
 categories: [Network]
 tags: [Network,Server, Tip, Basic]

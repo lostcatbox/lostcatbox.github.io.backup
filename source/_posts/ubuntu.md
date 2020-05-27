@@ -1,8 +1,8 @@
 ---
-title: ubuntu
+title: 우분투
 date: 2020-05-27 01:21:55
-categories:
-tags:
+categories: [Ubuntu]
+tags: [Ubuntu, Basic]
 ---
 
 ```
