@@ -45,8 +45,9 @@ ufw allow 22
 
 하지만 같은 네트워크 망에있으면 ssh 로 접근 불가능하였다.
 
-
-
-
+```
+ssh-keygen -R 192.168.0.7 #shh-keygen 초기화
+```
 
 [해결](https://cpuu.postype.com/post/30065)
+
