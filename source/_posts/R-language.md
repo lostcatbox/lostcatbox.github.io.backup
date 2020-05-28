@@ -710,3 +710,164 @@ idx <- which(iris[,1:4]>5.0, arr.ind =TRUE) #row, col 열로 나옴! 보기편�
 idx
 ```
 
+# 자료
+
+## 자료 구조
+
+### 자료 특성에 따른 분류
+
+- 범주형 자료(질적 자료) 
+  - 크기 비교못함
+  - 성별, 혈액형
+- 연속형 자료(양적 자료)
+  - 크기 비교 가능
+
+### 변수의 개수에 따른 분류
+
+- 단일변수 자료(열이 하나, 벡터하나로 표현가능)
+- 다중변수 자료(많은 변수들로 구성, 열이 여러개, 메트릭스or데이터프레임사용)
+
+## 단일변수 범주형 자료의 탐색
+
+### 도수 분포표 작성
+
+도수 분포표는 정한 구간에 해당하는 파라미터가 얼마나 있는지 파악할수있다.
+
+> 도수 분포표 만드는 원리
+>
+> \1. 자료의 개수를 센다. (55개) 2. 자료 내에서 최대/최소값을 찾는다. (최대 180, 최소 162) 3. 몇 개 구간으로 나눌지 결정한다. (5개 구간으로 설정) 4. 구간의 폭을 구한다. (구간폭=(최대값–최소값)/구간수, (180-162)/5=3.6, 따라서 4로 결정) 5. 구간의 경계값(급의 경계값)을 구한다. 6. 구간별 자료의 개수(도수)를 적는다.
+
+```R
+favorite <- c('WINTER', 'SUMMER', 'SPRING', 'SUMMER', 'SUMMER’,
+'FALL', 'FALL', 'SUMMER', 'SPRING', 'SPRING')
+favorite # favorite의 내용 출력
+table(favorite) # 도수분포표 계산
+table(favorite)/length(favorite) # 비율 출력
+```
+
+### 막대그래프
+
+```R
+ds <- table(favorite)
+ds
+barplot(ds, main='favorite season') #main은 차트 이름
+
+ds.new <- ds[c(2,3,1,4)]
+ds.new
+barplot(ds.new, main='favorite season') #계절순서바꿈
+```
+
+### 원그래프
+
+```R
+ds <- table(favorite)
+ds
+pie(ds.new,clockwise=TRUE, main='favorite season') #시계방향
+```
+
+### 숫자로 표현된 범주형 자료
+
+```R
+#1=초록, 2=빨강, 3=파랑
+favorite.color <- c(2, 3, 2, 1, 1, 2, 2, 1, 3, 2, 1, 3, 2, 1, 2)
+ds <- table(favorite.color)
+ds
+barplot(ds, main='favorite color')
+colors <- c('green', 'red', 'blue')
+names(ds) <- colors #자료값 1,2,3을 green, red, blue로 변경
+ds
+barplot(ds, main='favorite color', col=colors) # 색 지정 막대그래프
+pie(ds, main='favorite color', col=colors) # 색 지정 원그래프
+```
+
+## 단일변수 연속형 자료의 탐색
+
+### 평균과 중앙값
+
+- 평균은 그냥 평균, 중앙값은 자료의 값들을 크기순으로 일렬로 줄세웠을떄 중앙에 위치하는 값
+- 절사 평균: 자료의 관측값들 중에서 작은 값들의 하위 n%와 큰 값들 의 상위 n%를 제외하고 중간에 있는 나머지 값들만 가지고 평균을 계산
+
+```R
+weight <- c(60, 62, 64, 65, 68, 69)
+weight.heavy <- c(weight, 120)
+weight
+weight.heavy
+mean(weight) # 평균
+mean(weight.heavy) # 평균
+median(weight) # 중앙값, 6개이므로 중앙값은 가운데 2개값/2임
+median(weight.heavy) # 중앙값
+mean(weight, trim=0.2) # 절사평균(상하위 20% 제외)
+mean(weight.heavy,trim=0.2) # 절사평균(상하위 20% 제외)
+```
+
+
+
+### 사분위수
+
+- 사분위수(quatile)란 주어진 자료에 있는 값들을 크기순으로 나열했을 때 이것을 4등 분하는 지점에 있는 값들을 의미
+- 자료에 있는 값들을 4등분하면 등분점이 3개 생기는데, 앞에서부터 ‘제1사분위수 (Q1)’, ‘제2사분위수(Q2)’, ‘제3사분위수(Q3)’라고 부르며, 제2사분위수(Q2)는 중앙값 과 동일
+- 전체 자료를 4개로 나누었기 때문에 4개의 구간에는 각각 25%의 자료가 존재
+
+```R
+mydata <- c(60, 62, 64, 65, 68, 69, 120)
+quantile(mydata)
+quantile(mydata, (0:10)/10) # 10% 단위로 구간을 나누어 계산
+summary(mydata)
+```
+
+
+
+### 산포
+
+- 주어진 자료에 있는 값들이 퍼져 있는 정도(흩어져 있는 정도)
+- 분산(variance)과 표준편차(standard deviation)를 가지고 파악
+- 분산: 평균에서 얼마나 떨어져있나?
+- 자료의 분산과 표준편차가 작다는 의미는 자료의 관측값들이 평균값 부근에 모여있다는 뜻 
+
+``` R
+mydata <- c(60, 62, 64, 65, 68, 69, 120)
+var(mydata) # 분산(variance)
+sd(mydata) # 표준편차 (standard deviation)
+range(mydata) # 값의 범위
+diff(range(mydata)) # 최댓값, 최솟값의 차이
+```
+
+
+
+### 히스토그램(연속형 변수에게만 적용하는 막대그래프)
+
+- 히스토그램(histogram)은 외관상 막대그래프와 비슷한 그래프로, 연속형 자료의 분 포를 시각화할 때 사용
+- 막대그래프를 그리려면 값의 종류별로 개수를 셀 수 이어야 하는데, 키와 몸무게 등 의 자료는 값의 종류라는 개념이 없어서 종류별로 개수를 셀 수 없음
+- 대신에 연속형 자료에서는 구간을 나누고 구간에 속하는 값들의 개수를 세는 방법을 사용
+- 히스토그램에서는 막대의 면적도 의미가 존재함
+
+```R
+cars
+str(cars) #데이터프레임 구조 보기
+dist <- cars[,2] # 자동차 제동거리, 데이터프레임..
+hist(dist, # 자료(data)
+    main="Histogram for 제동거리", # 제목
+    xlab ="제동거리", # x축 레이블
+    ylab="빈도수", # y축 레이블
+    border="blue", # 막대 테두리색
+    col="green", # 막대 색
+    las=2, # x축 글씨 방향(0~3)
+    breaks=5) # 막대 개수 조절
+```
+
+
+
+### 상자그림
+
+- 상자그림(box plot)은 상자 수염 그림(box and whisker plot)으로도 부르며, __사분위 수를 시각화__하여 그래프 형태로 나타낸 것
+- 하나의 그래프로 데이터의 분포 형태를 포함한 다양한 정보를 전달하기 때문에 단일 변수 수치형 자료를 파악하는 데 자주 사용
+
+```R
+dist <- cars[,2] # 자동차 제동거리(단위: 피트)
+boxplot(dist, main="자동차 제동거리")
+
+boxplot.stats(dist)
+
+boxplot(Petal.Length~Species, data=iris, main="품종별 꽃잎의 길이")
+```
+
