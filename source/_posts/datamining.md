@@ -5,7 +5,7 @@ categories: [Dataminging]
 tags: [Dataminging, Univ]
 ---
 
-# 선형 회귀 분석?
+# 선형 회귀 분석
 
 
 
