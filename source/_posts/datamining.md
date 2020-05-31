@@ -11,6 +11,8 @@ tags: [Dataminging, Univ]
 
 
 
+
+
 ## 기본 통계학적 개념
 
 ![스크린샷 2020-04-16 오후 7.11.41](https://tva1.sinaimg.cn/large/007S8ZIlgy1gdvrv47qvyj30vi0rijwl.jpg)
