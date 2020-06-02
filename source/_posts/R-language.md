@@ -871,3 +871,69 @@ boxplot.stats(dist)
 boxplot(Petal.Length~Species, data=iris, main="품종별 꽃잎의 길이")
 ```
 
+## 다중변수 자료의 탐색
+
+### 산점도
+
+- 다중변수 자료(또는 다변량 자료): 변수가 2개 이상인 자료
+- 다중변수 자료는 2차원 형태를 나타내며, 이는 매트릭스나 테이터 프레임에 저장하여 분석
+- 산점도란 2개의 변수로 구성된 자료의 분포를 알아보는 그래프
+
+```R
+#산점도
+data() #R의 기본데이터 셋!!
+str(mtcars)
+wt <- mtcars$wt
+mpg <- mtcars$mpg
+plot(wt, mpg, main="중량 - 연비 그래프", xlab="중량", ylab="연비", col="red", pch=18) #pch는 plot에 18은 점 모양이 다이야몬드
+
+
+# 변수 여러개
+vars <- c("mpg","disp", "drat", "wt")
+target <- mtcars[,vars]  #모든 행뽑고, 변수에 해당하는 열들 모두 추출됨
+head(target)
+pairs(target, main="multi plots") #x, y값으로 모두 그래프 그려줌\
+
+# 변수관의 관계, 그룹관의 관계 한번에 관측비교가능(다른점모양, 다른 색 )
+iris.2 <- iris[,3:4]
+iris.2
+point <- as.numeric(iris$Species) #종의 이름이 들어가잇으므로 숫자로 바꿔줌
+iris$Species
+point
+color <- c("red", "green", "blue")
+plot(iris.2, main="Iris plot", pch=c(point), col=color[point]) #pch은 점 모양 , col은 색깔지정 point번호로 color red, green, blue순으로 출력
+
+```
+
+### 상관분석과 상관계수
+
+- 자동차의 중량이 커지면 연비는 감소하는 추세
+- 추세의 모양이 선 모양이어서 중량과 연비는 '선형적 관계'에 있다고 표현
+- 선형적 관계라고 해도 강한 선형적 관계가 있고 약한 선형적 관계도 있음
+- 상관분석: 얼마나 선형성을 보이는지 수치상으로 나타낼 수 있다.
+
+- 피어슨 상관계수(통계학에서 배운것)
+  - -1<r<1
+  - r이 1, -1에 가까울수록 x,y상관관계가 높음
+
+```R
+
+#상관분석과 상관계수
+#R을 이용한 상관ㄱㅖ수의 계산
+beers =c(5,2,9,8,3,7,3,5,3,5)
+bal <- c(0.1,0.03,0.19,0.12,0.04,0.0095,0.07,0.06,0.02,0.05)
+
+tbl <- data.frame(beers,bal) #데이터 프레임 생성
+tbl
+plot(bal~beers, data=tbl)  #산점도
+res <- lm(bal~beers, data=tbl) #회귀식 도출, y=ax+b를 a,b구하는것, 
+abline(res) #회귀선 그리기 
+cor(beers, bal) #상관계수 계산, 0.6797025만큼  상관관계를 가짐(0.5보다 높으면 굿굿)
+
+# 예시
+cor(iris[,1:4]) #4개 변수 간 상관성 분석  #0.5이상이면 상관관계 높음
+tbl <- data.frame(iris[,1:4])
+tbl
+plot(tbl)
+```
+
