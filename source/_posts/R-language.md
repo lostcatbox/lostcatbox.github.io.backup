@@ -12,6 +12,9 @@ mac 에서 utf8관련오류
 ```
 #teminal
 defaults write org.R-project.R force.LANG en_US.UTF-8
+
+#한글 깨짐
+#R에서 par(family="AppleGothic")
 ```
 
 
@@ -938,4 +941,478 @@ tbl <- data.frame(iris[,1:4])
 tbl
 plot(tbl)
 ```
+
+
+
+
+
+
+
+
+
+------------------
+
+# 데이터 전처리(시험x)
+
+## 결측값
+
+### 결측값의 개념 (NA)
+
+- 결측값(missing value)은 데이터를 수집하고 저장하는 과정에서 저장할 값을 얻지 못하는 경우 발생
+
+- 통계조사 응답자가 어떤 문항에 대해 응답을 안했다고 하면, 그 문항의 데이터값은 결측값이 됨
+
+-  데이터셋에 결측값이 섞여 있으면, 데이터 분석 시 여러 가지 문제를 야기
+
+- 성적자료에 결측값이 포함되어 있다면, 성적자료에 대한 합계 계산이나 평균 계산
+
+  등의 작업이 불가능
+
+- 결측값의 처리 1: 결측값을 제거하거나 제외하고, 데이터를 분석
+
+- 결측값의 처리 2: 결측값을 추정하여 적당한 값으로 치환한 후, 데이터를 분석
+
+### 벡터의 결측값 처리
+
+- 결측값의 특성과 존재 여부 확인
+
+```R
+z <- c(1,2,3,NA,5,NA,8)  # 결측값이 포함된 벡터 z
+sum(z)    # 정상 계산이 안 됨
+is.na(z)   # NA 여부 확인
+sum(is.na(z))  #NA갯수 확인
+sum(z, na.rm=TRUE)  # NA를 제외하고 합계를 계산
+```
+
+### 매트릭스와 데이터프레임의 결측값 처리
+
+```R
+# NA를 포함하는 test 데이터 생성
+x <- iris
+x[1,2]<- NA; 
+x[1,3]<- NA 
+x[2,3]<- NA; 
+x[3,4]<- NA 
+head(x)
+
+#데이터프레임의 열별 결측값 확인
+# for문을 이용한 방법
+for (i in 1:ncol(x)) { 
+  this.na <- is.na(x[,i])
+  cat(colnames(x)[i], "\t", sum(this.na), "\n") 
+}
+# apply를 이용한 방법
+col_na <- function(y) {
+  return(sum(is.na(y))) 
+}
+na_count <-apply(x, 2, FUN=col_na) 
+na_count
+
+#데이터프레임의 행별 결측값 확인
+rowSums(is.na(x)) # 행별 NA의 개수
+sum(rowSums(is.na(x))>0)# NA가 포함된 행의 개수
+
+sum(is.na(x)) # 데이터셋 전체에서 NA 개수
+
+#결측값을 제외하고 새로운 데이터셋 만들기
+head(x) 
+x[!complete.cases(x),]  # NA가 포함된 행들 출력(complete.cases함수는 NA가없는 행들 출력함)
+y <- x[complete.cases(x),]   # NA가 포함된 행들 제거
+head(y)                  # 새로운 데이터셋 y의 내용 확인
+```
+
+## 특이값
+
+### 특이값의 개념
+
+특이값(outlier)은 정상적이라고 생각되는 데이터의 분포 범위 밖에 위치하는 값들을 말하며, ‘이상치’라고도 부름
+
+- 특이값은 입력 오류에 의해 발생하기도 하고, 일반인의 몸무게 자료에 씨름선수의 몸무게가 합쳐진 경우처럼 실제로 특이한 값일 수도 있음
+
+- 제조 공정에서 불량인 제품을 선별하거나 은행거래 시스템에서 사기거래를 탐지할 때 사용하기도 함
+
+- 데이터 분석에서는 특이값을 포함한 채 평균 등을 계산하면 전체 데이터의 양상을 파악하는 데 왜곡을 가져올 수 있으므로 분석할 때 특이값을 제외하는 경우가 많음
+
+- 특이값이 포함되어 있는지 여부 확인 
+
+  - 논리적으로 있을 수 없는 값이 있는지 찾아봄
+
+    ex) 좋아하는 색깔을 1~5로 표시하기로 했는데 7이 존재함 
+
+    ex) 몸무게에 마이너스 값이 있음
+
+  - 상식을 벗어난 값이 있는지 찾아봄
+
+    ex) 나이가 120살 이상인 사람
+
+  - 상자그림(boxplot)을 통해 찾아봄
+
+    ex) 정상 범위 밖에 동그라미 표시가 있으면 특이값을 의미
+
+### 특이값 추출 및 제거
+
+```R
+#상자그림을 통한 특이값 확인
+st <- data.frame(state.x77) 
+boxplot(st$Income) 
+boxplot.stats(st$Income)$out
+
+out.val <- boxplot.stats(st$Income)$out # 특이값 추출
+st$Income[st$Income %in% out.val] <- NA # 특이값을 NA로 대체
+head(st)
+
+newdata <- st[complete.cases(st),] # NA가 포함된 행 제거
+head(newdata)
+
+
+```
+
+## 데이터 정렬
+
+### 벡터의 정렬
+
+```R
+# 정렬(sort)은 데이터를 주어진 기준에 따라 크기순으로 재배열하는 과정
+v1 <- c(1,7,6,8,4,2,3) 
+order(v1)
+v1 <- sort(v1) # 오름차순
+v1
+v2 <- sort(v1, decreasing=T) #내림차순
+v2
+```
+
+### 매트릭스와 데이터프레임의 정렬
+
+```R
+head(iris)
+order(iris$Sepal.Length)
+iris[order(iris$Sepal.Length),] #오름차순
+iris[order(iris$Sepal.Length, decreasing=T),] #내림차순
+iris.new <- iris[order(iris$Sepal.Length),]  #정렬된 데이터저장
+head(iris.new)
+iris[order(iris$Species, decreasing=T, iris$Petal.Length),]  #정렬기준 2개
+```
+
+## 데이터 분리와 선택
+
+### 데이터 분리
+
+```R
+sp <- split(iris, iris$Species) # 품종별로 데이터 분리
+sp   # 분리 결과 확인
+summary(sp)  # 분리 결과 요약
+sp$setosa # setosa 품종의 데이터 확인
+```
+
+### 데이터 선택
+
+```R
+subset(iris, Species == "setosa") 
+subset(iris, Sepal.Length > 7.5) 
+subset(iris, Sepal.Length > 5.1 &
+Sepal.Width > 3.9) 
+subset(iris, Sepal.Length > 7.6,
+      select=c(Petal.Length,Petal.Width))
+```
+
+## 데이터 샘플링과 조합
+
+- 샘플링(sampling): 통계용어로, 주어진 값들이 있을 때 그중에서 임의의 개수의 값들 을 추출하는 작업
+- ▪  복원추출, 비복원 추출
+- ▪  샘플링이 필요한 경우의 예: 데이터셋의 크기가 너무 커서 데이터 분석에 시간이 많 이 걸리는 경우에, 일부의 데이터만 샘플링하여 대략의 결과를 미리 확인하고자 할 때
+- ▪  복원추출: 한번 뽑은 것을 다시 뽑을 수 있는 추출 ex) 주머니에서 꺼낸 구슬을 도로 넣어 원상복구한 다음에 다시 구슬을 뽑음
+- ▪  비복원추출: 한번 뽑은 것을 다시 뽑을 수 없는 추출 ex) 한번 주머니에서 꺼낸 구슬 은 다시 넣지 않음
+
+```R
+#숫자를 임의로 추출하기
+x <- 1:100
+y <- sample(x, size=10, replace = FALSE) # 비복원추출 
+y
+
+#행을 임의로 추출하기
+idx <- sample(1:nrow(iris), size=50, replace = FALSE) # 50개의 행 추출 dim(iris.50)
+iris.50 <- iris[idx,]  # 행과 열의 개수 확인 
+head(iris.50)
+
+# set.seed( ) 함수 이해하기
+sample(1:20, size=5) 
+sample(1:20, size=5) 
+sample(1:20, size=5)
+set.seed(100) 
+sample(1:20, size=5) 
+set.seed(100) 
+sample(1:20, size=5) 
+set.seed(100) 
+sample(1:20, size=5)
+```
+
+### 데이터 조합
+
+조합(combination): 글자 그대로 주어진 데이터값들 중에서 몇 개씩 짝을 지어 추출 하는 작업
+
+```R
+combn(1:5,3) # 1~5에서 3개를 뽑는 조합
+x = c("red","green","blue","black","white")
+com <- combn(x,2) # x의 원소를 2개씩 뽑는 조합 
+com
+for(i in 1:ncol(com)) {       # 조합을 출력
+cat(com[,i], "\n") 
+}
+```
+
+## 데이터 집계와 병합
+
+### 데이터 집계
+
+1.1 iris 데이터셋에서 각 변수의 품종별 평균 출력
+
+▪ 2차원 데이터는 데이터 그룹에 대해서 합계나 평균을 계산해야 하는 일이 많음 ▪ 이와 같은 작업을 집계(aggregation)라고 함
+ ▪ R에서는 aggregate() 함수를 통해서 사용 가능
+
+```R
+agg <- aggregate(iris[,-5], by=list(iris$Species),
+FUN=mean) agg
+
+# iris 데이터셋에서 각 변수의 품종별 표준편차 출력
+agg <- aggregate(iris[,-5], by=list(표준편차=iris$Species),
+FUN=sd) 
+agg
+
+# mtcars 데이터셋에서 각 변수의 최댓값 출력
+head(mtcars)
+agg <- aggregate(mtcars, by=list(cyl=mtcars$cyl,
+vs=mtcars$vs),FUN=max) 
+agg
+
+
+```
+
+### 데이터 병합
+
+병합(merge) : 분리된 데이터 파일을 공통 컬럼을 기준으로 하나로 합치는작업
+
+```R
+x <- data.frame(name=c("a","b","c"), math=c(90,80,40))
+y <- data.frame(name=c("a","b","d"), korean=c(75,60,90)) 
+x
+y
+
+z <- merge(x,y, by=c("name")) 
+z
+
+merge(x,y, all.x=T) # 첫 번째 데이터셋의 행들은 모두 표시되도록 
+merge(x,y, all.y=T) # 두 번째 데이터셋의 행들은 모두 표시되도록 
+merge(x,y, all=T)# 두 데이터셋의 모든 행들이 표시되도록
+
+x <- data.frame(name=c("a","b","c"), math=c(90,80,40))
+y <- data.frame(sname=c("a","b","d"), korean=c(75,60,90))
+x # 병합 기준 열의 이름이 name 
+y # 병합 기준 열의 이름이 sname 
+merge(x,y, by.x=c("name"), by.y=c("sname"))
+```
+
+
+
+-----------------
+
+
+
+# 데이터 시각화
+
+## 데이터 시각화 기법
+
+### 데이터 시각화의 중요성
+
+▪ 데이터 시각화(data visualization) : 숫자 형태의 데이터를 그래프나 그림 등의 형태 로 표현하는 과정
+
+▪ 데이터 분석 과정에서 중요한 기술 중의 하나
+ ▪ 데이터를 시각화 하면 데이터가 담고 있는 정보나 의미를 보다 쉽게 파악 ▪ 경우에 따라서는 시각화 결과로부터 중요한 영감을 얻기도 함
+
+### 트리맵
+
+GNI2014 데이터셋으로 트리맵 작성하기
+
+- __사각타일의 형태로 구성되어 있으며, 각 타일의 크기와 색깔로 데이터의 크기를 나타냄__
+- 각각의 타일은 계층 구조가 있기 때문에 데이터에 존재하는 계층 구조도 표현
+- treemap 패키지 설치 필요
+- 예제 데이터셋 : treemap 패키지 안에 포함된 GNI2014. 2014년도의 전 세계 국가별 인구, 국민총소득(GNI), 소속 대륙의 정보를 담고 있음
+
+```R
+library(treemap) 
+data(GNI2014) 
+head(GNI2014) 
+treemap(GNI2014,
+        index=c("continent","iso3"), 
+        vSize="population", 
+        vColor="GNI", 
+        type="value", 
+        bg.labels="yellow", 
+        title="World's GNI")
+# treemap 패키지 불러오기 
+# 데이터 불러오기
+# 데이터 내용보기
+# 계층구조 설정(대륙-국가) 
+# 타일의 크기
+# 타일의 컬러
+# 타일 컬러링 방법
+# 레이블의 배경색 
+# 트리맵 제목
+
+library(treemap) # treemap 패키지 불러오기
+st <- data.frame(state.x77) # 매트릭스를 데이터프레임으로 변환
+st <- data.frame(st, stname=rownames(st)) # 주 이름 열 stname을 추가
+
+treemap(st,
+        index=c("stname"),
+        vSize="Area",
+        vColor="Income",
+        type="value",
+        title="USA states area and income" )
+# 타일에 주 이름 표기 # 타일의 크기
+# 타일의 컬러
+# 타일 컬러링 방법
+# 트리맵의 제목
+
+```
+
+### 버블차트
+
+- 버블 차트(bubble chart): 앞에서 배운 산점도 위에 버블의 크기로 정보를 표시하는 시각화 방법
+- 산점도가 2개의 변수에 의한 위치 정보를 표시한다면, 버블 차트는 3개의 변수 정보 를 하나의 그래프에 표시(버블 크기까지!)
+
+```R
+st <- data.frame(state.x77) # 매트릭스를 데이터프레임으로 변환
+
+symbols(st$Illiteracy, st$Murder,
+        circles=st$Population,
+        inches=0.3,
+        fg="white",
+        bg="lightgray",
+        lwd=1.5,
+        xlab="rate of Illiteracy", 
+        ylab="crime(murder) rate", 
+        main="Illiteracy and Crime")
+
+text(st$Illiteracy, st$Murder, rownames(st),
+     cex=0.6, col="brown")
+# 원의 x, y 좌표의 열 # 원의 반지름의 열
+# 원의 크기 조절값
+# 원의 테두리 색
+# 원의 바탕색
+# 원의 테두리선 두께
+# 텍스트가 출력될 x, y 좌표 # 출력할 텍스트
+# 폰트 크기
+# 폰트 컬러
+```
+
+### 모자이크 플롯
+
+- 모자이크 플롯(mosic plot): 다중변수 범주형 데이터에 대해 각 변수의 그룹별 비율 을 면적으로 표시하여 정보를 전달
+
+```R
+head(mtcars)
+mosaicplot(~gear+vs, data = mtcars, color=TRUE,
+           main ="Gear and Vs")
+```
+
+## ggploy 패키지
+
+- 지금까지는 그래프를 작성할 때 주로 R에서 제공하는 기본적인 함수들을 이용
+- 보다 미적인 그래프를 작성하려면 ggplot 패키지를 주로 이용
+- ggplot은 R의 강점 중의 하나가 ggplot이라고 할 만큼 데이터 시각화에서 널리 사용
+- ggplot은 복잡하고 화려한 그래프를 작성할 수 있다는 장점이 있지만, 그만큼 배우 기 어렵다는 것이 단점
+- ggplot2 패키지의 설치 필요
+
+ggplot 명령문의 기본 구조
+
+- 하나의 ggplot() 함수와 여러 개의 geom_xx() 함수들이 __+__로 연결되어 하나의 그래프 를 완성
+- ggplot() 함수의 매개변수로 그래프를 작성할 때 사용할 데이터셋 (data=xx)와 데이 터셋 안에서 x축, y축으로 사용할 열 이름(aes(x=x1,y=x2))을 지정
+- 이 데이터를 이용하여 어떤 형태의 그래프를 그릴지를 geom_xx()를 통해 지정 ex) geom_bar()
+
+###  막대그래프의 작성
+
+```R
+library(ggplot2)
+month <- c(1,2,3,4,5,6)
+rain <- c(55,50,45,50,60,70) 
+df <- data.frame(month,rain) # 그래프를 작성할 대상 데이터
+df
+
+ggplot(df, aes(x=month,y=rain)) +  # 그래프를 그릴 데이터 지정
+geom_bar(stat="identity",   # 막대의 높이는 y축에 해당하는 열의 값
+         width=0.7, # 막대의 폭 지정 
+         fill="steelblue") # 막대의 색 지정
+
+#막대그래도 꾸미기
+month <- c(1,2,3,4,5,6)
+rain <- c(55,50,45,50,60,70) 
+df <- data.frame(month,rain) # 그래프를 작성할 대상 데이터
+df
+ggplot(df, aes(x=month,y=rain)) +  # 그래프를 그릴 데이터 지정
+  geom_bar(stat="identity",   # 막대의 높이는 y축에 해당하는 열의 값
+           width=0.7, # 막대의 폭 지정 
+           fill="steelblue") + # 막대의 색 지정
+  ggtitle("xxxxxx") +
+  theme(plot.title = element_text(size=25, face="bold", colour="steelblue")) + labs(x="ccc",y="vvv") + # 그래프의 x, y축 레이블 지정 
+  coord_flip() # 그래프를 가로 방향으로 출력
+```
+
+###  히스토그램
+
+```R
+ggplot(iris, aes(x=Petal.Length)) + # 그래프를 그릴 데이터 지정 
+geom_histogram(binwidth=0.5) # 히스토그램 작성, 연속형 데이터에 구간 나눌때 기준이 0.5로 설정했음.
+
+
+ggplot(iris, aes(x=Sepal.Width, fill=Species, color=Species)) +   #fill내부색, color 윤곽선색
+geom_histogram(binwidth = 0.5, position="dodge") + #dodge는 species별로 분리하여!
+theme(legend.position="top")
+ 
+```
+
+### 산점도의 작성
+
+```R
+library(ggplot2)
+ggplot(data=iris, aes(x=Petal.Length, y=Petal.Width))+
+geom_point() #포인트.찍는것, 산점도
+
+library(ggplot2)
+ggplot(data=iris, aes(x=Petal.Length, y=Petal.Width,
+                      color=Species)) + geom_point(size=3) +
+ggtitle("flower.length, pock") + # 그래프의 제목 지정 
+theme(plot.title = element_text(size=25, face="bold", colour="steelblue"))
+```
+
+
+
+### 상자그림
+
+- 이상치, 특이치를 읽을 수 있음
+- 줄이 평균값
+
+```R
+library(ggplot2)
+ggplot(data=iris, aes(y=Petal.Length)) +  # y축에 대상 변수 지정
+geom_boxplot(fill="yellow")
+
+#품종별 상자그림
+library(ggplot2)
+ggplot(data=iris, aes(y=Petal.Length, fill=Species)) + geom_boxplot()
+```
+
+### 선그래프의 작성
+
+```R
+library(ggplot2)
+year <- 1937:1960
+cnt <- as.vector(airmiles) 
+df <- data.frame(year,cnt)  # 데이터 준비
+head(df)
+
+ggplot(data=df, aes(x=year,y=cnt)) + #선그래프 작성
+geom_line(col="red")
+```
+
+## 차원 축소(시험x)
 
