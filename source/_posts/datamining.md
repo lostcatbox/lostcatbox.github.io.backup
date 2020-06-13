@@ -31,21 +31,23 @@ t, p/f [자세히]([http://blog.daum.net/dataminer9/category/t%EA%B2%80%EC%A6%9D
 - 카테고리 값을 그냥 정수로 쓰면 회귀 분석 모형은 이 값을 크기를 가진 숫자로 인식하므로 더미변수의 형태로 변환 필요
 
   예를 들면 1\~12 월이 있는데 이것을 spring,summer,fall,winder로 0 or 1을 가진 변수로 바꿔주던가 아니면 mon1\~mon12로 0 or 1을 가진 변수를 바꿔줘야만한다.
+  
+- 한 종류 더미변수들 중에 기준이 되는 더미변수(mon1~mon12에서 mon1)하나는 반드시 제거후에 돌려줘야함(그래야 beta0값을 기준으로 beta들 차례대로 정해지니까)
 
 ![CE8D740B-FCB7-461D-AADA-F031E370DF8D_1_105_c](https://tva1.sinaimg.cn/large/007S8ZIlgy1geasxe5si7j310r0gidhv.jpg)
 
 ![D4805572-E335-4F4F-8A9E-86DEA5742A6F_1_105_c](https://tva1.sinaimg.cn/large/007S8ZIlgy1geasxh635pj30yx0hdwgu.jpg)
 
-# 선형 회귀 분석 해보기
+## 선형 회귀 분석 해보기
 
-## 데이터를 파일 또는 웹에서 가져오기
+### 데이터를 파일 또는 웹에서 가져오기
 
 ```R
 rd<-read.csv(“/User/”, header=T) #파일 (csv 형태): 
 rd <- read.table("http://사이트주소", header = T, stringsAsFactors = FALSE) #웹 (txt 형태), stringsAsFactors는 데이터안에 문자열로되어있는것을 범주형factors로 인식해버림을 방지
 ```
 
-## 산점도를 통한 두 변수간 관계 확인(관계성 유효한지 눈치보기)
+### 산점도를 통한 두 변수간 관계 확인(관계성 유효한지 눈치보기)
 
 ```R
 plot(x=a, y=b, xlim=c(0,10), ylim=c(0,10), main=“points“) #xlim, ylim은 값범위를 나타냄
@@ -53,9 +55,9 @@ par(mfrom=c(2,1));plat(x1,y);plot(x2,y) #;는 다른선언문이라고 표현
 
 ```
 
-## 필요한 변수 생성 및 모으기(질적변수>>양적변수처럼 만드는 더미변수)
+### 필요한 변수 생성 및 모으기(질적변수>>양적변수처럼 만드는 더미변수)
 
-### 일괄적 더미변수 생성
+#### 일괄적 더미변수 생성
 
 마지막에는 cbind로 dummy데이터 합쳐놔야함
 
@@ -63,17 +65,17 @@ A변수는 다 썻으면 없애기
 
 ```R
   drd <- data.frame(fac=factor(rd$A));#rd$A변수를 범주형 변수로 바꾼다음, 데이터프레임으로 저장후,  
-  dummy <- model.matrix(~fac-1, drd) #~fac을 더미변수로 변형됨,  -1은모든 0으로 되있는변수는 생성하지않고
+  dummy <- model.matrix(~fac-1, drd) #~fac을 더미변수로 변형됨,  -1은모든 0으로 되있는변수는 생성하지않고, #모든 값종류기준으로 전부 더미변수로
 ```
 
-### 조건별 더미변수 생성
+#### 조건별 더미변수 생성
 
 특정조건에 해당하면 1, 아니면 0
 
 A변수는 끝났으면 삭제, 아래는 기존 데이터에 추가되므로 cbind필요없다
 
 ```R
-    newdata <- transform(rd, dum1 = ifelse(A >= 1 & A < 2, 1, 0), dum2 = ifelse(A >= 3 & Month <4, 1, 0)) #더미변수 생성
+newdata <- transform(rd, dum1 = ifelse(A >= 1 & A < 2, 1, 0), dum2 = ifelse(A >= 3 & Month <4, 1, 0)) #더미변수 생성
 ```
 
 ## 회귀분석 돌리기
@@ -125,22 +127,21 @@ vif(reg1)   #vif의 10이하면 독립성이 성립!
 
 ## 실습해보기
 
-#### 최종 모형에 만약 p값이 의미없는 변수가 있다면
-
-- step 함수를 적용한 회귀분석 결과가 최종 모형이므로 유의하지 않은 계수들을 포함할 수 있습니다.  식에는 포함시키되, 식을 해석할 때와 예측할 때만 유의하지 않은 계수는 제외하고 계산하면 됩니다.
+step 함수를 적용한 회귀분석 결과가 최종 모형이므로 유의하지 않은 계수(p값이 의미없는것)들을 포함할 수 있습니다.  식에는 포함시키되, 식을 해석할 때와 예측할 때만 유의하지 않은 계수는 제외하고 계산하면 됩니다.
 
 ```R
 install.packages("car")
 library(car)
 
-rd <- read.csv("/Users/lostcatbox/uinv_lecture/data_mining/Lec6_dummy.csv", header=T)
+rd <- read.csv("/Users/lostcatbox/univ_lecture/data_mining/Lec6_dummy.csv", header=T)
 str(rd)
 #month변수는 우리가 볼때는 범주형 변수지만 R에서는 일단 연속형으로보고있다
-#즉, 더미 변수로 변환해줘야함
+#더미 변수로 변환해줘야함, 아래 과정은 전체를 더미변수화하는것이므로 4계절로나누는것불가!
 drd <- data.frame(mon=factor(rd$Month)) #일단 범주형인식후  mon변수로 가져옴
 str(drd)
 dummy_month <- model.matrix(~mon-1,drd) #더미를 생성함, mon변수에서 -1를 한이유는 0으로만 이루어진 interupt을 없애고 출력하겠음. 0만 나오는건 출력안함
 
+#4계절 더미변수만들기
 #아래는 봄여름가을겨울 계절 변수 만들기
 season <- transform(rd, spring = ifelse(Month>=3&Month<6,1,0), summer = ifelse(Month>=6&Month<9,1,0), 
                     fall = ifelse(Month>=9&Month<12,1,0), winter=ifelse(Month==12|Month<=2,1,0)) #일단 계절에 해당하는 변수 4개 생성
@@ -191,6 +192,15 @@ shapiro.test(residuals(reg_nodummy1))
 vif(reg_nodummy1) #최종 회기모형넣어줘야함
 vif(reg_nodummy1) >10 #True, False값만 보기
 
+
+
+
+
+
+
+
+
+
 #2 mon dummy 추가하여 회귀분석 돌리기.
 #산점도 그려서 보는것은 생략
 
@@ -216,7 +226,8 @@ summary(reg_month1)
 #                    (p<0.001)    (p<0.001)    (p=0.027)   (p=0.10142)  (p=0.003) #mon10은 R^2값을 설명하느데는 도움됨
 #R^2 = 0.753
 # Adj. R^2 = 0.7235 
-#해석은 4, 11이 판매량 감소고 다른 달은 판매량이 동일함. 10월도 판매량 동일, 11월달이 가장적다. 
+#해석은 4, 11이 판매량 감소고 다른 달은 판매량이 동일함. 
+#10월도 판매량 동일(해당계수가 유의미하지않으므로 0으로취급), 11월달이 가장적다. 
 #72.4%정도 모든 x들이 종속변수를 설명함.
 
 #잔차의 등분산성(유효한 연속형 변수에만 하면됨)
@@ -247,6 +258,8 @@ vif(reg_month1)
 
 # 비선형데이터 다루기
 
+- [변수](https://m.blog.naver.com/libido1014/120113775017), [변수2](http://triki.net/study/3108#dry_toc_2)
+
 - 데이터가 낫처럼 휘어져 있음
 
 - 좋은 회귀식의 조건은 데이터의 중앙을 지나야 하지만 직선으로 굽어진 데이터의 중앙을 모두 지날 수 없음
@@ -268,15 +281,14 @@ vif(reg_month1)
 ## 교호작용
 
 질적변수와 양적변수의 교호작용:
+
 예시
 
-𝑋: 연령, 𝑆: 성별(1 여성, 0 남성)일 때, 초봉(Y)를 설명하려고 한다.
+𝑋: 연령, 𝑆: 성별(1 여성, 0 남성)일 때, 초봉(Y)를 설명하려고 한다. (당연히 성별이 질적변수)
 
 더미 변수만 활용시 
 
-```
 𝑌 = 𝛽􏰀 + 𝛽􏰁𝑋 + 𝛽􏰂𝑆 + 𝜖
-```
 
  남성일 때의 연령과 여성일 때의 연령을 고려하기 위해서 교호작용 변수(𝑋 􏰃 𝑆)를 적용
 
@@ -388,7 +400,7 @@ summary(reg8)
 
 ```
 
-## 로지스틱 회귀분석
+# 로지스틱 회귀분석
 
 ```R
 
