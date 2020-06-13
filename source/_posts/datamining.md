@@ -1,6 +1,6 @@
 ---
 
-title: 회귀선형모형
+title: 선형 회귀 분석,로지스틱 회귀 분석, 신경망
 date: 2020-04-16 19:13:06
 categories: [Dataminging]
 tags: [Dataminging, Univ]
