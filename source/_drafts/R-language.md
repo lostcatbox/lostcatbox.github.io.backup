@@ -952,7 +952,7 @@ plot(tbl)
 
 ------------------
 
-# 데이터 전처리(시험x)
+# 데이터 전처리(시험x)(7장)
 
 ## 결측값
 
@@ -1217,7 +1217,7 @@ merge(x,y, by.x=c("name"), by.y=c("sname"))
 
 
 
-# 데이터 시각화
+# 데이터 시각화(8장)
 
 ## 데이터 시각화 기법
 
@@ -1415,4 +1415,178 @@ geom_line(col="red")
 ```
 
 ## 차원 축소(시험x)
+
+# 워드클라우드
+
+## 워드클라우드의 개념  
+
+- 지금까지 숫자 형태의 데이터를 다루는 방법에 관하여 학습
+- 분석 대상 데이터 중에는 숫자가 아닌 문자나 문장 형태의 데이터도 있음 ex) 이메일 내용이나 SNS 메시지, 댓글
+- 워드클라우드(word cloud)는 문자형 데이터를 분석하는 대표적인 방법으로, 대상 데이터에서 단어(주로 명사)를 추출하고 단어들의 출현 빈도수를 계산하여 시각화하는 기능
+- 출현 빈도수가 높은 단어는 그만큼 중요하거나 관심도가 높다는 것을 의미
+
+## 한글 워드클라우드 준비
+
+- JRE 설치
+
+- **2.2** **워드클라우드** **문서 파일 준비**
+  - 워드클라우드를 작성할 대상 문서는 일반적으로 텍스트 파일 형태로 준비
+  - 파일의 끝부분 처리를 마지막 문장이 끝나면 반드시 줄 바꿈을 한 후 저장
+  - 파일을 저장할 때, [다른 이름으로 저장]을 선택하고 [그림 10-5]와 같이 인코딩을 ‘UTF-8’로 선택을 하여 저장
+  - 파일 이름이나 파일이 저장된 폴더 경로에 한글이 포함되어 있으면 파일을 읽을 때 에러가 발생하는 경우가 있으므로 파일을 저장할 때는 파일 이름을 영어로 설정
+
+## 대국민 담화문의 명사 추출하기(시험문제)
+
+```R
+install.packages("wordcloud")
+install.packages("RColorBrewer")
+library(wordcloud) 			# 워드클라우드
+library(KoNLP) 			# 한국어 처리
+library(RColorBrewer) 		# 색상 선택
+Sys.setenv(JAVA_HOME="/Users/lostcatbox/univ_lecture/R language/")
+par(family="AppleGothic")
+#text 파일형식일때 text <- readLines("mis_document.txt", encoding ="UTF-8" ) # 파일 읽기
+
+word <- c("경기도", "포천시", "소흘읍")
+frequency <- c(651,305, 61)
+word
+frequency
+wordcloud(word, frequency, colors="blue") #각 word가 frequency만큼 있다고가정
+wordcloud(word, frequency, random.order=F, random.color=F, colors=rainbow(length(word))) #단어들 색변환
+
+#라이브러리 사용 색 출력
+pal2 <- brewer.pal(8, "Dark2")
+word <- c("경기도", "포천시", "소흘읍")
+frequency <- c(651,305, 61)
+wordcloud(word, frequency, colors=pal2)
+
+#지역별 순이동 인구수에 따른 워드 클라우드 
+pal2 <- brewer.pal(8, "Dark2")
+pal2
+setwd("/Users/lostcatbox/univ_lecture/R language/Temp/")
+data <- read.csv("city_population2.csv", header=T)
+head(data)
+names(data)
+str(data)
+summary(data)
+summary(data$행정구역.시군구.별)
+
+#"전국" 지역 통계 삭제
+data2 <- data[data$행정구역.시군구.별 != "전국",]
+head(data2)
+
+#"시" 단위 지역 통계 삭제
+x <- grep("시$", data2$행정구역.시군구.별) # grep()함수는 어떤 문자열이 어디에위치하는지(포함되어있어도) 알고싶을때. 텍스트 검색
+x
+data3 <- data2[-c(x),] #x를 제외한 !
+
+#순이동 인구수(전출보다 전입 인구수)가 많은 지역 ,다음수를 넣으면 행!
+data4 <- data3[data3$순이동..명.>0, ]
+data4
+word <- data4$행정구역.시군구.별
+word
+frequency <- data4$순이동..명.
+frequency
+wordcloud(word, frequency, colors=pal2)
+
+#순이동 인구수(전입보다 전출 인구수)가 많은 지역
+data5 <- data3[data3$순이동..명.<0, ]
+data5
+word <- data5$행정구역.시군구.별
+word
+frequency <- abs(data5$순이동..명.) #-값이므로 절댓값
+frequency
+wordcloud(word, frequency, colors=pal2)
+```
+
+
+
+## 워드 클라우드 실습
+
+```R
+# Install
+install.packages("tm")           # for text mining
+install.packages("SnowballC")    # for text stemming
+install.packages("wordcloud")   # word-cloud generator 
+install.packages("RColorBrewer") # color palettes
+
+# Load
+library("tm")
+library("SnowballC")
+library("wordcloud")
+library("RColorBrewer")
+
+# Read the text file from internet
+filePath <- "http://www.sthda.com/sthda/RDoc/example-files/martin-luther-king-i-have-a-dream-speech.txt"
+text <- readLines(filePath) #txt파일 읽기
+text
+
+# Load the data as a corpus
+docs <- Corpus(VectorSource(text))
+docs
+
+# Inspect documents
+inspect(docs)
+
+# Text transformation
+toSpace <- content_transformer(function (x , pattern ) gsub(pattern, " ", x))
+docs <- tm_map(docs, toSpace, "/")
+docs <- tm_map(docs, toSpace, "@")
+docs <- tm_map(docs, toSpace, "\\|")
+
+# Cleaning text
+# Convert the text to lower case
+docs <- tm_map(docs, content_transformer(tolower))
+# Remove numbers
+docs <- tm_map(docs, removeNumbers)
+# Remove english common stopwords
+docs <- tm_map(docs, removeWords, stopwords("english"))
+# Remove your own stop word
+# specify your stopwords as a character vector
+docs <- tm_map(docs, removeWords, c("blabla1", "blabla2")) 
+# Remove punctuations
+docs <- tm_map(docs, removePunctuation)
+# Eliminate extra white spaces
+docs <- tm_map(docs, stripWhitespace)
+# Text stemming
+docs <- tm_map(docs, stemDocument)
+
+# Build data matrix
+dtm <- TermDocumentMatrix(docs)
+m <- as.matrix(dtm)
+v <- sort(rowSums(m),decreasing=TRUE)
+d <- data.frame(word = names(v),freq=v)
+head(d, 10)
+
+# Generate wordcloud
+set.seed(1234)
+wordcloud(words = d$word, freq = d$freq, min.freq = 1,
+          max.words=200, random.order=FALSE, rot.per=0.35, 
+          colors=brewer.pal(8, "Dark2"))
+
+#-------- End of Chapter 10 ----------#
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
