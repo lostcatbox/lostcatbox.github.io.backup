@@ -9,12 +9,15 @@ tags: [R, Univ, Basic]
 
 mac 에서 utf8관련오류
 
-```
+```R
 #teminal
 defaults write org.R-project.R force.LANG en_US.UTF-8
 
 #한글 깨짐
 #R에서 par(family="AppleGothic")
+
+getwd() #현재 경로 
+setwd() #기본 경로 설정
 ```
 
 
@@ -31,6 +34,49 @@ ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/
 
 brew cask install rstudio   # rstudio설치
 ```
+
+### R언어  문제풀이
+
+```R
+#1
+for (i in 1:100) {
+  if (i%%3==0) {
+    cat('*')
+  } else {
+    cat(i)
+  }
+}
+#2
+num <- 2
+while(num <= 2000) {
+  i =2;
+  while(i<num) {
+    if (num%%i ==0) break;
+    i=i+1
+  }
+  if (num ==i) print(num);
+  num= num+1
+}
+
+#3
+
+x <- c(0,1)
+while (length(x) < 40) {
+  option <- length(x)
+  new <- x[option] + x[option -1]
+  x <- c(x,new)
+}
+
+print(x)
+
+#4
+data(iris)
+str(iris)
+apply(iris[,1:4], 1, sum) # row 방향으로 함수 적용 #1이 행방향
+apply(iris[,1:5], 2, max) # col 방향으로 함수 적용  #2는 열방향
+```
+
+
 
 ## R데이터 속성 
 
@@ -77,7 +123,7 @@ Inf 양의 무한대, -Inf 음의 무한대
 
 ### 백터의 개념
 
-- 1차원 배열 데이터 (1행에 데이터가![스크린샷 2020-04-19 오후 1.19.47](https://tva1.sinaimg.cn/large/007S8ZIlgy1gdyyi46fffj316n0u0al4.jpg)있다)(1학년 학생들의 몸무게 자료) 
+- 1차원 배열 데이터 (1행에 데이터가있다)(1학년 학생들의 몸무게 자료) ![스크린샷 2020-04-19 오후 1.19.47](https://tva1.sinaimg.cn/large/007S8ZIlgy1gdyyi46fffj316n0u0al4.jpg)
 
   ex) 몸무게 > 56|67|85|65|56|49
 
@@ -85,7 +131,7 @@ Inf 양의 무한대, -Inf 음의 무한대
 
   ex) 우리가 익히 아는 엑셀 데이터, DB
 
-### 리스트
+### 리스트(시험)
 
 ![스크린샷 2020-04-19 오후 1.10.55](https://tva1.sinaimg.cn/large/007S8ZIlgy1gdyylu3oevj317u0t8198.jpg)
 
@@ -127,7 +173,7 @@ x[4][[1]][2]   # 네번째리스트에 첫번째리스트의 값에 2번째 요�
 
 c()를 사용하여 벡터 변수를 만들수있다
 
-```
+```R
 x <- c(1,2,3) # 숫자형 벡터
 y <- c("a","b","c") # 문자형 벡터
 z <- c(TRUE,TRUE, FALSE, TRUE) # 논리형 벡터
@@ -144,27 +190,29 @@ v1
 v2 <- c(1,2,5, 50:90)
 v2
 
+#(시험)
 #연속 숫자인데 간격지정
 v3 <- seq(1,101,3)
 v3
 v4 <- seq(0.1,1.0,0.1)
 v4
 
+#(시험)
 #반복 생성
 v5 <- rep(1,times=5) # 1을 5번 반복
 ```
 
-벡터의 원소값에 이름 지정
+벡터의 원소값에 이름 지정(시험)
 
-```
+```R
 score = c(123,243,423,5234)
 names(score) = c('3', '4qjsWO', 'rrr', 'rew')
 score #실행시 이제 header가 names가 들어가고 2행 3열
 ```
 
-백터에서 원소 추출
+백터에서 원소 추출 (시험)
 
-```
+```R
 d <- c(1,2,3,4,5,6,6,7)
 d[1]
 d[1:8]
@@ -184,12 +232,12 @@ GNP[1]
 GNP["Japan"]
 GNP[c("Korea", "Nepal")]
 
-v1 <- c(1,5,7,8,9) v1
+v1 <- c(1,5,7,8,9)
 v1[2] <- 3 # v1의 2번째 값을 3으로 변경
 v1[c(1,5)] <- c(10,20) # v1의 1, 5번째 값을 각각 10, 20으로 변경
 ```
 
-### 벡터의 연산
+### 벡터의 연산(시험)
 
 기본적으로 벡터값을 연산은 벡터들의 길이가 같아야함
 
@@ -197,12 +245,13 @@ v1[c(1,5)] <- c(10,20) # v1의 1, 5번째 값을 각각 10, 20으로 변경
 
 ![image-20200412165213190](https://tva1.sinaimg.cn/large/007S8ZIlgy1gdr1axl1x2j30x00mo7cv.jpg)
 
-```
+```R
+mean(d[1:5])  #1~5번째 값들의 평균
 sort(d, decreasing = FALSE)  # 오름차순 정렬 default값임
 sort(d, decreasing = TRUE)   # 내림차순 정렬
 ```
 
-## 매트릭스(5주차)
+## 매트릭스
 
 ### 매트릭스의 개념
 
@@ -220,18 +269,21 @@ sort(d, decreasing = TRUE)   # 내림차순 정렬
 
 ![스크린샷 2020-04-19 오후 3.05.37](https://tva1.sinaimg.cn/large/007S8ZIlgy1gdz1k6v6v9j31480nmgqz.jpg)
 
-### 행열 만들기 (matrix함수사용하고 기본적으로 array의 2차원이 행열임)
+### 행열 만들기 (matrix함수사용하고 기본적으로 array의 2차원이 행열임)(시험)
 
 ```R
-x <- matrix(1:6, nrow=2) #행 2개
+x <- matrix(1:6, nrow=2, ncol=5) #행 2개 열 5개
 x
-x <-  matrix(1:6, nrow=2, byrow=TRUE) #행이 우선으로 채워짐, 즉 가로로 읽음!!!!!!!! TRUE or T
+x <-  matrix(1:6, nrow=2, byrow=T) #행이 우선으로 채워짐,가로로 채움,TRUE or T
 
 names <- list(c("1행", "2행"), c("1열", "2열", "3열"))
 matrix(1:6, nrow=2, byrow=TRUE, dimnames=names)
+
+cbind(x,y) #x,y를 열 방향으로 결합
+rbind(x,y) #x,y를 행방향으로 결합
 ```
 
-### 매트릭스에서 값 추출하기
+### 매트릭스에서 값 추출하기(시험)
 
 ```
 x[2,3]  #x에서 2행 3열의 값을 가져옴
@@ -246,9 +298,9 @@ z[,c(1,4)]
 
 ```
 
-### 행열에 이름붙이기
+### 행열에 이름붙이기(시험)
 
-```
+```R
 rownames(x) <- c("1행", "2행", "3행", "4행") #row name붙이는 함수
 x
 
@@ -261,10 +313,12 @@ rownames(x) #행의 모든 이름
 colnames(x) #열의 모든 이름
 colnames(x)[2] #열의 2번째 이름
 
-
+#행과 열에 지정한 이름으로 매트릭스값 추출가능
+score['John','Math']
+score['Tom',c('Math','Science')]
 ```
 
-## 데이터 프레임와 매트릭스
+## 데이터 프레임(시험)
 
 ### 데이터 프레임
 
@@ -273,11 +327,9 @@ colnames(x)[2] #열의 2번째 이름
 
 ![스크린샷 2020-05-02 오후 6.44.15](https://tva1.sinaimg.cn/large/007S8ZIlgy1gee8xrdm5oj30ow0f2gr4.jpg)
 
-![스크린샷 2020-04-19 오후 2.56.19](https://tva1.sinaimg.cn/large/007S8ZIlgy1gdz1axf3cqj317u0tgk4j.jpg)
-
 ![스크린샷 2020-04-19 오후 2.55.44](https://tva1.sinaimg.cn/large/007S8ZIlgy1gdz1b510ecj317q0u0n92.jpg)
 
-### 데이터세트
+### 데이터세트(시험)
 
 R에서 제공하는 실습용 데이터셋
 
@@ -317,15 +369,15 @@ rowMeans(iris[,-5]) # 행별 평균 #5열은 숫자형 데이터가 아니므로
 summary(iris)
 summary(iris$Petal.Width) #특정 변수 출력
 
-#데이터 세트 저장하고 일기
+#데이터 세트 저장하고 읽기(시험)
 write.table(iris, "../iris.txt", sep=",")  #변수와 변수사이의 값에대해 ,찍음
 
 x <- read.csv("../iris.txt", header=T)
 
-x<- read.csv(file.choose(), header=T)
+x<- read.csv(file.choose(), header=T) #경로 직접 선택가능
 ```
 
-### 이외의 필요한 정보
+### 이외의 필요한 정보(시험)
 
 ```R
 # 행과 열 방향 전환
@@ -333,7 +385,7 @@ z <- matrix(1:20, nrow=4, ncol=5)
 z
 t(z)  #이때 바뀜 t함수
 
-#조건에 맞는 행과 열의 값 추출 (subset은 데이터프레임에서 잘먹힘)
+#조건에 맞는 행과 열의 값 추출 (subset은 데이터프레임에서 잘먹힘)(중요!)
 IR.1 <- subset(iris, Species=="setosa")  #subset은 부분집합!
 IR.1
 IR.2 <- subset(iris, Sepal.Length>5.0 &
@@ -382,11 +434,11 @@ is.data.frame(state.x77)
 iris[,"Species"] # 결과=벡터. 매트릭스와 데이터프레임 모두 가능
 iris[,5] # 결과=벡터. 매트릭스와 데이터프레임 모두 가능
 iris["Species"] # 결과=데이터프레임. 데이터프레임만 가능
-iris[5] # 결과=데이터프레임. 데이터프레임만 가능 #,가 없으므로 열 로 인식
+iris[5] # 결과=데이터프레임. 데이터프레임만 가능 #,가 없으므로 열 로 인식 (주의!)
 iris$Species # 결과=벡터. 데이터프레임만 가능
 ```
 
-## 파일 데이터 읽기/쓰기
+## 파일 데이터 읽기/쓰기(시험)
 
 ```R
 setwd("../Users/user_name/uinv_lecture/R language/") # 기본 작업 폴더 지정
@@ -398,7 +450,7 @@ my.iris
 write.csv(my.iris, "my_iris.csv", row.names=F) # .csv 파일에 저장하기
 ```
 
-# 조건문, 반복문, 함수
+# 조건문, 반복문, 함수(시험)
 
 ## 조건문
 
@@ -493,22 +545,22 @@ for(i in 1:5) {
 }
 
 for(i in 1:9) {
-print('2 *', i,'=', 2*i,'\n')   #cat은 print와 유사하지만 다름, \n반드시기억
+print('2 *', i,'=', 2*i,'\n')   #cat은 print와 유사하지만 다름, \n반드시기억 (중요)
 }
 ```
 
 ### for 문 안에 if문 사용
 
 ```R
-for(i in 1:20) {w
-if(i%%2==0) { # 짝수인지 확인
-print(i)
-}
+for(i in 1:20) {
+  if(i%%2==0) { # 짝수인지 확인
+    print(i)
+  }
 }
 
 sum <- 0
 for(i in 1:100) {
-sum <- sum + i # sum에 i 값을 누적
+  sum <- sum + i # sum에 i 값을 누적
 }
 print(sum)
 >>>
@@ -516,9 +568,28 @@ print(sum)
 ```
 
 >```R
->/ 나눗셈
->%% 나머지
->%/% 몫
+>#(시험)
+>/             #나눗셈
+>%%            #나머지
+>%/%           #몫
+>sqrt()        #제곱근
+>max()         #파라미터에서 최댓값반환 
+>min()         #파라미터에서 최솟값반환 
+>log()         #로그취함
+>abs()         #절대값
+>factorial()   #팩토리얼 반환
+>
+>#변수명지정
+>-, @는 불가능
+>.,_ 사용하자
+>
+>#논리 연산지
+><=
+>>=
+>==
+>!=
+>|
+>&
 >```
 
 ### iris에서 꽃잎의 길이에 따른 분류 작업
@@ -545,7 +616,7 @@ newds <- data.frame(iris$Petal.Length, mylabel) # 꽃잎의 길이와 레이블 
 - while문은 어떤 조건이 만족하는 동안 코드블록을 수행하고, 해당 조건이 거짓일 경 우 반복을 종료하는 명령문
 
 ```R
-sum <- 0
+sum <- 0 #반드시 초기화해야함
 i <- 1
 while(i <=100) {
     sum <- sum + i 
@@ -558,6 +629,7 @@ print(sum)
 ### break
 
 ```R
+#if문에 해당하면 속해있는반복문종료
 sum <- 0 
 for(i in 1:10) {
     sum <- sum + i
@@ -569,6 +641,7 @@ sum
 ### next
 
 ```R
+#if문에 해당하면 그 i 넘어감
 sum <- 0 
 for(i in 1:10) {
   if (i%%2==0) next
@@ -577,7 +650,7 @@ for(i in 1:10) {
 sum
 ```
 
-### apply() 함수 (꼭 알아두기)
+### apply() 함수 (꼭 알아두기)(시험)
 
 - 반복 작업이 필요한 경우에는 반복문을 적용
 
@@ -614,7 +687,7 @@ print(mean(25:83))
 print(sum(1:100))
 ```
 
-### 사용자 정의 함수
+### 사용자 정의 함수(시험)
 
 사용자 정의 함수 문법
 
@@ -680,7 +753,7 @@ a+b
 mydiv(mydiv(20,2),5) # 함수 호출
 ```
 
-#### 조건에 맞는 데이터의 위치 찾기
+#### 조건에 맞는 데이터의 위치 찾기(시험)
 
 - 데이터 분석을 하다 보면 자신이 원하는 데이터가 벡터나 매트릭스, 데이터 프레임 안에서 어디에 위치하고 있는지를 알기 원하는 때가 있음
 - 예를 들어, 50명의 학생 성적이 저장된 벡터가 있는데 가장 성적이 좋은 학생은 몇 번째에 있는지를 알고 싶은 경우
@@ -719,7 +792,7 @@ idx
 
 ## 자료 구조
 
-### 자료 특성에 따른 분류
+### 자료 특성에 따른 분류(시험)
 
 - 범주형 자료(질적 자료) 
   - 크기 비교못함
@@ -732,7 +805,7 @@ idx
 - 단일변수 자료(열이 하나, 벡터하나로 표현가능)
 - 다중변수 자료(많은 변수들로 구성, 열이 여러개, 메트릭스or데이터프레임사용)
 
-## 단일변수 범주형 자료의 탐색
+## 단일변수 범주형 자료의 탐색(시험)
 
 ### 도수 분포표 작성
 
@@ -740,17 +813,24 @@ idx
 
 > 도수 분포표 만드는 원리
 >
-> \1. 자료의 개수를 센다. (55개) 2. 자료 내에서 최대/최소값을 찾는다. (최대 180, 최소 162) 3. 몇 개 구간으로 나눌지 결정한다. (5개 구간으로 설정) 4. 구간의 폭을 구한다. (구간폭=(최대값–최소값)/구간수, (180-162)/5=3.6, 따라서 4로 결정) 5. 구간의 경계값(급의 경계값)을 구한다. 6. 구간별 자료의 개수(도수)를 적는다.
+> 1. 자료의 개수를 센다. (55개)
+> 2. 자료 내에서 최대/최소값을 찾는다. (최대 180, 최소 162)
+> 3. 몇 개 구간으로 나눌지 결정한다. (5개 구간으로 설정) (x<-cut(weight, breaks= 5))
+> 4. 구간의 폭을 구한다. (구간폭=(최대값–최소값)/구간수, (180-162)/5=3.6, 따라서 4로 결정)
+> 5. 구간의 경계값(급의 경계값)을 구한다.
+> 6. 구간별 자료의 개수(도수)를 적는다.table(x)
 
 ```R
-favorite <- c('WINTER', 'SUMMER', 'SPRING', 'SUMMER', 'SUMMER’,
+favorite <- c('WINTER', 'SUMMER', 'SPRING', 'SUMMER', 'SUMMER',
 'FALL', 'FALL', 'SUMMER', 'SPRING', 'SPRING')
 favorite # favorite의 내용 출력
 table(favorite) # 도수분포표 계산
-table(favorite)/length(favorite) # 비율 출력
+table(favorite)/length(favorite) # 비율 출력 상대도수
 ```
 
-### 막대그래프
+### 막대그래프(시험)
+
+- 학생 신장 55명에서 막대그래프까지 구하는것 문제(시험)
 
 ```R
 ds <- table(favorite)
@@ -770,7 +850,7 @@ ds
 pie(ds.new,clockwise=TRUE, main='favorite season') #시계방향
 ```
 
-### 숫자로 표현된 범주형 자료
+### 숫자로 표현된 범주형 자료(색입히는것중요)
 
 ```R
 #1=초록, 2=빨강, 3=파랑
@@ -807,7 +887,7 @@ mean(weight.heavy,trim=0.2) # 절사평균(상하위 20% 제외)
 
 
 
-### 사분위수
+### 사분위수(시험)
 
 - 사분위수(quatile)란 주어진 자료에 있는 값들을 크기순으로 나열했을 때 이것을 4등 분하는 지점에 있는 값들을 의미
 - 자료에 있는 값들을 4등분하면 등분점이 3개 생기는데, 앞에서부터 ‘제1사분위수 (Q1)’, ‘제2사분위수(Q2)’, ‘제3사분위수(Q3)’라고 부르며, 제2사분위수(Q2)는 중앙값 과 동일
@@ -822,7 +902,7 @@ summary(mydata)
 
 
 
-### 산포
+### 산포(시험)
 
 - 주어진 자료에 있는 값들이 퍼져 있는 정도(흩어져 있는 정도)
 - 분산(variance)과 표준편차(standard deviation)를 가지고 파악
@@ -839,7 +919,7 @@ diff(range(mydata)) # 최댓값, 최솟값의 차이
 
 
 
-### 히스토그램(연속형 변수에게만 적용하는 막대그래프)
+### 히스토그램(연속형 변수에게만 적용하는 막대그래프)(시험)
 
 - 히스토그램(histogram)은 외관상 막대그래프와 비슷한 그래프로, 연속형 자료의 분 포를 시각화할 때 사용
 - 막대그래프를 그리려면 값의 종류별로 개수를 셀 수 이어야 하는데, 키와 몸무게 등 의 자료는 값의 종류라는 개념이 없어서 종류별로 개수를 셀 수 없음
@@ -860,9 +940,7 @@ hist(dist, # 자료(data)
     breaks=5) # 막대 개수 조절
 ```
 
-
-
-### 상자그림
+### 상자그림(시험)
 
 - 상자그림(box plot)은 상자 수염 그림(box and whisker plot)으로도 부르며, __사분위 수를 시각화__하여 그래프 형태로 나타낸 것
 - 하나의 그래프로 데이터의 분포 형태를 포함한 다양한 정보를 전달하기 때문에 단일 변수 수치형 자료를 파악하는 데 자주 사용
@@ -873,12 +951,12 @@ boxplot(dist, main="자동차 제동거리")
 
 boxplot.stats(dist)
 
-boxplot(Petal.Length~Species, data=iris, main="품종별 꽃잎의 길이")
+boxplot(Petal.Length~Species, data=iris, main="품종별 꽃잎의 길이") #종속변수~독립변수들!!! 중요
 ```
 
 ## 다중변수 자료의 탐색
 
-### 산점도
+### 산점도(시험)
 
 - 다중변수 자료(또는 다변량 자료): 변수가 2개 이상인 자료
 - 다중변수 자료는 2차원 형태를 나타내며, 이는 매트릭스나 테이터 프레임에 저장하여 분석
@@ -890,7 +968,7 @@ data() #R의 기본데이터 셋!!
 str(mtcars)
 wt <- mtcars$wt
 mpg <- mtcars$mpg
-plot(wt, mpg, main="중량 - 연비 그래프", xlab="중량", ylab="연비", col="red", pch=18) #pch는 plot에 18은 점 모양이 다이야몬드
+plot(wt, mpg, main="중량 - 연비 그래프", xlab="중량", ylab="연비", col="red", pch=18) #pch는 plot에 18은 점 모양이 다이야몬드(시험)
 
 
 # 변수 여러개
@@ -907,10 +985,9 @@ iris$Species
 point
 color <- c("red", "green", "blue")
 plot(iris.2, main="Iris plot", pch=c(point), col=color[point]) #pch은 점 모양 , col은 색깔지정 point번호로 color red, green, blue순으로 출력
-
 ```
 
-### 상관분석과 상관계수
+### 상관분석과 상관계수(시험)
 
 - 자동차의 중량이 커지면 연비는 감소하는 추세
 - 추세의 모양이 선 모양이어서 중량과 연비는 '선형적 관계'에 있다고 표현
@@ -922,10 +999,9 @@ plot(iris.2, main="Iris plot", pch=c(point), col=color[point]) #pch은 점 모�
   - r이 1, -1에 가까울수록 x,y상관관계가 높음
 
 ```R
-
 #상관분석과 상관계수
-#R을 이용한 상관ㄱㅖ수의 계산
-beers =c(5,2,9,8,3,7,3,5,3,5)
+#R을 이용한 상관계수의 계산
+beers <-c(5,2,9,8,3,7,3,5,3,5)
 bal <- c(0.1,0.03,0.19,0.12,0.04,0.0095,0.07,0.06,0.02,0.05)
 
 tbl <- data.frame(beers,bal) #데이터 프레임 생성
@@ -942,6 +1018,154 @@ tbl
 plot(tbl)
 ```
 
+### 선그래프의 작성(시험)
+
+```R
+month =1:12 #자료입력
+late = c(5,8,6,7,9,5,13,3,2,5,6,7)
+plot(month,               #x 데이터
+    late,                 #y데이터
+    main="지각생 통계",      #제목
+    type="l",             #그래프 종류선택
+    lty=1,                #선 종류선택(type)
+    lwd=1,                #선 굵기 
+    xlab="Month",         #x축 레이블
+    ylab="Late cnt"       #y축 레이블
+    )
+
+#두 반의 지각률 비교 그래프 그리기
+month =1:12 #자료입력
+late1 = c(5,8,6,7,9,5,13,3,2,5,6,7)
+late2 = c(1,3,6,5,3,3,12,4,2,5,6,7)
+plot(month,               #x 데이터
+    late1,                 #y데이터
+    main="지각생 통계",      #제목
+    type="b",             #그래프 종류선택
+    lty=1,                #선 종류선택(type)
+    lwd=1,                #선 굵기 
+    col="red",             #선 색
+    xlab="Month",         #x축 레이블
+    ylab="Late cnt",       #y축 레이블
+    ylim=c(1,15)          #y축 값 하한,상한
+    )
+lines(month,               #x 데이터
+    late2,                 #y데이터
+    type="b",             #그래프 종류선택
+    col="blue"             #선 색
+    )
+```
+
+### 자료탐색 실습(시험)(매우중요)
+
+- Boston Housing 데이터셋 소개 
+- 미국 보스턴 지역의 주택 가격 정보와 주택 가격에 영향을 미치는 여러 요소들에 대한 정보를 담고 있음, 총 14개의 변수로 구성이 되어 있는데, 여기서는 이중에 5개의 변수만 선택하여 분석, mlbench 패키지에서 제공
+- 탐색적 데이터 분석 과정
+
+```R
+library(mlbench)
+data("BostonHousing")
+myds <- BostonHousing[, c("crim","rm","dis","tax","medv")]
+grp <- c()
+for (i in 1:nrow(myds)) {
+  if (myds$medv[i] >= 25.0) {
+    grp[i] <- "H"
+  } else if (myds$medv[i] <= 17.0) {
+    grp[i] <- "L"
+  } else {
+    grp[i] <- "M"
+  }
+}
+grp <- factor(grp)        #문자 벡터를 팩터 타입으로 변경
+grp <- factor(grp, levels=c("H","M","L")) #레벨의 순서를 H,L,M>>H,M,L순으로 변경
+
+myds <- data.frame(myds, grp) #myds에 grp 열 추가
+str(myds)
+head(myds)
+table(myds$grp)
+
+#히스토그램에 의한 관측값의 분포확인
+par(mfrow=c(2,3))
+for(i in 1:5){
+  hist(myds[,i], main=colnames(myds)[i], col="yellow")
+}
+
+#상자 그림
+par(mfrow=c(2,3))
+for(i in 1:5){
+  boxplot(myds[,i], main=colnames(myds)[i])
+}
+
+#그룹별 관측값 분포의확인
+boxplot(myds$crim~myds$grp, main="1인당 범죄율")
+boxplot(myds$rm~myds$grp, main="방의 갯수")
+
+#다중 산점도를 통한 변수간 상관 관계확인
+pairs(myds[,-6])
+
+#그룹 정보를 포함한
+point <- as.integer(myds$grp) #점의 모양 지정
+color <- c("red","blue","green") #점의 색 지정
+pairs(myds[,-6], pch=point, col=color[point])
+
+#변수간의 상관계수의 확인
+cor(myds[,-6])
+
+
+#복습
+## (1) Prepare Data ----------------------
+library(mlbench)
+data("BostonHousing")
+myds <- BostonHousing[,c("crim","rm","dis","tax","medv")]
+## (2) Add new column ----------------------
+grp <- c()
+for (i in 1:nrow(myds)) {           # myds$medv 값에 따라 그룹 분류
+  if (myds$medv[i] >= 25.0) {
+    grp[i] <- "H"
+  } else if (myds$medv[i] <= 17.0) {
+    grp[i] <- "L"
+  } else {
+    grp[i] <- "M"
+  }
+}
+grp <- factor(grp) # 문자벡터를 팩터 타입으로 변경
+grp <- factor(grp, levels=c("H","M","L")) # 레벨의 순서를 H,L,M -> H,M,L
+myds <- data.frame(myds, grp) # myds 에 grp 컬럼추가
+## (3) Add new column ----------------------
+str(myds)
+head(myds)
+table(myds$grp) # 주택 가격 그룹별 분포
+
+## (4) histogram ----------------------
+par(mfrow=c(2,3)) # 2x3 가상화면 분할
+for(i in 1:5) {
+  hist(myds[,i], main=colnames(myds)[i], col="yellow")
+}
+par(mfrow=c(1,1)) # 2x3 가상화면 분할 해제
+## (5) boxplot ----------------------
+par(mfrow=c(2,3)) # 2x3 가상화면 분할
+for(i in 1:5) {
+  boxplot(myds[,i], main=colnames(myds)[i])
+}
+par(mfrow=c(1,1)) # 2x3 가상화면 분할 해제
+## (6) boxplot by group ------------------
+boxplot(myds$crim~myds$grp, main="1인당 범죄율")
+boxplot(myds$rm~myds$grp, main="방의 수")
+boxplot(myds$dis~myds$grp, main="직업센터까지의 거리")
+boxplot(myds$tax~myds$grp, main="제산세")
+
+## (7) scatter plot ------------------
+pairs(myds[,-6])
+## (8) scatter plot with group ------------------
+point <- as.integer(myds$grp) # 점의 모양 지정
+color <- c("red","green","blue") # 점의 색 지정
+pairs(myds[,-6], pch=point, col=color[point])
+## (9) correlation coefficient ------------------
+cor(myds[,-6])
+
+library(mlbench)
+data("BostonHousing")
+myds<–BostonHousing
+```
 
 
 
@@ -950,7 +1174,6 @@ plot(tbl)
 
 
 
-------------------
 
 # 데이터 전처리(시험x)(7장)
 
@@ -1219,7 +1442,7 @@ merge(x,y, by.x=c("name"), by.y=c("sname"))
 
 # 데이터 시각화(8장)
 
-## 데이터 시각화 기법
+## 데이터 시각화 기법(시험)
 
 ### 데이터 시각화의 중요성
 
@@ -1315,7 +1538,7 @@ mosaicplot(~gear+vs, data = mtcars, color=TRUE,
            main ="Gear and Vs")
 ```
 
-## ggploy 패키지
+## ggploy 패키지(시험)
 
 - 지금까지는 그래프를 작성할 때 주로 R에서 제공하는 기본적인 함수들을 이용
 - 보다 미적인 그래프를 작성하려면 ggplot 패키지를 주로 이용
@@ -1429,7 +1652,7 @@ geom_line(col="red")
 
 - JRE 설치
 
-- **2.2** **워드클라우드** **문서 파일 준비**
+- 2.2 워드클라우드 문서 파일 준비
   - 워드클라우드를 작성할 대상 문서는 일반적으로 텍스트 파일 형태로 준비
   - 파일의 끝부분 처리를 마지막 문장이 끝나면 반드시 줄 바꿈을 한 후 저장
   - 파일을 저장할 때, [다른 이름으로 저장]을 선택하고 [그림 10-5]와 같이 인코딩을 ‘UTF-8’로 선택을 하여 저장
@@ -1441,9 +1664,7 @@ geom_line(col="red")
 install.packages("wordcloud")
 install.packages("RColorBrewer")
 library(wordcloud) 			# 워드클라우드
-library(KoNLP) 			# 한국어 처리
 library(RColorBrewer) 		# 색상 선택
-Sys.setenv(JAVA_HOME="/Users/lostcatbox/univ_lecture/R language/")
 par(family="AppleGothic")
 #text 파일형식일때 text <- readLines("mis_document.txt", encoding ="UTF-8" ) # 파일 읽기
 
@@ -1471,16 +1692,16 @@ str(data)
 summary(data)
 summary(data$행정구역.시군구.별)
 
-#"전국" 지역 통계 삭제
+#"전국" 지역 통계 삭제(시험)
 data2 <- data[data$행정구역.시군구.별 != "전국",]
 head(data2)
 
-#"시" 단위 지역 통계 삭제
+#"시" 단위 지역 통계 삭제(시험)
 x <- grep("시$", data2$행정구역.시군구.별) # grep()함수는 어떤 문자열이 어디에위치하는지(포함되어있어도) 알고싶을때. 텍스트 검색
 x
 data3 <- data2[-c(x),] #x를 제외한 !
 
-#순이동 인구수(전출보다 전입 인구수)가 많은 지역 ,다음수를 넣으면 행!
+#순이동 인구수(전출보다 전입 인구수)가 많은 지역 ,다음수를 넣으면 행!(시험)
 data4 <- data3[data3$순이동..명.>0, ]
 data4
 word <- data4$행정구역.시군구.별
@@ -1489,7 +1710,7 @@ frequency <- data4$순이동..명.
 frequency
 wordcloud(word, frequency, colors=pal2)
 
-#순이동 인구수(전입보다 전출 인구수)가 많은 지역
+#순이동 인구수(전입보다 전출 인구수)가 많은 지역(시험)
 data5 <- data3[data3$순이동..명.<0, ]
 data5
 word <- data5$행정구역.시군구.별
@@ -1501,7 +1722,7 @@ wordcloud(word, frequency, colors=pal2)
 
 
 
-## 워드 클라우드 실습
+## 워드 클라우드 실습(시험x)
 
 ```R
 # Install
