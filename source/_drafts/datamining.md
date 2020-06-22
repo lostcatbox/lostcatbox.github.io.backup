@@ -59,6 +59,8 @@ par(mfrom=c(2,1));plat(x1,y);plot(x2,y) #;는 다른선언문이라고 표현
 
 마지막에는 cbind로 dummy데이터 합쳐놔야함
 
+
+
 A변수는 다 썻으면 없애기
 
 ```R
