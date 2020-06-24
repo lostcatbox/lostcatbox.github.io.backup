@@ -27,6 +27,8 @@ git clone 사용자명@호스트:/원격/저장소/경로
 ```
 ## 원격 저장소 주소 추가 삭제
 
+
+
 ```
 git remote add origin <주소>   #주소적기
 git remote    
