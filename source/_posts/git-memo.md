@@ -29,7 +29,7 @@ git clone 사용자명@호스트:/원격/저장소/경로
 
 ```
 git remote add origin <주소>   #주소적기
-git remote    
+git remote
 git remote -v   #지금 현재 주소 
 git remote show <리모트 저장소 이름>  #리모트 저장소의 구체적인 정보를 알수있다.
 git remote rename <원래 이름> <바꿀이름>   #리모트 저장소 이름 바꾸기
@@ -48,20 +48,26 @@ $ git fetch <remote>
 
 저장소를 Clone 하면 명령은 자동으로 리모트 저장소를 “origin” 이라는 이름으로 추가한다. 그래서 나중에 `git fetch origin` 명령을 실행하면 Clone 한 이후에(혹은 마지막으로 가져온 이후에) 수정된 것을 모두 가져온다. `git fetch` 명령은 리모트 저장소의 데이터를 모두 로컬로 가져오지만, 자동으로 Merge 하지 않는다. 그래서 당신이 로컬에서 하던 작업을 정리하고 나서 수동으로 Merge 해야 한다.
 
-그냥 쉽게 `git pull` 명령으로 리모트 저장소 브랜치에서 데이터를 가져올 뿐만 아니라 자동으로 로컬 브랜치와 Merge 시킬 수 있다(다음 섹션과 [Git 브랜치](https://git-scm.com/book/ko/v2/ch00/ch03-git-branching) 에서 좀더 자세히 살펴본다). 먼저 `git clone` 명령은 자동으로 로컬의 master 브랜치가 리모트 저장소의 master 브랜치를 추적하도록 한다(물론 리모트 저장소에 master 브랜치가 있다는 가정에서). 그리고 `git pull` 명령은 Clone 한 서버에서 데이터를 가져오고 그 데이터를 자동으로 현재 작업하는 코드와 Merge 시킨다.
+그냥 쉽게 `git pull` 명령으로 리모트 저장소 브랜치에서 데이터를 가져올 뿐만 아니라 자동으로 로컬 브랜치와 Merge 시킬 수 있다. 먼저 `git clone` 명령은 자동으로 로컬의 master 브랜치가 리모트 저장소의 master 브랜치를 추적하도록 한다. 그리고 `git pull` 명령은 Clone 한 서버에서 데이터를 가져오고 그 데이터를 자동으로 현재 작업하는 코드와 Merge 시킨다.
 
-## 저장소 commit 되돌리기 (rollback)
+## 저장소 commit 되돌리기
 
-```
+```python
 git reset <옵션> <돌아가고싶은 커밋>
 
 git reset --hard xxxxxxx # 돌아가려는 이력이후의 모든 내용을 지워 버립니다.
 
-git reset --soft  xxxxxx # 돌아가려 했던 이력으로 되돌아 갔지만, 이후의 내용이 지워지지 않고, 해당 내용의 인덱스(또는 스테이지)도 그대로 있습니다. 
+git reset --soft  xxxxxx # 돌아가려 했던 이력으로 되돌아 갔지만, 이후의 내용이 지워지지 않고, 해당 내용의 인덱스(또는 스테이지)도 그대로 있습니다.(git add . 햇던 상태임) 
 
 git reset HEAD~6 # 위와 같이 현재부터 6개 이전 이력으로 돌아가라라고 상대적으로 지정
 
-git psuh --force #분명 위에과정을 거치면 로컬과  git다를텐데 강제로 push
+git revert <commit번호> #특정커밋번호로 되돌리는데 파일 내용유지하며, 이후커밋들도 그대로 보존
+
+git push --force #분명 위에과정을 거치면 로컬과  git다를텐데 강제로 push
+
+#혹시 reset을 --hard실수했다면 
+git reflog #확인후 원하는 HEAD@{<number>} 확인후
+git reset --hard HEAD@{<number>} #돌아감
 
 ```
 
