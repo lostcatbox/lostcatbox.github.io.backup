@@ -27,8 +27,6 @@ git clone 사용자명@호스트:/원격/저장소/경로
 ```
 ## 원격 저장소 주소 추가 삭제
 
-
-
 ```
 git remote add origin <주소>   #주소적기
 git remote    
@@ -317,3 +315,102 @@ $ git branch
 
 https://stackoverflow.com/questions/42174485/git-how-dangerous-is-deleted-by-us-conflict
 
+
+
+
+
+## git develop >>develop 발생이유
+
+[자세히](https://stackoverflow.com/questions/31463025/why-does-git-merge-a-branch-into-itself)
+
+`Merge branch 'develop' of https://bitbucket.org/abc/xyz into develop`
+
+### 분석
+
+remote repository의  develop 가 내 로컬  develop와 현재 다르기 때문에 일어난 현상이다. 다음을 반드시 기억하자
+
+- `develop` = The branch he/she is currently working on. The new commits go here.(로컬기준 develop)
+- `origin/develop` = This is essentially a snapshot that the current repository holds about the state of the `develop` branch on the remote server. It gets updated with the remote changes when you do `fetch` or `pull`, and with the local changes after a successful `push`.(로컬에 있는 리모트 리포지토리의 develop와 연동된 곳)(git fetch, git pull할때 업뎃해줌.)
+
+이제 git pull을 하게된다면 fetch와 merge를 순차적으로 실행한다.
+
+- `fetch` - brings all new commits (if any) from the remote repository to the local `origin/develop` branch.(로컬에 리모트 관련 모든 브랜치를 최신 커밋으로 업뎃)
+
+- `merge` - takes the new commits and applies them to the local working `develop branch`. This can happen in one of two ways:
+
+  (상황에 따라 2가지)
+
+  - 로컬 워킹 브랜치에 분기 히스토리(리모트가 알지 못하는 새로운 커밋)이 포함되어있지 않은 경우, develop브랜치 포인터를 앞으로 진행 시켜 최신 커밋을 가리킵니다(fast-forwarding merge)
+
+    ![스크린샷 2020-06-25 오후 1.38.20](https://tva1.sinaimg.cn/large/007S8ZIlgy1gg4fk2frnxj30e404gwex.jpg)
+
+    > A가 origin/develop에 있는 커밋기록이고
+    >
+    > B가 로컬 워킹 브랜치이며 히스토리에는 A가 포함되어있음
+
+    
+
+  - 개발자가 리모트 저장소에 없어서 `origin/develop`브랜치에 없는 새로운 커밋이있는 경우 regular 병합이 수행되므로 두 가지의 변경 사항이 모두 포함 된 새로운 커밋이 생성된다. (no fast-forwarding 관계)
+
+    ![스크린샷 2020-06-25 오후 1.39.50](https://tva1.sinaimg.cn/large/007S8ZIlgy1gg4flk4ztkj30f0048mxo.jpg)
+
+    ![스크린샷 2020-06-25 오후 1.45.41](https://tva1.sinaimg.cn/large/007S8ZIlgy1gg4frp4qdaj30r409q3zs.jpg)
+
+    "merge에 대한 기록이 커밋으로 남으므로 편하다"
+
+    > fast-forwarding관계여도 
+    >
+    > git merge --no-ff \<branch name\>을 하면 가능하다
+
+### 해결
+
+계속해서 저런일이 발생할 환경(협업에서 자주일어남)이라면 매우 복잡한 커밋 기록 그래프가 만들어지므로 방지를 할려면 rebase를 추천한다
+
+따라서 rebase를 사용한다면 해결될수있다
+
+```python
+git fetch;git rebase #첫번째 방법
+git pull --rebase #두번째 방법
+```
+
+### git Merge 와 Rebase
+
+#### Merge
+
+`merge` - takes the new commits and applies them to the local working `develop branch`. This can happen in one of two ways:
+
+(상황에 따라 2가지)
+
+- 로컬 워킹 브랜치에 분기 히스토리(리모트가 알지 못하는 새로운 커밋)이 포함되어있지 않은 경우, develop브랜치 포인터를 앞으로 진행 시켜 최신 커밋을 가리킵니다(fast-forwarding merge)
+
+  ![스크린샷 2020-06-25 오후 1.38.20](https://tva1.sinaimg.cn/large/007S8ZIlgy1gg4fk2frnxj30e404gwex.jpg)
+
+  > A가 origin/develop에 있는 커밋기록이고
+  >
+  > B가 로컬 워킹 브랜치이며 히스토리에는 A가 포함되어있음
+
+  
+
+- 개발자가 리모트 저장소에 없어서 `origin/develop`브랜치에 없는 새로운 커밋이있는 경우 regular 병합이 수행되므로 두 가지의 변경 사항이 모두 포함 된 새로운 커밋이 생성된다. (no fast-forwarding 관계)
+
+  ![스크린샷 2020-06-25 오후 1.39.50](https://tva1.sinaimg.cn/large/007S8ZIlgy1gg4flk4ztkj30f0048mxo.jpg)
+
+  ![스크린샷 2020-06-25 오후 1.45.41](https://tva1.sinaimg.cn/large/007S8ZIlgy1gg4frp4qdaj30r409q3zs.jpg)
+
+  "merge에 대한 기록이 커밋으로 남으므로 편하다"
+
+  > fast-forwarding관계여도 
+  >
+  > git merge --no-ff \<branch name\>을 하면 가능하다
+
+
+
+#### Rebase
+
+base란 branch가 처음 master(다른가지가될수도있음)에서 나온 지점을 말한다.
+
+![스크린샷 2020-06-25 오후 2.00.52](/Users/lostcatbox/Library/Application Support/typora-user-images/스크린샷 2020-06-25 오후 2.00.52.png)
+
+rebase 를 통해서 가지의 처음 시작점이 바뀌고 거기서부터 가지를 만들었던것처럼 변한다
+
+(git merge가 branch들이 많아서 merge를 할때마다 그림이 복잡해 지는것을 막을수있다.)

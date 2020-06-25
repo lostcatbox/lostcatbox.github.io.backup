@@ -9,6 +9,8 @@ tags: [Project, basic]
 
 __messingTimeToWage__
 
+__외주끝날때까지중단__
+
 # 목적과 목표기능
 
 ## 프로젝트 목적
