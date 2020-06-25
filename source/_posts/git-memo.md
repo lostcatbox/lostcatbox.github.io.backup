@@ -97,30 +97,32 @@ git reset --hard HEAD@{<number>} #돌아감
 
 ## 현재상태확인
 
-```
-git status
+```python
+git status #상태 보여줌 (staged같은것들)
+
+git log --graph --all --oneline #커밋 기준 으로 그래프 출력
 ```
 ## 파일추가 및 확정.
 
-```
+```python
 git add<파일 이름>
 git add *
-git commit -m "이번 확정본에 대한 설명"
+git commit -m "<이번 확정본에 대한 설명>"
 ```
 ## 변경 내용 발행하기
 
 현재의 변경 내용은 아직 로컬 저장소의 HEAD안에 머물고 있다
 원격 서버로 올려보자
 
-```
-git push origin master (다른 가지를 발행하려면 master 대신 가지이름을 적는다)
+```python
+git push origin master # (다른 가지를 발행하려면 master 대신 가지이름을 적는다)
 ```
 
 ## 서버주소 입력해주자
 
 만약 기존에 있던 원격 저장소를 복제한것이 아니라면
 원격 서버의 주소를 git에게 알려줘야 해요
-```
+```python
 git remote add origin <원격 서버 주소>
 ```
 이제 변경 내용을 원격 서버로 발행가능
@@ -130,32 +132,32 @@ git remote add origin <원격 서버 주소>
 가지는 안전하게 격리된 상태에서 무언가를 만들떄 사용합니다
 branch로 가지로 나와서 나중에 완성되면 merge로 master(혹은 현재잡혀있는 위치)와 병합합니다
 
-```
-git checkout -b feature_x (feature_x라는 가지생성)
+```python
+git checkout -b feature_x #(feature_x라는 가지생성)
 
-git checkout master(마스터 가지로 돌아옴)
+git checkout master # (마스터 가지로 돌아옴)
 
-git branch -d feature_x (가지삭제)
+git branch -d feature_x # (가지삭제)
 
-git push origin <가지이름> (서버로 보낼떄까지는 다른사람 접근 불가)
+git push origin <가지이름> # (서버로 보낼떄까지는 다른사람 접근 불가)
 ```
 ## 갱신과 병합
 
 나의 로컬 저장소를 원격 저장소에 맞춰 갱신하려면 (원격 저장소의 변경 내용이 로컬 작업 디렉토리에 받아지고 병합됨)
-```
+```python
 git pull
 ```
 다른 가지에 있는 변경 내용을 현재 가지에 병합하려면 현재 위치에서
-```
+```python
 git merge <가지 이름>
 ```
 ### 만약 충돌일어나면? 
 위에 둘다  병합시도를 하는데 충돌이 일어나면 git에서 알려주는 파일을 직접 수정후 파일을 병합하라고 알려주셈 
-```
-git  add<파일 이름>
+```python
+git  add <파일 이름>
 ```
 변경내용을 병합하기전에, 어떻게 내용차이가 나는지알수있음
-```
+```python
 git diff <원래 가지> <비교대상가지>
 ```
 
@@ -179,8 +181,8 @@ git reset --hard origin/master
 ```
 
 ## git add한 걸 취소하고싶을떄
-```
-git reset HEAD[file]   #파일명이없다면 add한 파일 전체 취소한다
+```python
+git reset HEAD [file]   #파일명이없다면 add한 파일 전체 취소한다
 ```
 [자세히](https://gmlwjd9405.github.io/2018/05/25/git-add-cancle.html)
 
@@ -248,7 +250,33 @@ git add -i
 
 ## Conflict 대부분 해결방법
 
-[자세히](https://velog.io/@devmin/git-conflict-solution-basic)
+git에서 협동하다보면 pull request할 때 conflict가 일어날 때가있다
+
+### 문제
+
+master와 내가 merge하고싶은 브랜치 충돌
+
+### 해결
+
+똑같이 로컬에서 재현해서 고쳐야함
+
+```python
+git checkout master
+git pull origin master #리모트 저장소에 있는 최신 정보를 내 로컬 master에 덮어씌움
+
+git checkout <branch> #충돌을 그대로 재현해야하니까, 그 브랜치로이동
+git merge master #master를 <branch>에 merge시도하면 똑같은 충돌이 로컬에서 일어나게됨
+```
+
+ 해당 충돌이 일어난 파일들어가면 HEAD와 \<branch\>가 구별되어 둘중 무엇으로 선택하고 나머지를 삭제함
+
+```python
+git add .
+git commit -m "<원하는 메세지>" # 커밋 이름이됨
+git push origin <branch> # 다음 pull request
+```
+
+
 
 
 
