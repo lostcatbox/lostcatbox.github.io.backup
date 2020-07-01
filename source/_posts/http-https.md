@@ -1,5 +1,5 @@
 ---
-title: http/https
+title: Http/Https
 date: 2020-06-28 17:44:56
 categories: [Network]
 tags: [Network,Http,Https,Basic]
@@ -9,7 +9,7 @@ tags: [Network,Http,Https,Basic]
 
 [자세히2](https://gmlwjd9405.github.io/2019/01/28/http-header-types.html)
 
-# HTTP란
+# HTTP
 
 - Hyper Text Transfer Protocol
 
