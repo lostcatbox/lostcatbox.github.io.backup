@@ -13,6 +13,18 @@ tags: [Network,Html,Css,Front-End,Basic]
 
 [html, DOM 차이]([https://velog.io/@godori/DOM%EC%9D%B4%EB%9E%80-%EB%AC%B4%EC%97%87%EC%9D%B8%EA%B0%80](https://velog.io/@godori/DOM이란-무엇인가))
 
+
+
+# 왜?
+
+협업을 하고 외주를 진행하면서
+
+백엔드를 주로했지만 간단한것도 단번에 못알아듣고 기본적인 html css 구조정도는 알아야
+
+의사소통이 원할하게 진행을 느꼈다.
+
+html, css를 직접다루는 것이 아닌 구조파악이므로 많은부분이 생각되어있을수있다.
+
 # HTML
 
 ## 요소(Element)와 속성(Attribute)
@@ -154,35 +166,153 @@ body요소는 크게 블로요소와 인라인 요소로 나눈다.
 
 
 
+## 제목 요소
+
+body에 들어가는 요소중 헤드라인요소입니다. 제목들을 나타내는 요소이다.
+
+필요이유는 h1 요소를 쓸 것이
+
+아래 예시처럼 사용함.
+
+```html
+<h1>대 제목 </h1>
+<h2>소 제목</h2>
+<h3>하위 제목</h3>
+```
+
+## p 요소
+
+p 요소는 문단이라고 생각
+
+블록 요소임에도 다른 블록요소들을 포함 할수없다.(예외)
+
+p요소안에 인라인 요소는 포함가능하다
+
+## br 요소
+
+줄바꿈 요소, 남용하지말고 css로 해결추천
+
+br은 인라인요소이다.
+
+## hr 요소
+
+hr요소는 블록요소이며, 스스로 닫는 태그 형태이다.
+
+수평선을 그리려고 썻지만 css추천한다
 
 
 
+## 특수문자들
+
+특수문자를 쓰지 않을 경우, 태그 소스 등으로 오인하여 문제가 발생할 수 있음.
+
+|    표현문자     | 문자표현 | 숫자표현 |        문자 설명        |
+| :-------------: | :------: | :------: | :---------------------: |
+| 스페이스(space) |  &nbsp;  |  &#160;  |     공란(스페이스)      |
+|        &        |  &amp;   |  &#38;   |     엠퍼샌드 (and)      |
+|        <        |   &lt;   |  &#60;   |        보다 작은        |
+|        =        |    -     |  &#61;   |          등호           |
+|        >        |   &gt;   |  &#62;   |         보다 큰         |
+|        ©        |  &copy;  |  &#169;  | 저작권 표시 (Copyright) |
 
 
 
+## a요소와 id 속성
 
+a는 anchor(앵커)의 줄임이며, 이 때문에 '앵커'라고도 부릅니다. a 요소는 보통 다음과 같이 작성합니다.
 
+a태그기능
 
+- 링크로써의 기능이고, 다른 하나는 앵커(돛)로써 링크의 타깃이 되는 기능입니다.
 
+  보통 a 요소는 href 속성을 통해서 외부 페이지로 이동을 합니다
 
+  ```html
+  <a href="url.html">Link Text</a>  #a태그에 href속성이 필수는 아니다. 다른기능도존재하므로
+  ```
 
+  
 
+- **페이지 내부에서도 이동이 가능**
 
+  예전에는 name을 기준으로 이동하였다
 
+  현재는 __페이지에서 유일한 id값__사용을 권장함
 
+  ```html
+  <h1>목차</h1>
+  <a href="#history">1. 역사</a><br /> #예전방식 HTML5 에서는 아예삭제
+  <a id="chapter-1">2. 마크업</a><br /> #추천되는 방식
+  <a id="chapter-2">2. 마크업</a><br />
+  ```
 
+  또한 자바스크립트를 a태그에 href 속성에 넣지말고 onclick=""값에 넣자
 
+  ```html
+  <a href="http://webberstudy.com" onclick="해당 스크립트">팝업 열기</a>
+  ```
 
+### a요소의 속성들
 
+- target 속성
 
+  target 속성은 해당 링크를 현재 페이지에서 열지, 새 창에서 열지, 다른 프레임에서 열지 결정
 
+  |   속성 값   |                       설명                       |
+  | :---------: | :----------------------------------------------: |
+  |    _self    |           현재 페이지에서 이동합니다.            |
+  |   _parent   | 부모 프레임이 있다면 부모 페이지에서 이동합니다. |
+  |    _top     |          최 상위 페이지에서 이동합니다.          |
+  |   _blank    |       새로운 창(탭)에서 페이지가 열립니다.       |
+  | 사용자 정의 |          해당되는 프레임에서 열립니다.           |
 
+- rel 속성
+
+   rel속성을 통해서 해당 링크와의 관계를 나타낼 수 있다. (표시안되고 검색엔진이 활용)
+
+## 목록 요소
+
+- ol 요소 1. 2. 가 순서대로 표시됨(li말로 다른 요소 불가)
+
+  ```html
+  <ol>
+    <li>항목</li>
+    <li>항목</li>
+  </ol>
+  ```
+
+- ul 요소, 순서없는 목록 사용법은 ol과 같다
+
+## 의미없는 요소 div, span, class 속성
+
+이 의미 없는 요소(div, span)는 필요에 따라 그룹을 만들거나, css로 조절하기 위해서 사용합니다. 아마도 여러분들도 마크 업을 하면서 앞으로 제일 많이 사용하게 될 것입니다.
+
+**div는 블럭 요소이고, span은 인라인 요소입니다.** 둘 다 자기자신을 중첩할 수 있습니다. 특히, div는 레이아웃 잡는 용도로 많이 쓰기 때문에 많이 중첩됩니다. 다음은 예제입니다.
+
+div와 span 요소는 보통 class 속성을 같이 사용합니다. 
+
+이 class 속성은 원하는 이름을 넣고 css에서 그 class 이름을 선택자로 사용합니다. 
+
+특히 class속성은 여러 개를 넣을수있습니다.(구분은 띄어쓰기)
+
+아래 예제와 같은 방식입니다.
+
+```html
+<style type="text/css">
+.hello{
+  color: red;
+}
+</style>
+ 
+<span class="hello">안녕하세요.</span>
+
+<div class="hello test">Hello World</div> #hello와 test
+
+```
 
 일단, __아이디(id)는 페이지에서 딱 한번만 선언 가능합니다.__ 어떤 한 요소에서 'main-menu'라는 아이디 명을 사용한다면, 페이지 내 다른 요소들은 절대로 'main-menu'라는 아이디를 사용할 수 없습니다. 그래야 a 요소로 해당 아이디 요소에 이동이 가능합니다.
 
 반면, __클래스는 여러 번 사용이 가능합니다.__ 그렇기 때문에 클래스는 이름을 좀 더 범용적으로 짓고, 아이디는 이름을 좀 더 특수하게 짓습니다. 예를 들어 다음의 코드를 봐주세요, 소설의 장을(Chapter) 작성했습니다
-
-DOM개념 중요 <<반드시 찾아서 정리하기 (???)
 
 class="btn btn-primary"는 두개 DOM을 가지고있는 것을 일치판단후 스타일적용해주는 것
 
@@ -202,46 +332,90 @@ class="btn btn-primary"는 두개 DOM을 가지고있는 것을 일치판단후 
           </div>
 ```
 
+## 주석
+
+```html
+<!-- 본문 끝 -->
+```
+
 
 
 # CSS
 
+## Link요소로 연결
+
+```html
+<link href="common.css" rel="stylesheet" type="text/css" />
+<link href="main.css" rel="stylesheet" type="text/css" />
+<!-- common.css와 main.css 둘 다 연결합니다. -->
+```
+
+
+
+## style요소로 html에 직접적용
+
+```html
+<style type="text/css">
+  h1{
+    color: red;
+  }
+</style>
+
+```
+
+## style 속성을 통해 적용
+
+```html
+<h1 style="color:#fff;font-size:2em;">Hello world</h1>
+```
+
+
+
 ## CSS
 
+문법설명
+
+- .<class이름> -  class이름에 해당하는 것 선택
+
+- #<id속성값> - id속성값이 같은 해당하는 것 선택
+
+- <요소> - 요소에 해당하는 것 적용
+
+- 선택자의 중첩 사용
+
+  ```css
+  # box라는 class속성을 가진 요소들 중에서 p요소에만 스타일 줌
+  p.box {
+    color: red;
+  }
+  
+  # id가 box or p or h1 or a 인 애들 모두 적용
+  p, #box, h1, a {
+    color: red;
+  }
+  ```
+
+- 후손 선택자
+
+  띄어쓰기로 구별
+
+  ```css
+  # box2클래스안에 name클래스에 적용
+  .box2 .name{
+    color: red;
+  }
+  ```
+
+  
+
+
+
 ```css
-.class-wrap {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 16px
-}
-
-.class-wrap .top-info .cnts .c-name {
-  font-size: 18px;
-  font-weight: bold;
-  color: #bbb
-}
-
-.class-wrap .top-info .cnts h2 {
-  color: #111
-}
-
-.class-wrap .top-info .cnts .in-review {
-  margin-top: 15px
-}
-
-.class-wrap .top-info .cnts ul.d-list {
-  border-top: 1px solid #ddd
-}
-
 .class-wrap .top-info .cnts>p {
   flex: 1 0 auto;
   margin-top: 30px;
   font-size: 14px;
   font-family: "NotoSans-Light", "Roboto", "Droid Sans", "Malgun Gothic", "Helvetica", "Apple-Gothic", "애플고딕", "Tahoma", dotum, "돋움", gulim, "굴림", sans-serif
-}
-
-.class-wrap .top-info .cnts .data-list h3 {
-  font-size: 14px
 }
 
 .class-wrap .top-info .cnts .data-list h3:before {
@@ -253,12 +427,6 @@ class="btn btn-primary"는 두개 DOM을 가지고있는 것을 일치판단후 
   vertical-align: middle;
   background: url("../images/icon_detail.png") no-repeat -90px -1px
 }
-
-.class-wrap .top-info .cnts .data-list p {
-  margin-top: 8px;
-  font-size: 16px
-}
-
 
 ```
 
@@ -363,14 +531,4 @@ class="btn btn-primary"는 두개 DOM을 가지고있는 것을 일치판단후 
 # JS
 
 $는 jquery를 의미한다.
-
-
-
-
-
-
-
-# 참고 사이트
-
-[html](http://webberstudy.com/html-css/html-1/div-span-and-class-attr/)
 
