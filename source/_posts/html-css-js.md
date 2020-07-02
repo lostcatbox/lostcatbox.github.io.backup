@@ -528,7 +528,3 @@ class="btn btn-primary"는 두개 DOM을 가지고있는 것을 일치판단후 
 
 ```
 
-# JS
-
-$는 jquery를 의미한다.
-
