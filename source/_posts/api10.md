@@ -1,5 +1,5 @@
 ---
-title: api 기본편 10 + 11
+title: DRF 기본편 10+11
 date: 2020-01-23 15:52:04
 categories: API
 tags: [API, DRF]
