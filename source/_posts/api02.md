@@ -42,7 +42,7 @@ post_list = [
 
 In [2]:  #s는 spring 의미
 
-```
+```python
 import json
 
 json_string = json.dumps(post_list)
@@ -65,7 +65,7 @@ json.loads(json_string)
 
 Out[3]:
 
-```
+```python
 [{'message': 'hello askdjango'}]
 ```
 
@@ -124,7 +124,7 @@ __이제 장고의 데이터타입에 대해 JSON 직렬화를 수행하는 방�
 
 ## Django 프로젝트 기본 셋업
 
-본 에피소드를 시작하기에 앞서, Jupyter Notebook을 통해 직렬화 연습을 해보기 위해, [Jupyter Notebook에서 Django 프로젝트 세팅해서 모델 돌려보기](https://nomade.kr/doc/django/jupyter-notebook에서-django-프로젝트-세팅해서-모델-돌려보기/) 내역을 먼저 수행해주세요. 해당 내역을 잘 수행하셨다면, 다음 코드처럼 `Post`모델을 통해 DB 쿼리하실 수 있어요.
+본 에피소드를 시작하기에 앞서, Jupyter Notebook을 통해 직렬화 연습을 해보기 위해, [Jupyter Notebook에서 Django 프로젝트 세팅해서 모델 돌려보기](https://wayhome25.github.io/django/2017/03/21/django-ep7-django-shell/) 내역을 먼저 수행해주세요. 해당 내역을 잘 수행하셨다면, 다음 코드처럼 `Post`모델을 통해 DB 쿼리하실 수 있어요.
 
 ### 모델 돌려보기 해당 내용
 
@@ -138,7 +138,7 @@ Tip: 실제 장고 프로젝트에서 프로젝트와 연동되는 jupyter noteb
 
 Jupiter notebook python파일 만들고 시작
 
-```
+```python
 import django
 import os
 
@@ -192,7 +192,6 @@ Tip: python manage.py sqlmigrate <앱이름> <migrate번호>로 migration spq내
 아래는 jupyter notebook 에서 Post모델을 통해 DB퀴리가 가능해짐
 
 ```
-
 from django.db import models
 
 class Post(models.Model):
@@ -399,7 +398,7 @@ Out[14]:
 
 In [6]:
 
-```
+```python
 import json
 
 mydata = ['안녕', '파이썬']
@@ -414,7 +413,7 @@ Out[6]:
 
 In [7]:
 
-```
+```python
 json.dumps(mydata, ensure_ascii=False)
 ```
 
@@ -431,7 +430,7 @@ Out[7]:
 
 In [15]: #커스텀으로
 
-```
+```python
 from django.core.serializers.json import DjangoJSONEncoder
 from django.db.models.query import QuerySet
 
@@ -486,7 +485,7 @@ Tip: QuerySet타입은 SQL로 해석 CRUD 구현된다.
 
 In [21]:
 
-```
+```python
 from rest_framework.renderers import JSONRenderer
 
 data = {'이름': 'AskDjango'}
@@ -505,7 +504,7 @@ Out[21]:
 
 In [18]:
 
-```
+```python
 from rest_framework.renderers import JSONRenderer
 
 data = Post.objects.all() #QuerySet타입안에 개별 Model인스턴스가 존재하므로 불가능
@@ -711,7 +710,7 @@ __`ModelSerializer`는 `QuerySet`에 대해서도 변환을 지원해줍니다. 
 
 In [33]:
 
-```
+```python
 serializer = PostModelSerializer(Post.objects.all(), many=True)  # QuerySet을 지정할 경우, 필히 many=True 지정  , 모델인스턴스만 넘길때는 필요없음
 
 # 지정된 Model Instance 필드를 통해 list/OrderedDict 획득
@@ -726,7 +725,7 @@ Out[33]:
 
 In [35]:
 
-```
+```python
 import json
 
 json.dumps(serializer.data, ensure_ascii=False) #이미 다 변환됬으므로 잘됨
@@ -740,7 +739,7 @@ Out[35]:
 
 In [36]:
 
-```
+```python
 from rest_framework.renderers import JSONRenderer
 
 json_utf8_string = JSONRenderer().render(serializer.data)
@@ -767,7 +766,7 @@ JSON 포맷으로 직렬화된 문자열은 장고 뷰를 통해서 응답이 �
 
 In [38]:
 
-```
+```python
 # 직렬화할 QuerySet 준비
 data = Post.objects.all()
 data
@@ -788,7 +787,7 @@ Out[38]:
 
 In [40]:
 
-```
+```python
 encoder = MyJSONEncoder
 safe = False  # True: data가 dict일 경우, False: dict이 아닐 경우  #QuerySet은 리스트 타입이므로
 json_dumps_params = {'ensure_ascii': False} # 넘겨줄 인자
@@ -821,14 +820,14 @@ Out[42]:
 
 In [59]:
 
-```
+```python
 # 변환할 데이터로서 QuerySet을 준비
 queryset = Post.objects.all()
 ```
 
 In [60]:
 
-```
+```python
 # queryset을 통해 ModelSerializer 준비
 serializer = PostModelSerializer(queryset, many=True)
 serializer
@@ -862,7 +861,7 @@ Out[61]:
 
 In [63]:
 
-```
+```python
 from rest_framework.response import Response
  
 response = Response(serializer.data)
@@ -908,7 +907,7 @@ Out[67]:
 
 In [68]: #이 시점에 직렬화 수행함
 
-```
+```python
 response.rendered_content.decode('utf8')
 ```
 
@@ -924,7 +923,7 @@ Out[68]:
 
 In [84]: # ListAPIView도 뜯어보면 ModelViewSet중에 몇개만 구성되어있음. 비슷하게 모두구성됨
 
-```
+```python
 from rest_framework import generics
 
 class PostListAPIView(generics.ListAPIView):
@@ -936,7 +935,7 @@ class PostListAPIView(generics.ListAPIView):
 
 Tip: ModelViewSet은 urls.py에서도 여러가지 url들을 활용해야하므로 urlpatterns= [ ]앞에 아래코드가 꼭 필요하다 (ViewSet은 뷰자체가 4개임)
 
-```
+```python
 router = DefaultRouter()
 router.register(r'posts', views.PostViewSet) # 이렇게 posts는 url프리픽스로 지정하면 posts/하면 목록나오고 posts/{pk}하면 특정 글에대해 열림
 
@@ -946,7 +945,7 @@ router.register(r'posts', views.PostViewSet) # 이렇게 posts는 url프리픽�
 
 In [86]: (???)
 
-```
+```python
 from django.http import HttpRequest
 
 class DummyUser:
