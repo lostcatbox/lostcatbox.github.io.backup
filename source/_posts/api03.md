@@ -173,26 +173,16 @@ APIView는 django-rest-framework 규격의 Class Based View입니다.
 
 1. 하나의 Class Based View이므로, 한 URL에 대해서만 처리할 수 있습니다.
 
-   - ```
-     /post/
-     ```
+   `/post/`에 대한 CBV일 경우
 
-      
+   - get요청 : 포스팅 목록 요청
+   - post요청 : 새 포스팅 등록 요청
 
-     에 대한 CBV일 경우
+   `/post/10/`에 대한 CBV일 경우
 
-     - get요청 : 포스팅 목록 요청
-     - post요청 : 새 포스팅 등록 요청
-
-   - ```
-     /post/10/
-     ```
-
-     에 대한 CBV일 경우
-
-     - get요청 : 10번 포스팅 내용 요청
-     - put요청 : 10번 포스팅 수정 요청
-     - delete요청 : 10번 포스팅 삭제 요청
+   - get요청 : 10번 포스팅 내용 요청
+   - put요청 : 10번 포스팅 수정 요청
+   - delete요청 : 10번 포스팅 삭제 요청
 
 2. 요청 method에 맞게 멤버함수를 정의하면, 해당 method 요청이 들어올 때 호출이 됩니다.
 
@@ -208,8 +198,6 @@ APIView는 django-rest-framework 규격의 Class Based View입니다.
    - 사용량 제한 체크 : 호출 허용량 범위인지 체크
    - 권한 클래스 지정 : 비인증유저/인증유저에 대해 해당 API 호출을 허용할 것인지를 결정
    - 요청된 API 버전 문자열을 탐지하여 `request.version`에 저장
-
-Slide Type-SlideSub-SlideFragmentSkipNotes
 
 APIView 클래스를 활용하여, 다음과 같이 글목록응답/새글등록을 처리해주는 CBV를 만들어보겠습니다.
 

@@ -126,6 +126,12 @@ __이제 장고의 데이터타입에 대해 JSON 직렬화를 수행하는 방�
 
 본 에피소드를 시작하기에 앞서, Jupyter Notebook을 통해 직렬화 연습을 해보기 위해, [Jupyter Notebook에서 Django 프로젝트 세팅해서 모델 돌려보기](https://wayhome25.github.io/django/2017/03/21/django-ep7-django-shell/) 내역을 먼저 수행해주세요. 해당 내역을 잘 수행하셨다면, 다음 코드처럼 `Post`모델을 통해 DB 쿼리하실 수 있어요.
 
+> jupyter notebook에서 장고 3.0이상에서 DB접근시 필요한것
+>
+> ```python
+> os.environ["DJANGO_ALLOW_ASYNC_UNSAFE"]="true"
+> ```
+
 ### 모델 돌려보기 해당 내용
 
 django로 간단한 장고 코드 검증을 위해 jupyter notebook밖에서 장고 프로젝트를 생성/세팅하는것은 번거로운일. Jupyter notebook밖으로 나가고싶지않다. >> 가능함
@@ -387,7 +393,7 @@ data = [
     {'id': post.id, 'title': post.title, 'content': post.content}
     for post in Post.objects.all()]
 
-json.dumps(data, ensure_ascii=False) # 이렇게 해도 작동함 왜냐면 data는 이제 queryset형태가 아니라 리스트안에 dic형태안에 숫자, 문자열로 구성되었있으므로 가능, ensuer_ascii=false의 이유는 유니코드 코드 값을 표현되므로 보기어렵고, utf표현방식으로 표현되서 사람이 보기도좋음 json은 보통 다 지원하긴함,
+json.dumps(data, ensure_ascii=False) # 이렇게 해도 작동함 왜냐면 data는 이제 queryset형태가 아니라 리스트안에 dic형태안에 숫자, 문자열로 구성되었있으므로 가능, ensure_ascii=false의 이유는 true값에서는 모든 비 ASCII 문자가 이스케이프 되도록 보장됩니다. ensure_ascii가 거짓이면, 그 문자들은 있는 그대로 출력됩니다
 ```
 
 Out[14]:
