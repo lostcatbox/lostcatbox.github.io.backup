@@ -45,109 +45,71 @@ APIView클래스와 api_view 장식자는 뷰에 여러 기본 설정을 부여�
 
    
 
-  ```
-  renderer_classes
-  ```
-
-   
-
+  `renderer_classes`
+  
   속성 (list)
 
   - 디폴트
-    - `rest_framework.renderers.JSONRenderer` : JSON 직렬화
+  - `rest_framework.renderers.JSONRenderer` : JSON 직렬화
     - `rest_framework.renderers.TemplateHTMLRenderer` : HTML 페이지 직렬화
 
 - 비직렬화 클래스 지정 :
 
-   
+   `parser_classes`
 
-  ```
-  parser_classes
-  ```
-
-   
-
-  속성 (list)
-
+   속성 (list)
+  
   - 디폴트
-    - `rest_framework.parsers.JSONParser` : JSON 포맷 처리
+  - `rest_framework.parsers.JSONParser` : JSON 포맷 처리
     - `rest_framework.parsers.FormParser`
-    - `rest_framework.parsers.MultiPartParser`
-
+  - `rest_framework.parsers.MultiPartParser`
+  
 - __인증 클래스 지정__ :
 
    
 
-  ```
-  authentication_classes
-  ```
-
-   
-
+  `authentication_classes`
+  
   속성 (list)
 
   - 디폴트
-    - `rest_framework.authentication.SessionAuthentication` : 세션에 기반한 인증(세션에 로그인되어있다고기록된상태봄)
+  - `rest_framework.authentication.SessionAuthentication` : 세션에 기반한 인증(세션에 로그인되어있다고기록된상태봄)
     - `rest_framework.authentication.BasicAuthentication` : HTTP Basic 인증
 
 - __사용량 제한 클래스 지정__ : (초당 몇회, 요청 가능 제한가능, 골드 맴버쉽은 만회, 일반 멤버쉽은 100회처럼)
 
-   
+   `throttle_classes`
 
-  ```
-  throttle_classes
-  ```
-
-   
-
-  속성 (list)
-
+   속성 (list)
+  
   - 디폴트 : 빈 튜플
 
 - __권한 클래스 지정__ :
 
-   
-
-  ```
-  permission_cla sses
-  ```
-
-   
+  `permission_cla sses`
 
   속성 (list)
-
+  
   - 디폴트
-    - `rest_framework.permissions.AllowAny` : 누구라도 접근 허용
-
+  - `rest_framework.permissions.AllowAny` : 누구라도 접근 허용
+  
 - 요청에 따라 적절한 직렬화/비직렬화 클래스를 선택 :
 
-   
-
-  ```
-  content_negotiation_class
-  ```
-
-   
+   `content_negotiation_class`
 
   속성 (문자열)
-
+  
   - 같은 URL로의 요청이지만, JSON응답을 요구하는 것이냐 / HTML응답을 요구하는 것인지 판단
-  - 디폴트 : `rest_framework.negotiation.DefaultContentNegotiation`
-
+- 디폴트 : `rest_framework.negotiation.DefaultContentNegotiation`
+  
 - 요청 내역에서 API 버전 정보를 탐지할 클래스 지정 :
 
-   
+   `versioning_class`
 
-  ```
-  versioning_class
-  ```
-
-   
-
-  속성
-
+   속성
+  
   - 디폴트 : `None` : API 버전 정보를 탐지하지 않겠다.
-  - 요청 URL에서, GET인자에서, HEADER에서 버전정보를 탐지하여, 해당 버전의 API뷰를 호출토록 합니다.
+- 요청 URL에서, GET인자에서, HEADER에서 버전정보를 탐지하여, 해당 버전의 API뷰를 호출토록 합니다.
 
 ### 장고에는 FBV와 CBV가 있어요.
 
