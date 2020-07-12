@@ -19,8 +19,8 @@ from django.conf import settings  # 추가
 from django.db import models
 
 class Post(models.Model):
-        author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='ep08_post_set')  # 추가
-    title = models.CharField(max_length=100)
+  author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='ep08_post_set')  # 추가
+  title = models.CharField(max_length=100)
 ```
 
 오류는 이미 ep04에서 ForeignKey이미 똑같이 사용중이므로 여기에서 reverse를 할때 둘중무엇을 돌려줘야할지겹쳐버리게된다. 따라서 `related_name='ep08_post_set'`를 지정해주면 ep04에서는 `user.post_set.all()`  으로 관련 포스트에 대한 쿼리 모두가져올수있고, ep08모델에서는  `user.ep08_post_set.all()` 으로 관련 포스트에 대한쿼리 모두 가져올수있다.
