@@ -165,7 +165,7 @@ base64 인코딩된 문자열은 손쉽게 디코딩해서 원본 문자열을 �
 
 In [9]:
 
-```
+```python
 from base64 import b64decode
 
 b64decode(b'dXNlcm5hbWU6cGFzc3dvcmQ=')
@@ -173,7 +173,7 @@ b64decode(b'dXNlcm5hbWU6cGFzc3dvcmQ=')
 
 Out[9]:
 
-```
+```python
 b'username:password'
 ```
 

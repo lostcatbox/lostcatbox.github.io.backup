@@ -231,9 +231,9 @@ class PostViewSet(ModelViewSet):
         return Response(serializer.data)
 ```
 
-## `PostViewSet`의 `public_list` API
+## PostViewSet의 public_list API
 
-- URL 매핑은 `/prefix/함수명/`으로서 `/post/public_list/`가 됩니다.
+- URL 매핑은 `/prefix/함수명/`으로서 `/post/public_list/`가 됩니다.(기본 get으로 응답)
 - methods가 지정되지 않았으므로 GET요청에 응답합니다. 이는 `list_route/detail_route`의 디폴트 처리입니다.
 - 함수명이 `public_list`이므로, URL Reverse 이름은 `모델명-함수명`으로서 `post-public-list`가 됩니다. 언더바(`_`)는 하이픈(`-`)으로 변경하여 처리됩니다.
 
@@ -246,7 +246,7 @@ class PostViewSet(ModelViewSet):
 ## PostViewSet의 set_public API
 
 - URL 매핑은 `/prefix/{pk}/함수명/`으로서 `/post/{pk}/set_public/`이 됩니다.
-- methods이 patch로 지정되었으므로, patch 요청에 응답합니다.
+- methods이 patch로 지정되었으므로, patch 요청에 응답합니다.(GET요청못받음)
 - 함수명이 `set_public`이므로, URL Reverse 이름은 `모델명-함수명`으로서 `post-set-public`이 됩니다. 언더바(`_`)는 하이픈(`-`)으로 변경하여 처리됩니다.
 
 요청 예시

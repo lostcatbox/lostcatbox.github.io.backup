@@ -34,7 +34,7 @@ tags: [API, DRF]
 
 Throttle와 Pagination은 꺼주시고, 현재, DB Record갯수가 적기에 ... **뻥튀기**
 
-```
+```python
 from ep08.models import Post
 
 post = Post.objects.first()
@@ -73,7 +73,7 @@ total시간은 요청이 요청되고 응답이 다생성되고 닫기까지의 
 
 - 코드1/3
 
-```
+```python
 import time
 from rest_framework.response import Response
 
@@ -99,7 +99,7 @@ class PostViewSet(ModelViewSet):
 
 - 코드 2/3
 
-```
+```python
         def list(self, request, *args, **kwargs): 
             db_start = time.time()
             post_list = list(self.queryset) #원래 queryset은 lazy 작동하지만 list등으로 변환을 줘서 즉시 DB Fetch를 이루워지게함 #실제 프로젝트에서는 lazy한게좋다
@@ -119,7 +119,7 @@ class PostViewSet(ModelViewSet):
 
   동작하지 않습니다.
 
-```
+```python
 from django.core.signals import request_started, request_finished
 
 def started_fn(sender, **kwargs): global started
@@ -162,7 +162,7 @@ def finished_fn(sender, **kwargs):
 
 QuerySet.values(**필드명**)**를 통해**, **원하는 필드만 가져오기**
 
-```
+```python
 def list(self, request, *args, **kwargs):
     db_start = time.time()
     # post_list = list(self.queryset)
@@ -194,7 +194,7 @@ __Tip: 하지만, Serializer으로 얻는 막대한 개발생산성이 있으며
 
 cache는 django에서 기본설정으로 django.conf.global_settings.py에서 cache를 보면 locmemcache인 것을 알수있다.
 
-```
+```python
 from django.core.cache import cache  #cache 접근
 
 # 중략
@@ -223,7 +223,7 @@ Tip: 코드 최적화가 먼저입니다. 캐시는 적당히. 무분별한 캐�
 
 ## APIView에 필요한 설정만 넣기
 
-```
+```python
 from rest_framework.negotiation import BaseContentNegotiation
 from rest_framework.renderers import JSONRenderer
 
@@ -254,7 +254,7 @@ __본 프로젝트가 API 기능만 할 경우, 장고 웹페이지를 위한 �
 
 
 
-```
+```python
 # 프로젝트/settings.py
 INSTALLED_APPS = [
 		# 'debug_toolbar',
@@ -278,7 +278,7 @@ MIDDLEWARE = [
 
 ## Django **기본** HttpResponse **쓰기**
 
-```
+```python
 import json
 from django.http import HttpResponse
 

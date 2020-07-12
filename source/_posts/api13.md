@@ -21,7 +21,7 @@ tags: [API, DRF]
 
 ## **시작하기전에**-**기본코드**
 
-```
+```python
 # 앱/models.py
 
 class Post(models.Model):
@@ -86,7 +86,7 @@ INSTALLED_APPS = ( 'rest_framework.authtoken',
 - 각User별 Token인스턴스가자동생성되지않습니다.(모델생성했다고 자동생성절대안됨)
 - Token은 유저 별로 Unique합니다. Token만으로 인증을 수행합니다.
 
-```
+```python
 # rest_framework/authotken/models.py
 
 class Token(models.Model): # 모델 코드에서 주요부분만 발췌
@@ -99,7 +99,7 @@ class Token(models.Model): # 모델 코드에서 주요부분만 발췌
 
 token 획득 API 뷰에서 Token 획득/생성을 아래 코드와 같이 처리하므로, **Token** **재생성**이 아니라면 특별히 처리해줄 필요는 없습니다.
 
-```
+```python
 # rest_framework/authtoken/views.py
 
 class ObtainAuthToken(APIView):
@@ -111,7 +111,7 @@ class ObtainAuthToken(APIView):
 
 ### **방법**2) Signal**을 통한 자동 생성** (**필수는 아님**)(이벤트헨들러느낌)
 
-```
+```python
 from django.conf import settings
 from django.db.models.signals import post_save 
 from django.dispatch import receiver
@@ -136,7 +136,7 @@ python3 manage.py drf_create_token -r <username>
 
 post만 처리가능함
 
-```
+```python
 from rest_framework.authtoken.views import obtain_auth_token
 
 urlpatterns += [
@@ -196,7 +196,7 @@ http DELETE $HOST/api/post/16/ "Authorization: Token $TOKEN"
 
 ## **파이썬 코드를 통한** Token **획득**
 
-``` 
+``` python
 import requests
 
 HOST = 'http://localhost:8000'
@@ -218,7 +218,7 @@ headers = {
 }
 ```
 
-```
+```python
 # Post List
 res = requests.get(HOST + '/api/post/', headers=headers) res.raise_for_status()
 print(res.json())
@@ -236,7 +236,7 @@ print(res)
 print(res.json())
 ```
 
-```
+```python
 # Post#16 Detail
 res = requests.get(HOST + '/api/post/', headers=headers) 
 res = requests.get(HOST + '/api/post/16/', headers=headers) res.raise_for_status()

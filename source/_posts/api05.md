@@ -27,7 +27,7 @@ APIView에서는 출력포맷을 결정하는 format인자를 다음 3가지 형
 ```
 http :8000/ep04/ Accept:application/json
 http :8000/ep04/?format=json
-http :8000/ep04/.json     #router에서 url
+http :8000/ep04.json     #router에서 url
 ```
 
 지정 예) HTML 응답 요청>>이 형태가 브라우저로들어갈때의 rest-framework가 보여주는api
@@ -35,7 +35,7 @@ http :8000/ep04/.json     #router에서 url
 ```
 http :8000/ep04/ Accept:text/html
 http :8000/ep04/?format=api
-http :8000/ep04/.api      #router에서 url
+http :8000/ep04.api      #router에서 url
 ```
 
 헤더와 GET인자를 활용하는 방법은 별도의 URL Conf 설정이 필요없습니다. 하지만 `:8000/.json`의 경우에는 "인자 Capture"가 필요하므로 별도의 URL Conf 설정이 필요하며 뷰에서도 `format` 이름의 인자를 받을 수 있어야 합니다.
@@ -132,11 +132,7 @@ REST_FRAMEWORK = {
         #'rest_framework.renderers.BrowsableAPIRenderer'
     )
 }
-
-
 ```
-
-
 
 ## API를 사용하는 HTML 페이지 만들기
 
@@ -145,10 +141,6 @@ REST_FRAMEWORK = {
 Django Form을 사용하지 않고, DRF를 통해 HTML페이지에서; 폼처리를 할 수는 있습니다. 하지만 이 부분은 DRF를 쓰기보다 Django Form을 사용하는 것이 보다 효율적인 듯 해서, 다루진 않겠습니다.
 
 언젠가 Django Form과 Serializer가 합쳐지는 날이 오지 않을까 싶네요.
-
-
-
-
 
 # EP 06 - 필터링
 
@@ -175,7 +167,7 @@ urlpatterns = [
 self.kwargs.get('username', '') #사전에서 지원해주는 동작, 있다면 가져오고 없다면 빈문자열 가져옴
 ```
 
-```
+```python
 # 상관없는 내용ㅇ foreignkey복습필요, user_model보기
 from django.db import models
 from django.conf import settings
@@ -210,7 +202,7 @@ class PostListAPIView(generics.ListAPIView):
 
 예시
 
-```
+```python
 #views.py
 
 from django.shortcuts import render
@@ -273,7 +265,7 @@ Out[6]: b'\xec\xb2\xab\xeb\xb2\x88\xec\xa7\xb8'
 
 아래방법은 그냥 기본적인 검색
 
-```
+```python
     def get_queryset(self):
         qs = super().get_queryset()
 
@@ -313,7 +305,7 @@ Out[6]: b'\xec\xb2\xab\xeb\xb2\x88\xec\xa7\xb8'
 pip3 freeze | grep djangorestframework
 ```
 
-```
+```python
 #models.py 에서 순서 꼭 지정해주기 ordering
 
 class Post(models.Model):
