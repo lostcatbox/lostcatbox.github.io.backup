@@ -452,3 +452,4 @@ class PostSerializer(serializers.ModelSerializer):
     "title": "t1"
 }
 ```
+
