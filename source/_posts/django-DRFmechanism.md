@@ -2,7 +2,7 @@
 title: Django, DRF 메커니즘 그림
 date: 2020-07-14 15:56:44
 categories: [DRF]
-tags:[DRF, Django, Mechanism]
+tags: [DRF, Django, Mechanism]
 ---
 
 # 왜?
@@ -21,4 +21,5 @@ tags:[DRF, Django, Mechanism]
 
 # DRF
 
-![IMG_0610](https://tva1.sinaimg.cn/large/007S8ZIlgy1ggqid29jygj31fa0u013j.jpg)
+![IMG_0612](https://tva1.sinaimg.cn/large/007S8ZIlgy1ggqiqifej5j31h80qw48j.jpg)
+
