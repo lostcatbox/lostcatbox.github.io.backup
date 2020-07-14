@@ -1,5 +1,5 @@
 ---
-title: django+DRFmechanism
+title: Django, DRF 메커니즘 그림
 date: 2020-07-14 15:56:44
 categories: [DRF]
 tags:[DRF, Django, Mechanism]
