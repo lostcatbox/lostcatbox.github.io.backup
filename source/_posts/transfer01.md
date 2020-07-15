@@ -11,7 +11,7 @@ tags: [Html, English, Basic]
 
 # Render vs Parse
 
-[자세히](HTML parsing and rendering🌻: Here's what happens when you type URL and press enter...)
+[자세히](https://dev.to/saurabhdaware/html-parsing-and-rendering-here-s-what-happens-when-you-type-url-and-press-enter-3b2o)
 
 ![스크린샷 2020-07-15 오후 1.08.53](https://tva1.sinaimg.cn/large/007S8ZIlgy1ggrj3rpcjsj313c0guwgg.jpg)
 
