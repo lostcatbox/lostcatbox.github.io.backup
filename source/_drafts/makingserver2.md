@@ -9,6 +9,8 @@ tags:
 
 ![스크린샷 2020-06-25 오후 7.49.15](https://tva1.sinaimg.cn/large/007S8ZIlgy1gg4qa419uxj317u0ek44t.jpg)
 
+
+
 서버 동작 과정
 
 ## Refer
@@ -17,6 +19,7 @@ tags:
 2. [장고 배포 체크리스트](https://docs.djangoproject.com/en/2.2/howto/deployment/checklist/)
 3. [Ubuntu16.04, Nginx, Uwsgi환경에서 Django 프로젝트 배포하기](https://www.digitalocean.com/community/tutorials/how-to-serve-django-applications-with-uwsgi-and-nginx-on-ubuntu-16-04)
 4. [Ubuntu16.04에서 장고 배포 후  Postgresql 사용하기](https://www.digitalocean.com/community/tutorials/how-to-use-postgresql-with-your-django-application-on-ubuntu-16-04)
+5. [자세히](https://twpower.github.io/41-connect-nginx-uwsgi-django)
 
 ## **시스템 환경**
 
@@ -182,7 +185,7 @@ tags:
 
 6. **nginx 설정**
 
-   1. s**erver-block 설정 파일 추가**
+   1. **server-block 설정 파일 추가**
 
       ```bash
       $ sudo apt-get install -y nginx
