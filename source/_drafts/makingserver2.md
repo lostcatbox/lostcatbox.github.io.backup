@@ -5,7 +5,7 @@ categories:
 tags:
 ---
 
-# 장고 배포하기 실습
+# AWS이용하여  nginx django배포
 
 ![스크린샷 2020-06-25 오후 7.49.15](https://tva1.sinaimg.cn/large/007S8ZIlgy1gg4qa419uxj317u0ek44t.jpg)
 

@@ -19,6 +19,12 @@ tags: [Nginx,Wsgi,Network, Server, DRF]
 
 서버를 구성하고 웹서버환경을 구축하려면 nginx가 필요하다. 이를 DRF와 연결까지하여 실제로 JSON을 주고 받아보자
 
+```
+$ ssh -i ~/.ssh/[private_key] ubuntu@ip 
+```
+
+
+
 # 웹서버 구조
 
 ![스크린샷 2020-07-17 오후 5.48.19](https://tva1.sinaimg.cn/large/007S8ZIlgy1ggu2fr84f3j30yy0bq79u.jpg)
@@ -281,6 +287,11 @@ server {
     # max upload size
     client_max_body_size 75M;   # adjust to taste
 
+    
+    #(추가, favicon.ico관해서 설정..)
+    location = /favicon.ico { access_log off; log_not_found off; }
+
+
     #5 Django media파일 경로
     location /media  {
         alias /home/linku/LinkU/linku_backend/media;
@@ -375,8 +386,6 @@ $ sudo /etc/init.d/nginx restart
 (LinkU)$ uwsgi --socket :8001 --module linku.wsgi
 ```
 
-
-
 이제 도메인을 통해서 domain.com:port를 통해서 접속하면 `여기서의 Port는 위에 conf파일에 있는 server 블록에 있는 Port번호 입니다.` 장고에서 해당하는 응답을 보여줌을 확인 할 수 있습니다.
 
 #### uWSGI가 실행이 되지 않는다면
@@ -386,8 +395,6 @@ nginx error log(/var/log/nginx/error.log)를 확인해서 아래와 같은 오�
 ```
 connect() to unix:///path/to/your/mysite/mysite.sock failed (13: Permission denied)
 ```
-
-
 
 다음 아래 두 명령어중에 하나를 시도해보시면 됩니다. 권한 떄문에 생기는 문제인데 nginx의 사용자 그룹에 현재 접속한 유저를 추가해주셔야 됩니다.
 
