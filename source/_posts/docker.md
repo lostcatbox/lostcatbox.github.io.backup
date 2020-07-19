@@ -185,13 +185,33 @@ CMD ["start.sh"]
 
 맥환경: [Docker for mac](https://docs.docker.com/docker-for-mac/)
 
+[리눅스](https://subicura.com/2017/01/19/docker-guide-for-beginners-2.html)
 
+## Linux
 
+자동 설치 스크립트를 이용
 
+```
+curl -fsSL https://get.docker.com/ | sudo sh
+```
 
+**sudo 없이 사용하기**
 
+docker는 기본적으로 root권한이 필요합니다. root가 아닌 사용자가 sudo없이 사용하려면 해당 사용자를 `docker`그룹에 추가합니다.
 
+```
+sudo usermod -aG docker $USER # 현재 접속중인 사용자에게 권한주기
+sudo usermod -aG docker your-user # your-user 사용자에게 권한주기
+```
 
+사용자가 로그인 중이라면 다시 로그인 후 권한이 적용됩니다.
 
+```
+docker version #도커 버전 확인
+```
 
+> 버전정보가 클라이언트와 서버로 나뉘어져 있습니다. 도커는 하나의 실행파일이지만 실제로 클라이언트와 서버역할을 각각 할 수 있습니다. 도커 커맨드를 입력하면($docker run xxx) 도커 클라이언트가 도커 서버로 명령을 전송하고 결과를 받아 터미널에 출력해 줍니다.
+>
+> 기본값이 도커 서버의 소켓을 바라보고 있기 때문에 사용자는 의식하지 않고 마치 바로 명령을 내리는 것 같은 느낌을 받습니다. 이러한 설계가 mac이나 windows의 터미널에서 명령어를 입력했을때 가상 서버에 설치된 도커가 동작하는 이유입니다.
 
+[리리](https://subicura.com/2017/01/19/docker-guide-for-beginners-2.html)
