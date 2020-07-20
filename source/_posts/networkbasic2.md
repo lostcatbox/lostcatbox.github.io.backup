@@ -67,3 +67,26 @@ tags: [Network,Server, Tip, Basic]
 
 - 
 
+# 네트워크 관련 명령어
+
+```
+netstat -rn
+ifconfig -a
+traceroute
+ping
+
+```
+
+vpn설정후 
+
+```
+vi /etc/ppp/ip-up #여기에서 선택적으로 vpn적용할것들 선택가능(나머지는 vpn안쓰고 그냥 통신됨)
+
+#ip-up
+1 #!/bin/bash
+2
+3 /sbin/route add -net 192.168.88.0/24 -interface $1
+
+#sudo chmod +x ip-up으로 권한 변경꼭해주기
+```
+
