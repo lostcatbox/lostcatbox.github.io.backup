@@ -101,7 +101,7 @@ services:
                         - .:/app
 ```
 
-
+위와 같이 volumes에 현재폴더를 한이유는 git pull로 당겨서 만약 파일들을 업데이트한다면 컨테이너에 즉시 반영하기위해서다.
 
 # Docker -v
 
@@ -126,4 +126,68 @@ docker run -d -P --name <name of your container> -v /path/to/local/directory:/pa
 [실습2](https://docker-compose.tistory.com/1)
 
 [실습3](https://www.daleseo.com/docker-compose-django/)
+
+```
+#DockerFile
+
+FROM python:3.7.6
+
+COPY . /app
+RUN pip install -r /app/requirements.txt
+WORKDIR /app
+
+EXPOSE 8000
+```
+
+```
+#docker-compose.yml
+version: '3'
+
+services:
+        db:
+                image: mysql:5.7
+                ports:
+                        - "3306:3306"
+                environment:
+                        MYSQL_DATABASE: 'test_db'
+                        MYSQL_USER: 'root'
+                        MYSQL_PASSWORD: 'password'
+                        MYSQL_ROOT_PASSWORD: 'password'
+                volumes:
+                        - test_volume:/var/lib/mysql
+
+
+        drf:
+                build: .
+                command: python manage.py runserver 0.0.0.0:8000
+                ports:
+                        - "8000:8000"
+                volumes:
+                        - .:/app
+
+volumes:
+        test_volume:
+```
+
+현재 db는 마운트되어있는상태이며 맨마지막에 volumes: \\ test_volume: 를 적었으므로 `docker volume ls` 에 나타나는 docker volume에 따로 DB 파일이 존재하게된다. (즉, 컨테이너를 제거해도 남아있다)
+
+위와 다른것은 django의 settings.py의 설정이 바꼈다는 것이다.
+
+아래와 같이 연결가능
+
+```
+#  settings.py의 일부분
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'test_db',
+        'USER': 'root',
+        'PASSWORD': 'password',
+        'HOST': 'db',
+        'PORT': 3306,
+    }
+}
+```
+
+
 
