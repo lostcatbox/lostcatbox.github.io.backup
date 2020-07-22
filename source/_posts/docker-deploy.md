@@ -127,6 +127,8 @@ docker run -d -P --name <name of your container> -v /path/to/local/directory:/pa
 
 [실습3](https://www.daleseo.com/docker-compose-django/)
 
+
+
 ```
 #DockerFile
 
@@ -187,6 +189,13 @@ DATABASES = {
         'PORT': 3306,
     }
 }
+```
+
+docker-compose 가 모두 구성이 되었다면
+
+```
+docker-compose build
+docker-compose up -d
 ```
 
 
