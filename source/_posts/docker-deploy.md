@@ -200,3 +200,55 @@ docker-compose up -d
 
 
 
+# Docker Network
+
+[자세히](https://nirsa.tistory.com/80)
+
+[자세히](https://www.daleseo.com/docker-networks/)
+
+[자세히](https://www.ctl.io/developers/blog/post/docker-networking-rules)
+
+[자세히](https://jungwoon.github.io/docker/2019/01/13/Docker-4/)
+
+컨테이너 끼리 통신하려면 docker-compose를 사용하거나
+
+network를 만들어서 같은 network에 넣어주면 가능하다.
+
+\--link는 도커에서 추천하지 않는방법이며
+
+```
+docker run --name db2 -d --network django_network -e MYSQL_ROOT_PASSWORD=password -p 3308:3306 mysql:5.7
+
+docker run --name django -d -p 7999:8000 --network django_network 494
+```
+
+```
+docker  network create --driver bridge django_network
+```
+
+```
+#setting.py
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'my_app_db',
+        'USER': 'root',
+        'PASSWORD': 'password',
+        'HOST': 'db2',
+        'PORT': 3306,
+    }
+}
+```
+
+> 의문점은 필자의 의도는 setting.py에서 포트를 3308로 요청해야 db2에서 처리를 하는지 알았는데, 그것이 아니고 3306으로 요청주면 응답하였다. 이유는 다음과같다.
+>
+> \-p 로 지정하는  ports는 호스트OS와 컨테이너의 포트를 바인딩 시켜줍니다. 즉, 호스트OS에 등록하는것!
+>
+> expose는 mysql은 기본적으로  3306으로 되어있고 이것은  호스트 OS에 포트를 공개하지 않고, 링크등으로 연결된 컨테이너-컨테이너간의 통신만이 필요한 경우로 사용된다. 같은 네트워크에 속해있고 db2로 요청하면 바로 맥주소를 반환하므로 호스트 OS와 상관없이 통신한다.
+
+```
+docker inspect <컨테이너이름>|<컨테이너id> #해당 컨테이너 네트워크 detail 조회
+docker network ls #docker에 현재 망 조회
+```
+
