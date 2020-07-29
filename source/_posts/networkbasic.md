@@ -149,27 +149,6 @@ tags: [Network,Server, Tip, Basic]
 
     보내고자 하는 인원들에게만 한번에 보낼수 있기 떄문에 이런 경우 제일 유용함
 
-- 
-
-- 
-
-- 
-
-- 
-
-- 
-
-- 
-
-- 
-
-  
-
-  
-
-
-
-
 
 # OSI 계층 구조
 
@@ -559,4 +538,26 @@ ISP(Internet Service Provider) 업체에서 제공하는 한 개의 인터넷 IP
 Wireshark를 통해 패킷을 분석결과
 
 sequence number, acknowledgment number 를 확인하였고, 3way확인가능, 그리고 연결통로 확보 후 GET HTTP/1.1 요청후  GET HTTP/1.1 200  응답받는것을 확인가능 필요한 정보들을 패킷으로 연속적으로 받아오는것을 확인할수있다.![스크린샷 2020-06-28 오후 2.59.51](https://tva1.sinaimg.cn/large/007S8ZIlgy1gg7yrw5bfyj30xc0mudou.jpg)
+
+# 네트워크  통신 메커니즘
+
+[자세히](https://blog.naver.com/PostView.nhn?blogId=goduck2&logNo=220111709554&parentCategoryNo=&categoryNo=73&viewDate=&isShowPopularPosts=false&from=postView)
+
+pc0,switch,pc1 이 연결되어있는 상태(처음연결)
+
+LAN환경에서 PC0가 PC1에게 요청 응답을 받는상황이라면 어떻게 통신할까?
+
+1. PC0에서 통신할 상대방 PC1에 IP주소를 알아낸다
+2. PC0에서 요청을 보낸다
+3. PC0의 Routing Table에서 PC1의 IP주소로 가려면, 어떤 interface로 나가야 하고, next hop ip(목적지 네트워크를 가기 위한 다음 장치를 Next Hop이라고 한다)가 무엇인지 찾는다
+4. 이 next hop ip의 MAC address가 ARP Table에 등록되어있는지 찾는다
+5. ARP Table에 Next hop IP의  MAC address 가 없다면 MAC address를 알아오기 위해서 ARP request메시지를 전송한다.
+6. Switch는 ARP request 메시지를 수신하면  source MAC address를 보고, PC0의 MAC Table entry를 만든다.(PC0의 MAC address와 Frame이 수신된 port번호를 MAC Table에 기록한다.)
+7. Switch는 ARP request 메세지를 모든 LAN port로 브로드캐스트한다. (ARP 패킷은 LAN구간 끝까지 어디든 날아간다.)
+8. ARP request를 수신한 PC1은 자신의  ARP Table에 PC0의 IP와 MAC address를 등록하고 ARP reply 메시지를 전송한다.(PC1의 ARP Table에는 ARP request메시지를 받으면서 이미 PC0의  MAC address가 등록되어 있다.)
+9. Swtich는 ARP reply 메시지를 수신하면, source MAC address를 보고, PC1의 MAC Table entry를 만든다.
+10. PC0은 ARP reply 메시지를 수신하면, ARP Table에 PC1의 IP와 MAC address를 등록하고, PC1으로 전송되어야 할 패킷의  Destination MAC에 PC1의 MAC address를 부착하고 메시지를 전송한다.
+11.  Switch는 PC0가 전송한 Ethernet Frame을 수신하면, Desitnation MAC address가 MAC Table에 존재하는지 찾는다.
+12.  Switch는 MAC Table에 PC1의 정보가 등록되어 있으므로 PC1이 연결되어 있는 port로 메시지를 전송(Unicast)한다.
+13. PC1은 Destination MAC address가 자신의 NIC MAC address와 동일하므로 메시지를 수신하여 IP layer로 전달하고,
 

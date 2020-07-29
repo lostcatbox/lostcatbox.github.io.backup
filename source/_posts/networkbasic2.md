@@ -65,12 +65,22 @@ tags: [Network,Server, Tip, Basic]
 
   외부망(밖)에서보면 Gateway주소만 알수있고 이것을 보고 전송주고받고 내부망(안)에서보면 Gateway주소쪽으로 보내야 외부와 통신이 가능해진다.
 
-- 
+
+- 라우팅 테이블
+
+  라우팅을 할때 prefix(CIDR숫자더한값)이 큰기준부터 Destination 주소와비교후 맞다면 해당 gateway로 보내는것.  결국 해당하는 것이 없다면 prefix=0인 default Destination(0.0.0.0)과 맞아떨어지므로 해당  gateway로 전송됨.
+
+  > 추가로  gateway가 0.0.0.0값을 가지는 것은 해당 행은 내부망으로 연결되어 있어 외부 네트워크로 나갈 게이트웨이가 없다는것. 미지정의미임. 결국 해당 인터페이스에 로컬로 연결되어 있음을 알수있다.
 
 # 네트워크 관련 명령어
 
 ```
-netstat -rn
+netstat -rn # -r은 라우팅테이블 조회 -n은 이름대신 ip주소로나옴.
+netstat -n  # 연결 목록이 -n은 이름대신 ip주소로나옴.
+netstat -a # 연결된 혹은 연결을 기다리고 있는 모든 포트를 보여준다.
+netstat -nap # 연결을 기다리는 목록과 프로그램을 보여준다
+netstat -an | grep <포트번호> #특정 포트가 사용 중에 있는지 확인 
+netstat -nlpt #TCP listening 상태의 포트와 프로그램을 보여준다
 ifconfig -a
 traceroute
 ping
