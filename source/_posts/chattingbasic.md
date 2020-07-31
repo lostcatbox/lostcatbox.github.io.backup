@@ -1,5 +1,5 @@
 ---
-title: chattingbasic
+title: 소켓을 이용한 실시간 채팅 만들기
 date: 2020-07-31 13:01:31
 categories: [Chattingbasic]
 tags: [Network, Socket]
@@ -117,6 +117,13 @@ __하지만 위에 실습 내용은 연속적으로 주고받지못하며, 프�
 #server.py
 import threading
 import time
+from socket import *
+
+serverSock = socket(AF_INET, SOCK_STREAM)
+serverSock.bind(('', 8080))
+serverSock.listen(1)
+connectionSock, addr = serverSock.accept() 
+print(str(addr),'에서 접속이 확인되었습니다.')
 
 def send(sock):
     while True:
@@ -151,6 +158,10 @@ while True:
 
 import threading
 import time
+from socket import *
+
+clientSock = socket(AF_INET, SOCK_STREAM)
+clientSock.connect(('127.0.0.1', 8080)) 
 
 def send(sock):
     while True:
@@ -162,6 +173,7 @@ def receive(sock):
     while True:
         recvdata = sock.recv(1024)
         print('받은 데이터:', recvdata.decode('utf-8'))
+
 
 sender = threading.Thread(target=send, args=(clientSock,))
 receiver = threading.Thread(target=receive, args=(clientSock,))
