@@ -591,6 +591,8 @@ Router의 IP Layer에서는 MAC Layer로부터 수신된 IP 패킷에 대하여 
 
 상기 열거한 항목 중에서 항목 1)은 라우터 자신에게 온 패킷의 경우이고, 항목 2), 3)은 라우터의 본래 기능인 라우팅 기능을 통해서 다른 LAN으로 routing 되기 위해 수신 된 패킷입니다. Destination IP가 자기 interface에 설정된 IP가 아닌 경우가 Routing을 위해서 수신된 IP 패킷입니다. 서로 다른 LAN(subnet, network)간 통신을 위해서는 Router 기능이 필수적으로 필요합니다. 전통적인 Router 이외에 L3 switch나 routing 기능이 있는 L4~L7 스위치 장비도 서로 다른 LAN간 통신에 이용될 수 있습니다. 그렇게 Routing 기능을 수행할 수 있는 장비들은 모두 한결같이 Routing Table과 ARP Table을 가지고있습니다
 
+![스크린샷 2020-07-30 오후 3.53.32](/Users/lostcatbox/Desktop/스크린샷 2020-07-30 오후 3.53.32.png)
+
 > 간단히 요약해서  pc0-router0-router1-router2-server0순으로 연결되어있다면 처음통신할때 pc0에서 arp request를 router0에 보내며 응답으로 router0의 맥주소를 알게된다
 >
 > pc0는 sever0의 목적지 IP를 가지며 source MAC을 자신의것, 목적지 MAC을 router0의것으로한 프레임 만들어 전송
