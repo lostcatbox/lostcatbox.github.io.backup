@@ -5,7 +5,7 @@ categories: [Network]
 tags: [Network,Server, Tip, Basic]
 ---
 
-# 네트워크 기본
+# 네트워크 지식 01
 
 [자세히](https://aaasssddd25.tistory.com/9?category=617816 )
 

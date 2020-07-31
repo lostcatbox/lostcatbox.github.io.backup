@@ -5,7 +5,7 @@ categories: [Network]
 tags: [Network,Server, Tip, Basic]
 ---
 
-# 네트워크 지식(정리중???)
+# 네트워크 지식 02
 
 - VPN
 
@@ -35,7 +35,7 @@ tags: [Network,Server, Tip, Basic]
 
   - 라우터가 해당 IP주소를 가지고있지 않다면 옆에 라우터로 넘기고
 
-    스위치도 마찬가지고 해당 요청에 대한 맥주소에 해당하지 않는다면 옆으로 넘김..???
+    스위치도 마찬가지고 해당 요청에 대한 맥주소에 해당하지 않는다면 옆으로 넘김
 
   - router는 IP기준, switch는 MAC 기준
 
