@@ -11,6 +11,8 @@ tags: [Docker, Django, DRF]
 
 [자세히](https://www.slideshare.net/raccoonyy/django-164557454)
 
+[도커 네트워크 구성]([https://youngmind.tistory.com/entry/%EB%8F%84%EC%BB%A4-%EA%B0%95%EC%A2%8C-3-%EB%8F%84%EC%BB%A4-%EB%84%A4%ED%8A%B8%EC%9B%8C%ED%81%AC-1](https://youngmind.tistory.com/entry/도커-강좌-3-도커-네트워크-1))
+
 # 왜? (작성중)
 
 도커는 이미지와 컨테이너로 굉장히 많은 일을 기록하여 다음에는 단순화 할수있다.

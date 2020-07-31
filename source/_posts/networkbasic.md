@@ -551,7 +551,7 @@ sequence number, acknowledgment number 를 확인하였고, 3way확인가능, �
 
 pc0,switch,pc1 이 연결되어있는 상태(처음연결)
 
-## LAN환경에서 PC0가 PC1에게 요청 응답을 받는상황이라면 어떻게 통신할까?
+## Bridge+LAN환경에서 PC0가 PC1에게 요청 응답을 받는상황이라면 어떻게 통신할까?
 
 1. PC0에서 통신할 상대방 PC1에 IP주소를 알아낸다
 2. PC0에서 요청을 보낸다
@@ -591,5 +591,16 @@ Router의 IP Layer에서는 MAC Layer로부터 수신된 IP 패킷에 대하여 
 
 상기 열거한 항목 중에서 항목 1)은 라우터 자신에게 온 패킷의 경우이고, 항목 2), 3)은 라우터의 본래 기능인 라우팅 기능을 통해서 다른 LAN으로 routing 되기 위해 수신 된 패킷입니다. Destination IP가 자기 interface에 설정된 IP가 아닌 경우가 Routing을 위해서 수신된 IP 패킷입니다. 서로 다른 LAN(subnet, network)간 통신을 위해서는 Router 기능이 필수적으로 필요합니다. 전통적인 Router 이외에 L3 switch나 routing 기능이 있는 L4~L7 스위치 장비도 서로 다른 LAN간 통신에 이용될 수 있습니다. 그렇게 Routing 기능을 수행할 수 있는 장비들은 모두 한결같이 Routing Table과 ARP Table을 가지고있습니다
 
-https://blog.naver.com/PostView.nhn?blogId=goduck2&logNo=220142854627&parentCategoryNo=&categoryNo=73&viewDate=&isShowPopularPosts=false&from=postView
-
+> 간단히 요약해서  pc0-router0-router1-router2-server0순으로 연결되어있다면 처음통신할때 pc0에서 arp request를 router0에 보내며 응답으로 router0의 맥주소를 알게된다
+>
+> pc0는 sever0의 목적지 IP를 가지며 source MAC을 자신의것, 목적지 MAC을 router0의것으로한 프레임 만들어 전송
+>
+> router0에서는 자신에게 직접 연결된 LAN에서 해당 목적지 IP가 없으므로 Routing Table을 참조 후에 default 주소로 보낸다. ARP table에 MAC 주소가 존재하지않으므로  ARP request를 router1에게 보낸다.
+>
+> source MAC을 router0의것, 목적지 MAC을 router1의것으로한 프레임 만들어 전송
+>
+> router1의 Routing Table에서 default route는 다른 라우터로 나가게 되어있으므로 Routing Table에  해당 목적지 IP이면 server0가 속하는 router2의 주소를 줘야함. 설정되었다면, Routing  Table을 기준으로 router2에게 ARP request를 보내며 MAC 주소를 알아내고.. 앞에과정똑같다
+>
+> 마지막으로 router2에서는 server0와 직접적으로 연결되어있으므로  router2가 직접적으로 server0에게 ARP request를 보내며 MAC주소를 알아내고.. 앞에 과정과 똑같이 프레임 전송한다.
+>
+> 이제 모든 기기가 ARP table에 해당 IP에 대한 MAC주소가 기록되어있으므로 보다 간결한 방식으로 통신이 가능하게된다.
