@@ -189,8 +189,6 @@ while True:
 
 
 
-
-
 [채팅 심화](https://lidron.tistory.com/44)
 
 [채팅 심화](https://docs.python.org/ko/3.7/howto/sockets.html)
