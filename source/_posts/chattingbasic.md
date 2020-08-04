@@ -130,16 +130,23 @@ print(str(addr),'에서 접속이 확인되었습니다.')
 def send(sock):
     while True:
         senddata=input('>>>')
-        connectionSock.send(senddata.encode('utf-8'))
+        sock.send(senddata.encode('utf-8'))
         print('전송완료')
+
 
 def receive(sock):
     while True:
         recvdata = sock.recv(1024)
+        if recvdata.decode('utf-8') == '/quit':
+          sock.close()
+          break
+         
         print('받은 데이터:', recvdata.decode('utf-8'))
 
 sender = threading.Thread(target=send, args=(connectionSock,))
+sender.daemon = True  #메인프로세스 종료시 같이 종료
 receiver = threading.Thread(target=receive, args=(connectionSock,))
+receiver.daemon = True
 
 sender.start()
 receiver.start()
@@ -168,17 +175,26 @@ clientSock.connect(('127.0.0.1', 8080))
 def send(sock):
     while True:
         senddata=input('>>>')
-        clientSock.send(senddata.encode('utf-8'))
+        sock.send(senddata.encode('utf-8'))
         print('전송완료')
+        if senddata == '/quit':
+          print('연결정상종료')
+          break
     
 def receive(sock):
     while True:
         recvdata = sock.recv(1024)
+        if not recvdata:
+          sock.close()
+          break
+
         print('받은 데이터:', recvdata.decode('utf-8'))
 
 
 sender = threading.Thread(target=send, args=(clientSock,))
+sender.daemon = True
 receiver = threading.Thread(target=receive, args=(clientSock,))
+receiver.daemon = True
 
 sender.start()
 receiver.start()
@@ -188,7 +204,21 @@ while True:
     pass
 ```
 
+## 오류
 
+while구문을 조심하자
+
+socket.close()를 처음하는 것은 서버나 클라이언트 모두가 가능하다
+
+하지만  반드시  처음으로 close() 요청하는 것을 active open, 처음받는 쪽을  passive  open으로 정의한다.
+
+따라서 passive의 close()가 제대로 동작하지 않는다면 active쪽 소켓을 없어지나 passive의 소켓은 CLOSE_WAIT상태로 유지되며 TIME_OUT시간도없어서 자동으로 사라지지않는다(이런 상태면 반드시 프로세스 자체가 종료되어야함)
+
+따라서 반드시 passive쪽의 소켓의 close()를 제대로 호출해주자!
+
+참고로 close()요청을 받는 passive에서 recv()의 리턴값은 0이므로 `if not recvdata:` 를 사용하여 예시에서는 적용하였다.
+
+![스크린샷 2020-08-04 오후 10.38.54](https://tva1.sinaimg.cn/large/007S8ZIlgy1ghf3yvsar3j30vu0u047v.jpg)
 
 [채팅 심화](https://lidron.tistory.com/44)
 
