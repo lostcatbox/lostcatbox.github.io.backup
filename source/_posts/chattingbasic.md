@@ -136,12 +136,14 @@ def send(sock):
 
 def receive(sock):
     while True:
-        recvdata = sock.recv(1024)
-        if recvdata.decode('utf-8') == '/quit':
-          sock.close()
-          break
-         
-        print('받은 데이터:', recvdata.decode('utf-8'))
+        try:
+            recvdata = sock.recv(1024)
+            if recvdata.decode('utf-8') == '/quit':
+               sock.close()
+
+            print('받은 데이터:', recvdata.decode('utf-8'))
+        except:
+            pass
 
 sender = threading.Thread(target=send, args=(connectionSock,))
 sender.daemon = True  #메인프로세스 종료시 같이 종료
@@ -154,6 +156,7 @@ receiver.start()
 while True:
     time.sleep(1)
     pass
+
 ```
 
 
@@ -178,15 +181,19 @@ def send(sock):
         sock.send(senddata.encode('utf-8'))
         print('전송완료')
         if senddata == '/quit':
-          print('연결정상종료')
-          break
+            print('연결정상종료')
+            break
+        
+
+
     
 def receive(sock):
     while True:
         recvdata = sock.recv(1024)
         if not recvdata:
-          sock.close()
-          break
+            print('no receive data')
+            sock.close()
+            break
 
         print('받은 데이터:', recvdata.decode('utf-8'))
 
@@ -202,6 +209,7 @@ receiver.start()
 while True:
     time.sleep(1)
     pass
+
 ```
 
 ## 오류
@@ -212,7 +220,7 @@ socket.close()를 처음하는 것은 서버나 클라이언트 모두가 가능
 
 하지만  반드시  처음으로 close() 요청하는 것을 active open, 처음받는 쪽을  passive  open으로 정의한다.
 
-따라서 passive의 close()가 제대로 동작하지 않는다면 active쪽 소켓을 없어지나 passive의 소켓은 CLOSE_WAIT상태로 유지되며 TIME_OUT시간도없어서 자동으로 사라지지않는다(이런 상태면 반드시 프로세스 자체가 종료되어야함)
+따라서 passive의 close()가 제대로 동작하지 않는다면 active쪽 소켓을 없어지나 passive의 소켓은 CLOSE_WAIT상태로 유지되며 TIME_OUT시간도없어서 자동으로 사라지지않는다(이런 상태면 반드시 프로세스 자체가 종료되어야함(이런식으로 구현해도됨))
 
 따라서 반드시 passive쪽의 소켓의 close()를 제대로 호출해주자!
 
