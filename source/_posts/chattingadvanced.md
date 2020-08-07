@@ -2,7 +2,7 @@
 title: 소켓을 이용한 실시간 채팅 만들기 (심화편)
 date: 2020-08-04 15:12:47
 categories: [Chatting]
-tags:[Network, Socket,. Threading]
+tags: [Network, Socket, Threading]
 ---
 
 [실시간 채팅 구현 참조](https://lidron.tistory.com/44)
@@ -26,7 +26,6 @@ import threading
 HOST = ''
 PORT = 9009
 lock = threading.Lock()  # syncronized 동기화 진행하는 스레드 생성, 즉, 단 하나의 프로세스나, 스레드만 접근해서 데이터를 수정함!
-
 
 
 class UserManager:  # 사용자관리 및 채팅 메세지 전송을 담당하는 클래스
@@ -198,6 +197,3 @@ def runChat():
 runChat()
 ```
 
-# 웹소켓을 지난 활용
-
-지금까지 한 것들은 모두 로컬에서 서비스를 하고, 
