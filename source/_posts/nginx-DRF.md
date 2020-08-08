@@ -1,5 +1,5 @@
 ---
-title: nginx,DRF로 웹서비스 배포
+title: Nginx 웹서비스 배포(DRF 사용)
 date: 2020-07-17 15:23:46
 categories: [Server]
 tags: [Nginx,Wsgi,Network, Server, DRF]
@@ -175,6 +175,20 @@ $ pyenv activate [virtual environment name]
 ```
 
 # Nginx uWSGI DRF 연결
+
+> ## WSGI란?
+>
+> [자세히]([https://medium.com/@shdotseo/uwsgi%EC%9D%98-%EC%97%AD%ED%99%9C%EC%9D%80-c0ffe2920391](https://medium.com/@shdotseo/uwsgi의-역활은-c0ffe2920391))
+>
+> [WAS, Web Server](https://jeong-pro.tistory.com/84)
+>
+> WSGI의 종류에는 uWSGI, Bjoern, mod_wsgi, CherryPy, Gunicorn가 있다.
+>
+> WSGI는 웹서버와 웹앱을 연결해주는 인터페이스를 정의([PEP333](http://legacy.python.org/dev/peps/pep-0333/))하여 웹서버와 웹앱(python으로 구현한)를 독립적으로 구성할 수 있게 한다. 
+>
+> 예를 들면 Apache, Nginx의 웹서버는 정적 콘텐츠(이미지, 파일 등)에 대한 처리를 수행하고 동적 콘텐츠(로그인, 메일)는 django, flask를 이용하여 만든 웹앱이 처리를 한다. 이 때 Nginx와 django 사이의 interface를 정의한 것이 WSGI이고 구현한 것이 uWSGI이다.
+>
+> 
 
 ## [선택] pyenv와 virtualenv를 통해서 가상환경 설정하기
 
