@@ -197,3 +197,150 @@ def runChat():
 runChat()
 ```
 
+# Websocket을 이용한 실시간채팅구현
+
+[자세히](https://nowonbun.tistory.com/674)
+
+[자세히]([https://igotit.tistory.com/entry/%ED%8C%8C%EC%9D%B4%EC%8D%AC-%EC%9B%B9%EC%86%8C%EC%BC%93-WbeSocket-%EA%B5%AC%ED%98%84](https://igotit.tistory.com/entry/파이썬-웹소켓-WbeSocket-구현))
+
+이제 웹소켓이 필요해졌다
+
+웹으로 배포한것으로 실시간 채팅을 구현하는 것이 목표이기 때문이다.
+
+\+ 추후 성능을 위해 [쓰레드]([http://pythonstudy.xyz/python/article/24-%EC%93%B0%EB%A0%88%EB%93%9C-Thread](http://pythonstudy.xyz/python/article/24-쓰레드-Thread)) 포스팅도 합니다.
+
+__멀티스레드와 비동기는 다른 개념이다__(추후포스팅 분리하기)
+
+> [자세히](https://qastack.kr/programming/34680985/what-is-the-difference-between-asynchronous-programming-and-multithreading)
+>
+> # 멀티 스레드
+>
+> 작업자에 관한 개념이다. 달걀과 토스트 주문이 하나 들어오면 이를 작업자1명을 둘것인가 2명을 둘것인가에 따라 다른것이다. 멀티 스레드를 쓴다면 동일한 일을 2개이상의 스레드가 처리한다.
+>
+> # 비동기
+>
+> 작업!에 관한 개념이다. 달걀과 토스트 주문이 하나 들어오면 달걀을 구우며 타이머 해놓고, 토스트 돌리며 타이머를 해놓고 나머지는 청소가 가능하다. 즉, 단일 스레드를 중지하지 않고 계속 다른일을 시키는 것이다.
+>
+> `asyncio` 는 python의 비동기 처리를 위한 라이브러리이다.
+>
+> async와 await가 핵심이다.
+
+# 연습
+
+### 서버
+
+```python
+#websockettest.py
+
+import asyncio
+# 웹 소켓 모듈을 선언한다.
+import websockets
+
+
+# 클라이언트 접속이 되면 호출된다.
+async def accept(websocket, path):
+    while True:
+        # 클라이언트로부터 메시지를 대기한다.
+        data = await websocket.recv()
+        print("receive : " + data)
+        # 클라인언트로 echo를 붙여서 재 전송한다.
+        await websocket.send("echo : " + data)
+
+# 웹 소켓 서버 생성.호스트는 localhost에 port는 9998로 생성한다.
+start_server = websockets.serve(accept, "localhost", 9998)
+
+# 비동기로 서버를 대기한다.
+asyncio.get_event_loop().run_until_complete(start_server)
+asyncio.get_event_loop().run_forever()
+```
+
+웹 브라우져에서 위에 작성한 html를 실행시키면 javascript에서 python websocket서버로 접속을 합니다. 그리고 hello와 test의 메시지를 작성해서 보냈는데 server측에서는 hello와 test의 메시지를 받아서 콘솔에 출력을 했고 브라우저에서는 echo : 가 붙은 메시지가 표시가 되었습니다.
+
+### 웹 구성
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>Insert title here</title>
+    </head>
+<body>
+    <form onsubmit="return false;">
+        <!-- 서버로 메시지를 보낼 텍스트 박스 -->
+        <input id="textMessage" type="text">
+        <!-- 전송 버튼 -->
+        <input onclick="sendMessage()" value="Send" type="button">
+        <!-- 접속 종료 버튼 -->
+        <input onclick="disconnect()" value="Disconnect" type="button">
+    </form>
+    <br />
+    <!-- 출력 area -->
+    <textarea id="messageTextArea" rows="10" cols="50"></textarea>
+    <script type="text/javascript">
+        // 웹 서버를 접속한다.
+        var webSocket = new WebSocket("ws://localhost:9998");
+        // 웹 서버와의 통신을 주고 받은 결과를 출력할 오브젝트를 가져옵니다.
+        var messageTextArea = document.getElementById("messageTextArea");
+        // 소켓 접속이 되면 호출되는 함수
+        webSocket.onopen = function(message){
+        messageTextArea.value += "Server connect...\n";
+        };
+        // 소켓 접속이 끝나면 호출되는 함수
+        webSocket.onclose = function(message){
+        messageTextArea.value += "Server Disconnect...\n";
+        };
+        // 소켓 통신 중에 에러가 발생되면 호출되는 함수
+        webSocket.onerror = function(message){
+        messageTextArea.value += "error...\n";
+        };
+        // 소켓 서버로 부터 메시지가 오면 호출되는 함수.
+        webSocket.onmessage = function(message){
+        // 출력 area에 메시지를 표시한다.
+        messageTextArea.value += "Recieve From Server => "+message.data+"\n";
+        };
+        // 서버로 메시지를 전송하는 함수
+        function sendMessage(){
+            var message = document.getElementById("textMessage");
+            messageTextArea.value += "Send to Server => "+message.value+"\n";
+            //웹소켓으로 textMessage객체의 값을 보낸다.
+            webSocket.send(message.value);
+            //textMessage객체의 값 초기화
+            message.value = "";
+            }
+        function disconnect(){
+                webSocket.close();
+            }
+    </script>
+    </body>
+</html>
+```
+
+### python파일로 client구성
+
+```python
+import asyncio
+# 웹 소켓 모듈을 선언한다.
+import websockets
+
+async def my_connect():
+# 웹 소켓에 접속을 합니다.
+    async with websockets.connect("ws://localhost:9998") as websocket:
+    # 10번을 반복하면서 웹 소켓 서버로 메시지를 전송합니다.
+        for i in range(1,10):
+            await websocket.send("hello socket!!")
+            # 웹 소켓 서버로 부터 메시지가 오면 콘솔에 출력합니다.
+            data = await websocket.recv()
+            print(data)
+# 비동기로 서버에 접속한다.
+asyncio.get_event_loop().run_until_complete(my_connect())
+```
+
+
+
+
+
+
+
+
+
