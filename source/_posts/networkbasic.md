@@ -672,3 +672,9 @@ Router의 IP Layer에서는 MAC Layer로부터 수신된 IP 패킷에 대하여 
 > 마지막으로 router2에서는 server0와 직접적으로 연결되어있으므로  router2가 직접적으로 server0에게 ARP request를 보내며 MAC주소를 알아내고.. 앞에 과정과 똑같이 프레임 전송한다.
 >
 > 이제 모든 기기가 ARP table에 해당 IP에 대한 MAC주소가 기록되어있으므로 보다 간결한 방식으로 통신이 가능하게된다.
+
+# 참고
+
+![스크린샷 2020-07-30 오후 3.53.32](https://tva1.sinaimg.cn/large/007S8ZIlgy1ghmty8mqhtj315c0mi4ad.jpg)
+
+![스크린샷 2020-07-30 오후 4.09.35](https://tva1.sinaimg.cn/large/007S8ZIlgy1ghmty9bieij30qj0hpaex.jpg)
