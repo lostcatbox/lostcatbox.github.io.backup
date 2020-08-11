@@ -44,6 +44,8 @@ tags: [Library, Python]
 
 [자세히](https://docs.python.org/ko/3/library/asyncio-eventloop.html)
 
+[공식문서](https://docs.python.org/ko/3/library/asyncio-future.html#asyncio.ensure_future)
+
 파이썬에서 비동기를 사용하기 위해서 필요한 라이브러리
 
 프로그래밍에서는 특히 데이터를 요청하고 응답을 기다리는 네트워크 IO에 큰 성능 상향을 기대할수있다.
@@ -60,7 +62,17 @@ tags: [Library, Python]
 
   이때, 이러한 작업은 파이썬에서 __코루틴(Coroutine)__으로 이루어져 있습니다. **코루틴은 응답이 지연되는 부분에서 이벤트 루프에 통제권을 줄 수 있으며, 응답이 완료되었을 때 멈추었던 부분부터 기존의 상태를 유지한 채 남은 작업을 완료할 수 있는 함수**를 의미합니다. 파이썬에서 코루틴이 아닌 일반적인 함수는 `서브루틴(Subroutine)`이라고 합니다.
 
-  ![0_s1GH0YO9ZNdEEDxo](https://tva1.sinaimg.cn/large/007S8ZIlgy1ghmvhn66fxj30m80vqmyo.jpg)
+- task,  future 객체관계는 task클래스가 future의 서브 클래스이다.
+
+  코루틴을 Task로 도입하고싶다면 `asyncio.create_task()` (Python 3.6 이전은 `asyncio.ensure_future()`) 함수를 사용해서 Task로 만들 수 있다. Task로 만들어지는 과정에서 코루틴은 런루프에 등록되어 스케줄링되고, (언젠지는 모르지만) 실행 가능한 시점이 오면 실행을 시작할 수 있다.
+
+- `asyncio.gather()`는 코루틴인 경우는 자동으로 자동으로 작업으로 예약된다. 나머지 awaitable 객체면 작업을 진행후 처음 받은 들어온 obj 순서에  맞춰서 결과값을 list에 반환한다.
+
+  만약 task나  future객체를 받을경우는 이미  loop에 작업이 등록되어있으므로 결과값만 기다린다.
+
+
+
+![0_s1GH0YO9ZNdEEDxo](https://tva1.sinaimg.cn/large/007S8ZIlgy1ghmvhn66fxj30m80vqmyo.jpg)
 
 ## 연습
 
@@ -224,7 +236,27 @@ if __name__ == "__main__":
     print(f'{end-start}')
 ```
 
+>asyncio.ensure_future(obj,*,loop=None) 함수는
+>
+>- *obj*가 [`Future`](https://docs.python.org/ko/3/library/asyncio-future.html#asyncio.Future), [`Task`](https://docs.python.org/ko/3/library/asyncio-task.html#asyncio.Task) 또는 퓨처류 객체면, *obj* 인자를 있는 그대로 ([`isfuture()`](https://docs.python.org/ko/3/library/asyncio-future.html#asyncio.isfuture)로 검사합니다.)
+>- *obj*가 코루틴이면, *obj*를 감싸는 [`Task`](https://docs.python.org/ko/3/library/asyncio-task.html#asyncio.Task) 객체 ([`iscoroutine()`](https://docs.python.org/ko/3/library/asyncio-task.html#asyncio.iscoroutine)로 검사합니다); 이 경우 코루틴은 `ensure_future()`로 예약됩니다.
+>- *obj*가 어웨이터블이면, *obj*를 기다릴 [`Task`](https://docs.python.org/ko/3/library/asyncio-task.html#asyncio.Task) 객체 ([`inspect.isawaitable()`](https://docs.python.org/ko/3/library/inspect.html#inspect.isawaitable)로 검사합니다.)
+>
+>따라서  obj가 코루틴이거나, future, task객체여야한다. task 객체는 asyncio.create_task() 로 만들수있다.
+
 ## 실습
 
 [자세히](https://sjquant.tistory.com/15?category=797018)
+
+>lock.acquire() 를 사용하면 shared resource에 오직 하나만 접근하는 것을 보증할수있다.
+>
+>```python
+>lock = asyncio.Lock()
+>
+>await lock.acquire()
+>try:
+>    self.users[username] = (conn, addr)
+>finally:
+>    lock.release()
+>```
 
