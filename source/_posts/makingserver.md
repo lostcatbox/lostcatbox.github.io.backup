@@ -1,7 +1,7 @@
 ---
-title: 개인서버 만들기
+title: 서버 구성 살펴보기
 date: 2020-05-26 22:38:27
-categories: [Server]
+categories: [Network]
 tags: [Network, Server, Tip, Basic]
 ---
 

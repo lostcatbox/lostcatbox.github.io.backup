@@ -348,7 +348,17 @@ asyncio.get_event_loop().run_until_complete(my_connect())
 
 
 
+# 오류 해결
 
+모든 브라우저에서 예상대로 종료해주기를 바라는 건 욕심이였다. 모바일 크롬에서만 하면 모두가 채팅이 불가능하게 되었다...
+
+왜그랬을까?
+
+server의 소캣은 user에 기록되어있었지만 실제로는 연결이 끊기 소캣에 대해서는 send()를 해도 오류가 발생하였다.
+
+이를 해결하기위해 try, except 구문을 통해 메세지를 보낼때 만약 전체메시지 전송도중에 오류가 발생하면 self.removeUser(username)함수를 통해 그 등록된 유저와 소캣을 제거하고, pass를 하여 메세지를 모두에게 보내는 함수의 for문이 끊기지 않도록 하여 해결하였다
+
+__[`send()`](https://websockets.readthedocs.io/en/stable/api.html#websockets.protocol.WebSocketCommonProtocol.send) raises a [`ConnectionClosed`](https://websockets.readthedocs.io/en/stable/api.html#websockets.exceptions.ConnectionClosed) exception when the client disconnects, which breaks out of the `while True` loop.__
 
 
 

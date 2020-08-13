@@ -148,20 +148,20 @@ EXPOSE 8000
 version: '3'
 
 services:
-        db:
-                image: mysql:5.7
-                ports:
+        db: #구성에서의 이름
+                image: mysql:5.7 #컨테이너생성할 기준 이미지
+                ports:  #host에 오픈되는 포트
                         - "3306:3306"
-                environment:
+                environment: #컨테이너 생성후 환경설정
                         MYSQL_DATABASE: 'test_db'
                         MYSQL_USER: 'root'
                         MYSQL_PASSWORD: 'password'
                         MYSQL_ROOT_PASSWORD: 'password'
-                volumes:
+                volumes: #-v 볼륨 마운트 
                         - test_volume:/var/lib/mysql
 
 
-        drf:
+        drf: 
                 build: .
                 command: python manage.py runserver 0.0.0.0:8000
                 ports:
@@ -253,4 +253,8 @@ DATABASES = {
 docker inspect <컨테이너이름>|<컨테이너id> #해당 컨테이너 네트워크 detail 조회
 docker network ls #docker에 현재 망 조회
 ```
+
+# 왜 0.0.0.0
+
+[자세히](https://pythonspeed.com/articles/docker-connection-refused/)
 
