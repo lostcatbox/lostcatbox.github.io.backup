@@ -1,5 +1,5 @@
 ---
-title: nginx-proxy
+title: Nginx로 Reverse-proxy 서버 구성
 date: 2020-08-12 11:11:53
 categories: [Network]
 tags: [Nginx, Network, Proxy]
