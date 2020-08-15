@@ -5,9 +5,15 @@ categories: [Python]
 tags: [Python, PEP]
 ---
 
+[자세히](https://github.com/python/peps/blob/master/pep-0008.txt)
+
 # 왜?
 
 python으로 코드를 만든다면 공식문서를 참고하는것이좋다. 모두가 약속한대로 코드를 짜면 서로 보기 편하기 때문이다
+
+천천히 시간날때마다 읽어보자
+
+
 
 PEP: 8
 Title: Style Guide for Python Code
@@ -1540,7 +1546,6 @@ Copyright
 This document has been placed in the public domain.
 
 
-
 ..
    Local Variables:
    mode: indented-text
