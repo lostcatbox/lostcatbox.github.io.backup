@@ -13,6 +13,10 @@ tags: [Nginx, Network, Proxy]
 
 [nginx공식문서](http://nginx.org/en/docs/http/ngx_http_upstream_module.html)
 
+[참고하면 좋은 라이브러리](https://github.com/nginx-proxy/docker-letsencrypt-nginx-proxy-companion)
+
+[하나씩 구성하기](https://medium.com/@pentacent/nginx-and-lets-encrypt-with-docker-in-less-than-5-minutes-b4b8a60d3a71)
+
 # 왜?
 
 채팅앱을 만들다가 https에서는 `ws://<ip>` 를 사용하지 못하고 `wss://<ip>` 를 통해 websocket요청을 해야하는 것을 알았다.
@@ -154,3 +158,25 @@ __이를 도메인으로 지정할  경우 포트는 같지만 도메인기준�
 
 proxy\_pass설정을 보면 `/ `로 들어올경우 위에서 정의한 upstream docker-nginx(web이라는이름을 가진 container의 8080포트)로  proxy한다.
 
+[자세히](https://kscory.com/dev/nginx/https) 이거꼭보기
+
+[자세히](https://opentutorials.org/module/384/4328)
+
+> nginx의 잡지식
+>
+> nginx\-available디렉토리의 파일들은  자동으로 nginx\-enabled에 추가되며 이것을nginx\-enabled에서 삭제하면 disable과 able을 구별할수있도록된다.
+>
+> conf.d 디렉토리의 파일들은 nginx\-enabled와 마찬가지다. 하지만 disable로 만들라면 con.d에서 삭제하거나 이동해야해야한다는 단점이있다.
+>
+> 즉 구조적측면이 아니라면 그냥 conf.d쓰자
+>
+> ```
+> #nginx.conf  파일에서아래와같이 활용하면된다.
+> 
+> http {
+>     include /etc/nginx/conf.d/*.conf;
+>     include /etc/nginx/sites-enabled/*.conf;
+>     include /etc/nginx/sites-enabled/my_own_conf;
+> ...
+> }
+> ```
