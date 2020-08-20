@@ -15,9 +15,7 @@ tags: [Nginx, Network, Proxy]
 
 [참고하면 좋은 라이브러리](https://github.com/nginx-proxy/docker-letsencrypt-nginx-proxy-companion)
 
-[하나씩 구성하기](https://medium.com/@pentacent/nginx-and-lets-encrypt-with-docker-in-less-than-5-minutes-b4b8a60d3a71)
-
-[자세히](https://kscory.com/dev/nginx/https) 이거꼭보기
+[자세히](https://kscory.com/dev/nginx/https) 
 
 [자세히](https://opentutorials.org/module/384/4328)
 
@@ -32,8 +30,6 @@ tags: [Nginx, Network, Proxy]
 즉, ssl인증서가 필요했고, https로 통신이 가능해야하였다. 하지만 지금까지 내 서버는 포트포워딩으로 http로만 통신을 하는 앱을 만들었기때문에 문제가되었다. 또한 포트포워드의 한계는 요청하는 곳에서도 포트를 지정해줘야하는데 cloudflare곳에서는 ip에 도메인을 등록하는 방법이였다. 따라서 내 서버의 1개의 ip주소로는 웹서비스 1개만 제공이 가능하게되었다.
 
 ip주소는 1개인데 어떻게 다양한 서비스를 한 서버에서 제공할수있을까? 고민하던중 nignx로 reverse-proxy를 도메인 기준으로하면 같은 ip주소로 요청을 보내더라도 요청한 도메인이 서로 다르기에 그것을 기준으로 해당 서비스를 연결해줄수있었다.
-
-
 
 # Nginx로 프록시서버 만들기
 
@@ -188,3 +184,166 @@ proxy\_pass설정을 보면 `/ `로 들어올경우 위에서 정의한 upstream
 > ...
 > }
 > ```
+
+# Nginx reverse proxy에 SSL 적용하기
+
+[도커+Let's Encrypt](https://medium.com/@pentacent/nginx-and-lets-encrypt-with-docker-in-less-than-5-minutes-b4b8a60d3a71)
+
+아래는 최종 nginx reverse proxy구성 tree이다
+
+![스크린샷 2020-08-20 오후 8.15.39](https://tva1.sinaimg.cn/large/007S8ZIlgy1ghxhquo285j30qm0g8dgv.jpg)
+
+## 구성
+
+certbot과 nginx를 모두 컨테이너로 올려서 자동 ssl 인증서 연장까지 구현할 것이므로 docker-compose.yml은 다음과같다
+
+```
+# docker-compose.yml
+
+version: '3'
+services:
+  nginx:
+    image: nginx:1.18-alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./data/nginx.conf:/etc/nginx/nginx.conf
+      - ./data/nginx:/etc/nginx/conf.d
+      - ./data/certbot/conf:/etc/letsencrypt
+      - ./data/certbot/www:/var/www/certbot
+    command: "/bin/sh -c 'while :; do sleep 6h & wait $${!}; nginx -s reload; done & nginx -g \"daemon off;\"'"
+
+  certbot:
+    image: certbot/certbot
+    volumes:
+      - ./data/certbot/conf:/etc/letsencrypt
+      - ./data/certbot/www:/var/www/certbot
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
+```
+
+
+
+
+
+```
+# nginx.conf
+user  nginx;
+worker_processes  1;
+error_log  /var/log/nginx/error.log warn;
+pid        /var/run/nginx.pid;
+events {
+    worker_connections  1024;
+}
+http {
+    include       /etc/nginx/mime.types;
+    default_type  application/octet-stream;
+
+    log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
+                      '$status $body_bytes_sent "$http_referer" '
+                      '"$http_user_agent" "$http_x_forwarded_for"';
+
+    access_log  /var/log/nginx/access.log  main;
+
+    sendfile        on;
+    keepalive_timeout  65;
+    include /etc/nginx/conf.d/*.conf;
+}
+```
+
+
+
+```
+# app.conf
+
+server {
+    listen 80;
+    server_name chatting.lostcatbox.com;
+    location / {
+        return 301 https://$host$request_uri;
+    }
+    location /.well-known/acme-challenge/ {
+         root /var/www/certbot;
+    }
+    access_log /var/log/nginx/access.log;
+    error_log /var/log/nginx/error.log;
+}
+
+upstream chatting-html {
+        server htmldeploy;
+}
+
+server {
+    listen 443 ssl;
+    server_name chatting.lostcatbox.com;
+
+    access_log /var/log/nginx/access.log;
+    error_log /var/log/nginx/error.log;
+
+    proxy_connect_timeout 1d;
+    proxy_send_timeout 1d;
+    proxy_read_timeout 1d;
+
+    location / {
+        proxy_pass http://chatting-html/; #for demo purposes
+        proxy_redirect     off;
+    }
+    location /websocket/ {
+        proxy_pass http://172.29.0.6:7777/;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+    }
+
+    ssl_certificate /etc/letsencrypt/live/chatting.lostcatbox.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/chatting.lostcatbox.com/privkey.pem;
+    include /etc/letsencrypt/options-ssl-nginx.conf;
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
+}
+
+```
+
+
+
+# Nginx websocket wss:// 적용하기
+
+https에서는 wss가 필수이므로 반드시 ssl적용이 필요했다
+
+하지만 nginx에서는 이미 websocket에 대해 따로 지원을 해준다. 
+
+```
+server {   
+    ##아래와 같은 양식으로 추가
+    location /websocket/ {
+        proxy_pass http://172.29.0.6:7777/;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_read_timeout 86400;
+    }
+}
+```
+
+```javascript
+// js로 요청하는 방법
+var webSocket = new WebSocket("wss://chatting.lostcatbox.com/websocket/");
+```
+
+# 오류
+
+## nginx에서 소캣을 자동 삭제
+
+Nginx의 기본 Keepalive 구성으로 인해 75 초 (또는 그 정도)마다 웹 소켓 연결을 삭제하는 것 같습니다.
+
+### 해결
+
+프록시 연결을 1일로 유지함.
+
+```
+proxy_connect_timeout 1d;
+proxy_send_timeout 1d;
+proxy_read_timeout 1d;
+```
+
+
+

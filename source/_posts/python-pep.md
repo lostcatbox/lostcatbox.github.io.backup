@@ -9,7 +9,7 @@ tags: [Python, PEP]
 
 # 왜?
 
-python으로 코드를 만든다면 공식문서를 참고하는것이좋다. 모두가 약속한대로 코드를 짜면 서로 보기 편하기 때문이다
+python으로 코드를 만든다면 이렇게 공식문서를 참고하는것이좋다. 모두가 약속한대로 코드를 짜면 서로 보기 편하기 때문이다
 
 천천히 시간날때마다 읽어보자
 
@@ -480,23 +480,33 @@ Avoid extraneous whitespace in the following situations:
 
 - Immediately inside parentheses, brackets or braces::
 
-     # Correct:
-     spam(ham[1], {eggs: 2})
+  ```
+  # Correct:
+  
+  spam(ham[1], {eggs: 2})
+  ```
 
   ::
 
-    # Wrong:
-    spam( ham[ 1 ], { eggs: 2 } )
+  ```
+  # Wrong:
+  
+  spam( ham[ 1 ], { eggs: 2 } ) 
+  ```
+
+  
 
 - Between a trailing comma and a following close parenthesis::
 
-      # Correct:
-      foo = (0,)
+  ```
+  # Correct:
+  foo = (0,)
+  ```
 
-  ::
-
-      # Wrong:
-      bar = (0, )
+  ```
+  # Wrong:
+  bar = (0, )
+  ```
 
 - Immediately before a comma, semicolon, or colon::
 
@@ -1544,13 +1554,3 @@ Copyright
 =========
 
 This document has been placed in the public domain.
-
-
-..
-   Local Variables:
-   mode: indented-text
-   indent-tabs-mode: nil
-   sentence-end-double-space: t
-   fill-column: 70
-   coding: utf-8
-   End:
