@@ -1,8 +1,8 @@
 ---
-title: Nginx로 Reverse-proxy 서버 구성
+title: Nginx로 Reverse-proxy 서버 구성 +SSL인증서 (Docker로 구성)
 date: 2020-08-12 11:11:53
 categories: [Network]
-tags: [Nginx, Network, Proxy]
+tags: [Nginx, Network, Proxy, Ssl, Docker]
 ---
 
 [nginx-proxy, ssl자동갱신까지 라이브러리](https://github.com/nginx-proxy/docker-letsencrypt-nginx-proxy-companion)
@@ -13,13 +13,7 @@ tags: [Nginx, Network, Proxy]
 
 [nginx공식문서](http://nginx.org/en/docs/http/ngx_http_upstream_module.html)
 
-[참고하면 좋은 라이브러리](https://github.com/nginx-proxy/docker-letsencrypt-nginx-proxy-companion)
-
-[자세히](https://kscory.com/dev/nginx/https) 
-
-[자세히](https://opentutorials.org/module/384/4328)
-
-[완전 따라하기](https://kscory.com/dev/nginx/https)
+[upstream](https://opentutorials.org/module/384/4328)
 
 [웹소캣 wss로 nginx에 물리기](https://stackoverflow.com/questions/12102110/nginx-to-reverse-proxy-websockets-and-enable-ssl-wss)
 
@@ -40,6 +34,28 @@ ip주소는 1개인데 어떻게 다양한 서비스를 한 서버에서 제공�
 - /etc/nginx/sites-available: 해당 디렉터리에서 프록시 설정 및 어떻게 요청을 처리해야 할지에 대해 설정 할 수 있습니다.
 - /etc/nginx/sites-enabled: 해당 디렉터리는 sites-available 디렉터리에서 연결된 파일들이 존재하는 곳 입니다.이 곳에 디렉터리와 연결이 되어 있어야 nginx가 프록시 설정을 적용합니다.
 - /etc/nginx/snippets: sites-available 디렉터리에 있는 파일들에 공통적으로 포함될 수 있는 설정들을 정의할 수 있는 디렉터리 입니다.
+- /etc/nginx/con.d : 해당 디렉터리는 nginx\-enabled와 마찬가지다.
+
+> nginx의 잡지식
+>
+> nginx\-available디렉토리의 파일들은  자동으로 nginx\-enabled에 추가되며 이것을nginx\-enabled에서 삭제하면 disable과 able을 구별할수있도록된다.
+>
+> conf.d 디렉토리의 파일들은 nginx\-enabled와 마찬가지다. 하지만 disable로 만들라면 con.d에서 삭제하거나 이동해야해야한다는 단점이있다.
+>
+> 즉 구조적측면이 아니라면 그냥 conf.d 디렉토리 쓰자
+>
+> ```
+> #nginx.conf  파일에서 아래와 같이 활용하면된다.
+> 
+> http {
+>     include /etc/nginx/conf.d/*.conf;
+>     include /etc/nginx/sites-enabled/*.conf;
+>     include /etc/nginx/sites-enabled/my_own_conf;
+> ...
+> }
+> ```
+>
+> 
 
 ## 연습
 
@@ -164,27 +180,6 @@ __이를 도메인으로 지정할  경우 포트는 같지만 도메인기준�
 
 proxy\_pass설정을 보면 `/ `로 들어올경우 위에서 정의한 upstream docker-nginx(web이라는이름을 가진 container의 8080포트)로  proxy한다.
 
-
-
-> nginx의 잡지식
->
-> nginx\-available디렉토리의 파일들은  자동으로 nginx\-enabled에 추가되며 이것을nginx\-enabled에서 삭제하면 disable과 able을 구별할수있도록된다.
->
-> conf.d 디렉토리의 파일들은 nginx\-enabled와 마찬가지다. 하지만 disable로 만들라면 con.d에서 삭제하거나 이동해야해야한다는 단점이있다.
->
-> 즉 구조적측면이 아니라면 그냥 conf.d쓰자
->
-> ```
-> #nginx.conf  파일에서아래와같이 활용하면된다.
-> 
-> http {
->     include /etc/nginx/conf.d/*.conf;
->     include /etc/nginx/sites-enabled/*.conf;
->     include /etc/nginx/sites-enabled/my_own_conf;
-> ...
-> }
-> ```
-
 # Nginx reverse proxy에 SSL 적용하기
 
 [도커+Let's Encrypt](https://medium.com/@pentacent/nginx-and-lets-encrypt-with-docker-in-less-than-5-minutes-b4b8a60d3a71)
@@ -194,6 +189,8 @@ proxy\_pass설정을 보면 `/ `로 들어올경우 위에서 정의한 upstream
 ![스크린샷 2020-08-20 오후 8.15.39](https://tva1.sinaimg.cn/large/007S8ZIlgy1ghxhquo285j30qm0g8dgv.jpg)
 
 ## 구성
+
+### docker-compose.yml
 
 certbot과 nginx를 모두 컨테이너로 올려서 자동 ssl 인증서 연장까지 구현할 것이므로 docker-compose.yml은 다음과같다
 
@@ -222,9 +219,11 @@ services:
     entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
 ```
 
+-  services>nginx>volumes와 services> certbox>volumes에서 `./data/certbot/conf:/etc/letsencrypt`, `./data/certbot/www:/var/www/certbot` 를 보면 certbot의 인증서 발급에  관해서 nginx컨테이너와 certbot컨테이너가 동시에 마운트되어있다.
 
+### nginx.conf
 
-
+nginx.conf파일은 추후에 프록시 서버, 로드밸런서를 설정할 때 중요하므로 volume해놓았다.
 
 ```
 # nginx.conf
@@ -251,7 +250,9 @@ http {
 }
 ```
 
+### app.conf
 
+내 채팅앱에 대해 리버스 프록시는 다음과 같은 구성이 되어있다.
 
 ```
 # app.conf
@@ -303,19 +304,167 @@ server {
 
 ```
 
+- 아래는 certbot이 ssl을 발급할때 위의 해당주소/.well-known/acme-challenge/ 를 통해 인증하므로 반드시 필요하다.(???)
+
+  ```
+  location /.well-known/acme-challenge/ {
+       root /var/www/certbot;
+  ```
+
+- nginx에서 HTTPS프로토콜에 이용될 ssl인증서 경로
+
+  ```
+  ssl_certificate /etc/letsencrypt/live/chatting.lostcatbox.com/fullchain.pem;
+  ssl_certificate_key /etc/letsencrypt/live/chatting.lostcatbox.com/privkey.pem;
+  ```
+
+  
+
+- Let’s also add them to our config file. This will score you a straight A in the [SSL Labs test](https://www.ssllabs.com/index.html)! (???)
+
+  ```
+  include /etc/letsencrypt/options-ssl-nginx.conf;
+  ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
+  ```
+
+### init-letsencrypt.sh
+
+앞서 과정만 진행을 하고 `docker-compose up`을 실행한다면 실패한다. 왜냐하면 nginx에 ssl인증서가 발급되어있지않으므로 파일이 존재하지않기때문이다. 
+
+즉, create dummy certificate>start nginx, delete dummy and request the real certificates 과정을 거쳐야한다.
+
+아래는 init-letsencrypt.sh 내용이다. 
+
+__반드시 domains, email, data_path란에 해당 서비스로 수정해야한다.__
+
+권한부여 후  `chmod +x init-letsencrypt.sh`
+
+실행하자  `sudo ./init-letsencrypt.sh`
+
+```
+#!/bin/bash
+
+if ! [ -x "$(command -v docker-compose)" ]; then
+  echo 'Error: docker-compose is not installed.' >&2
+  exit 1
+fi
+
+domains=(example.org www.example.org)
+rsa_key_size=4096
+data_path="./data/certbot"
+email="" # Adding a valid address is strongly recommended
+staging=0 # Set to 1 if you're testing your setup to avoid hitting request limits
+
+if [ -d "$data_path" ]; then
+  read -p "Existing data found for $domains. Continue and replace existing certificate? (y/N) " decision
+  if [ "$decision" != "Y" ] && [ "$decision" != "y" ]; then
+    exit
+  fi
+fi
+
+
+if [ ! -e "$data_path/conf/options-ssl-nginx.conf" ] || [ ! -e "$data_path/conf/ssl-dhparams.pem" ]; then
+  echo "### Downloading recommended TLS parameters ..."
+  mkdir -p "$data_path/conf"
+  curl -s https://raw.githubusercontent.com/certbot/certbot/master/certbot-nginx/certbot_nginx/_internal/tls_configs/options-ssl-nginx.conf > "$data_path/conf/options-ssl-nginx.conf"
+  curl -s https://raw.githubusercontent.com/certbot/certbot/master/certbot/certbot/ssl-dhparams.pem > "$data_path/conf/ssl-dhparams.pem"
+  echo
+fi
+
+echo "### Creating dummy certificate for $domains ..."
+path="/etc/letsencrypt/live/$domains"
+mkdir -p "$data_path/conf/live/$domains"
+docker-compose run --rm --entrypoint "\
+  openssl req -x509 -nodes -newkey rsa:1024 -days 1\
+    -keyout '$path/privkey.pem' \
+    -out '$path/fullchain.pem' \
+    -subj '/CN=localhost'" certbot
+echo
+
+
+echo "### Starting nginx ..."
+docker-compose up --force-recreate -d nginx
+echo
+
+echo "### Deleting dummy certificate for $domains ..."
+docker-compose run --rm --entrypoint "\
+  rm -Rf /etc/letsencrypt/live/$domains && \
+  rm -Rf /etc/letsencrypt/archive/$domains && \
+  rm -Rf /etc/letsencrypt/renewal/$domains.conf" certbot
+echo
+
+
+echo "### Requesting Let's Encrypt certificate for $domains ..."
+#Join $domains to -d args
+domain_args=""
+for domain in "${domains[@]}"; do
+  domain_args="$domain_args -d $domain"
+done
+
+# Select appropriate email arg
+case "$email" in
+  "") email_arg="--register-unsafely-without-email" ;;
+  *) email_arg="--email $email" ;;
+esac
+
+# Enable staging mode if needed
+if [ $staging != "0" ]; then staging_arg="--staging"; fi
+
+docker-compose run --rm --entrypoint "\
+  certbot certonly --webroot -w /var/www/certbot \
+    $staging_arg \
+    $email_arg \
+    $domain_args \
+    --rsa-key-size $rsa_key_size \
+    --agree-tos \
+    --force-renewal" certbot
+echo
+
+echo "### Reloading nginx ..."
+docker-compose exec nginx nginx -s reload
+
+```
+
+### 자동으로 인증서 재발급
+
+`docker-compose.yml`파일에서 certbot 아래를 추가해주자(12시간마다 재발급)
+
+```
+entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
+```
+
+`docker-compose.yml`파일에서 nginx 아래를 추가해주자(6시간마다 nginx reload)
+
+```
+command: "/bin/sh -c 'while :; do sleep 6h & wait $${!}; nginx -s reload; done & nginx -g \"daemon off;\"'"
+```
+
+
+
+## 네트워크 구성
+
+네트워크는 `docker-compose up`을 통해 `proxy_default` 가 자동으로 생성될것이다. 
+
+따라서 reverse-proxy를 원하는 컨테이너를 `proxy_default`망에 추가하고  쓸때는 해당 `컨테이너이름:[포트]`로 nginx의 conf파일에 지정해주면 외부컨테이너와 연결가능하다.
+
+예시) `docker run -d --expose 7777 --name chattingserver chatting server:v5`
 
 
 # Nginx websocket wss:// 적용하기
 
-https에서는 wss가 필수이므로 반드시 ssl적용이 필요했다
+https에서는 wss가 필수이므로 반드시 ssl적용이 필요했다.
 
-하지만 nginx에서는 이미 websocket에 대해 따로 지원을 해준다. 
+upstream부터 `server { }를` 따로 설정해줄수있지만 1.1.3버전부터 nginx에서는 이미 websocket에 대해 따로 지원을 해준다. 
 
 ```
+upstream pythonchattingserver {
+        server chattingserver:7777;
+}
+
 server {   
     ##아래와 같은 양식으로 추가
     location /websocket/ {
-        proxy_pass http://172.29.0.6:7777/;
+        proxy_pass http://pythonchattingserver/;
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection "upgrade";
