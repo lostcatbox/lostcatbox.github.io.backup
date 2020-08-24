@@ -1,5 +1,5 @@
 ---
-title: nginx
+title: Nginx 자세히
 date: 2020-08-24 23:04:52
 categories: [Network]
 tags: [Nginx, Network, Proxy, Ssl, Docker]
