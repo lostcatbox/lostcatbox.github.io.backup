@@ -304,7 +304,18 @@ server {
 
 ```
 
-- 아래는 certbot이 ssl을 발급할때 위의 해당주소/.well-known/acme-challenge/ 를 통해 인증하므로 반드시 필요하다.(???)
+- 아래는 certbot이 ssl을 발급할때 위의 해당주소/.well-known/acme-challenge/ 를 통해 인증하므로 반드시 필요하다.
+
+  발급된 인증서는 `/etc/letsencrypt/live/{도메인명}` 에 존재합니다.
+
+  아래 4 가지의 파일을 발견하실 수 있을 것입니다.
+
+  1. **cert.pem**: 도메인 인증서
+  2. **chain.pem**: Let’s Encrypt chain 인증서
+  3. **fullchain.pem**: cert.pem + chain.pem
+  4. **privkey.pem**: 인증서의 개인키
+
+  즉 여기서 사용될 파일은 **fullchain.pem** 과 **privkey.pem** 입니다. 이제 키 발급이 완료 되었습니다.
 
   ```
   location /.well-known/acme-challenge/ {
@@ -448,35 +459,6 @@ command: "/bin/sh -c 'while :; do sleep 6h & wait $${!}; nginx -s reload; done &
 따라서 reverse-proxy를 원하는 컨테이너를 `proxy_default`망에 추가하고  쓸때는 해당 `컨테이너이름:[포트]`로 nginx의 conf파일에 지정해주면 외부컨테이너와 연결가능하다.
 
 예시) `docker run -d --expose 7777 --name chattingserver chatting server:v5`
-
-
-# Nginx websocket wss:// 적용하기
-
-https에서는 wss가 필수이므로 반드시 ssl적용이 필요했다.
-
-upstream부터 `server { }를` 따로 설정해줄수있지만 1.1.3버전부터 nginx에서는 이미 websocket에 대해 따로 지원을 해준다. 
-
-```
-upstream pythonchattingserver {
-        server chattingserver:7777;
-}
-
-server {   
-    ##아래와 같은 양식으로 추가
-    location /websocket/ {
-        proxy_pass http://pythonchattingserver/;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection "upgrade";
-        proxy_read_timeout 86400;
-    }
-}
-```
-
-```javascript
-// js로 요청하는 방법
-var webSocket = new WebSocket("wss://chatting.lostcatbox.com/websocket/");
-```
 
 # 오류
 

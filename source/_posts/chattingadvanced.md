@@ -1,5 +1,5 @@
 ---
-title: 소켓을 이용한 실시간 채팅 만들기 (심화편)
+title: 소켓을 이용한 실시간 채팅 만들기 (심화편)(wss적용)
 date: 2020-08-04 15:12:47
 categories: [Chatting]
 tags: [Network, Socket, Threading]
@@ -8,6 +8,8 @@ tags: [Network, Socket, Threading]
 [실시간 채팅 구현 참조](https://lidron.tistory.com/44)
 
 [serversocket문서](https://python.flowdas.com/library/socketserver.html)
+
+[웹소켓 JSON값](https://websockets.readthedocs.io/en/stable/intro.html)
 
 # 왜?
 
@@ -345,6 +347,36 @@ asyncio.get_event_loop().run_until_complete(my_connect())
 ```
 
 
+
+# Nginx websocket wss:// 적용하기
+
+https에서는 wss가 필수이므로 반드시 ssl적용이 필요했다.
+
+upstream부터 `server { }를` 따로 설정해줄수있지만 1.1.3버전부터 nginx에서는 이미 websocket에 대해 따로 지원을 해준다. 
+
+```
+upstream pythonchattingserver {
+        server chattingserver:7777;
+}
+
+server {   
+    ##아래와 같은 양식으로 추가
+    location /websocket/ {
+        proxy_pass http://pythonchattingserver/;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_read_timeout 86400;
+    }
+}
+```
+
+```javascript
+// js로 요청하는 방법
+var webSocket = new WebSocket("wss://chatting.lostcatbox.com/websocket/");
+```
+
+# 
 
 
 
