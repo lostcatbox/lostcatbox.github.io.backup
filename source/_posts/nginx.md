@@ -93,7 +93,7 @@ nginx의 conf파일들의 경로를 자세히 정리하겠다
 
 ### 파일 지정 방법
 
-root 경로 + /ticket이 최종 URi의 바라보게되는 경로이다.
+root 경로 + /ticket이 최종 uri의 바라보게되는 경로이다.
 
 /usr/share/nginx/html/ticket/index.html
 
