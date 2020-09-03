@@ -23,6 +23,8 @@ http://pages.cs.wisc.edu/~remzi/OSTEP/
 
 
 
+진행중..거의다 끝남
+
 
 
 
