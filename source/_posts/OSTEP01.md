@@ -13,7 +13,7 @@ http://pages.cs.wisc.edu/~remzi/OSTEP/
 
 가면 운영체제, 3가지 쉬운 이야기에 대해  볼수있다.
 
-- 가상화(Virtualization) 
+- 가상화(Virtualization)
 - 동시성(Concurrency) 
 - 지속성(Persistence)
 
@@ -27,11 +27,11 @@ http://pages.cs.wisc.edu/~remzi/OSTEP/
 
 메모리 부분만 하면 이제 완료
 
-
+완료
 
 # 연속성은 완료
 
-
+완료
 
 
 
