@@ -2,21 +2,15 @@
 
 title: 선형 회귀 분석,로지스틱 회귀 분석, 신경망
 date: 2020-04-16 19:13:06
-categories: [Dataminging]
-tags: [Dataminging, Univ]
+categories: [Statistics]
+tags: [Dataminging, Univ, Statistics]
 ---
 
 # 선형 회귀 분석
 
-t, p/f [자세히]([http://blog.daum.net/dataminer9/category/t%EA%B2%80%EC%A6%9D%2C%EB%B6%84%EC%82%B0%EB%B6%84%EC%84%9D%2CF%EA%B2%80%EC%A6%9D%2CANOVA](http://blog.daum.net/dataminer9/category/t검증%2C분산분석%2CF검증%2CANOVA))
+[자세히](https://m.blog.naver.com/PostView.nhn?blogId=istech7&logNo=50152984368&targetKeyword=&targetRecommendationCode=1)
 
-## 기본 통계학적 개념
-
-![스크린샷 2020-04-16 오후 7.11.41](https://tva1.sinaimg.cn/large/007S8ZIlgy1gdvrv47qvyj30vi0rijwl.jpg)
-
-1. 평균(mean, average): 주어진 수의 합을 측정개수로 나눈 값으로, 대표값 중 하나이다
-2. 분산(Variance): 편차의 제 곱의 평균값으로, 변량들이 퍼져있는 정도를 의미한다.
-3. 표준편차(standard deviation): 분산의 양의 제곱근으로, 분산보다 많이 쓰인다.
+통계학의 기본 정리 먼저 보고오기 (내 블로그 글)
 
 ## 확률변수
 
