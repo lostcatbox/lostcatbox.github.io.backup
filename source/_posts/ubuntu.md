@@ -181,3 +181,27 @@ $ ssh username@domain.name 'chmod 700 .ssh; chmod 640 .ssh/authorized_keys'
 ## 설정 완료
 
 이제 password 없이 서버에 접속이 가능하다.
+
+
+
+# sftp 설정
+
+```
+sudo vi /etc/ssh/sshd_config  
+```
+
+
+
+```
+# sshd_config 내용중에
+
+Port 22      #22번 포트열어줌
+PermitRootLogin yes   #루트 권한자 로그인 가능(파일쓰기,읽기 모두 ftp에서 필요했음)
+```
+
+
+
+```
+sudo /etc/init.d/ssh restart   #반드시 재시작필요
+```
+
