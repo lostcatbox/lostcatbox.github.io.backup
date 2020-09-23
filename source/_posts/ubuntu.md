@@ -176,8 +176,6 @@ $ cat ~/.ssh/id_rsa.pub | ssh username@domain.name 'cat >> .ssh/authorized_keys'
 $ ssh username@domain.name 'chmod 700 .ssh; chmod 640 .ssh/authorized_keys'
 ```
 
- 
-
 ## 설정 완료
 
 이제 password 없이 서버에 접속이 가능하다.
