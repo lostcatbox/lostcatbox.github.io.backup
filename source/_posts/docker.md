@@ -50,6 +50,18 @@ docker exec [OPTIONS] CONTAINER COMMAND [ARG...] # 실행중인 커테이너에 
 >mysql -uroot #bash안에서 입력하면 mysql로 진입
 >```
 
+```
+ docker stop $(docker ps -a -q) #구동중인 모든 도커 컨테이너들을 중지
+
+ docker rm $(docker ps -a -q) 구동중인 모든 도커 컨테이너들을 삭제
+
+ docker rmi $(docker images -q) #모든 도커 이미지 삭제
+```
+
+
+
+
+
  ## 도커 Run options
 
 도커를 실행하는 명령어는 다음과 같습니다.
