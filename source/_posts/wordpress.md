@@ -1,5 +1,5 @@
 ---
-title: wordpress
+title: 워드프레스 도커활용하여 배포하기
 date: 2020-09-25 09:14:20
 categories: [ETC]
 tags: [Wordpress, Basic, Docker]
