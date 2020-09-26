@@ -166,11 +166,15 @@ services:
 
 # 생각할 것
 
+
+
 __`WORDPRESS_CONFIG_EXTRA` 안에 설정값이 필요이유 설명__
 
 플러그인에서 php관리자와 wordpress간의 오류를 경험하고 싶지 않다면 다음과 같은 설정을 고려하자.
 
 `define('FS_METHOD', 'direct' );`WordPress에서 파일을 직접 쓰도록 강요한다.
+
+
 
 ### wp-config.php 편집
 
@@ -179,6 +183,8 @@ __`WORDPRESS_CONFIG_EXTRA` 안에 설정값이 필요이유 설명__
 워드프레스가 설치된 곳 최상위에서 wp-config.php 파일을 찾으신 뒤에 해당 파일에 아래와 같은 코드를 추가해 준다.
 
 변경하려는 사이트의 주소가 https://home.lostcatbox.com/인 경우 아래와 같이 2줄을 추가하여 준다.
+
+
 
 ```
 define('WP_HOME','https://home.lostcatbox.com/');
