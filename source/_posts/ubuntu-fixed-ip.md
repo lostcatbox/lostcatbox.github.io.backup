@@ -7,7 +7,7 @@ tags:  [Ubuntu, Network]
 
 [자세히](https://blog.dalso.org/linux/ubuntu-20-04-lts/9069)
 
-# 왜? 
+# 왜?
 
 버전 20.04 LTS이다
 
@@ -27,6 +27,8 @@ __기본 파일 내용(DHCP일경우)__
 __변경 내용__
 
 ![스크린샷 2020-09-25 오후 12.22.53](https://tva1.sinaimg.cn/large/007S8ZIlgy1gj2qelmcedj30rc0jmjt4.jpg)
+
+~~(gateway4: 192.168.88.1 이였다..)~~
 
 - dhcp4 : IPv4 dhcp 설정
 - dhcp6 : IPv6 dhcp 설정

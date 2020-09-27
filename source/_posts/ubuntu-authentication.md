@@ -5,7 +5,9 @@ categories: [Ubuntu]
 tags: [Ubuntu, Basic]
 ---
 
-# root권한을 주는 것과 동시에 외부접속 root계정은 x
+# root권한, 외부접속x
+
+root권한을 주는 것과 동시에 외부접속 root계정은 x
 
 [자세히](https://www.hanumoka.net/2019/09/26/ubuntu-20190926-ubuntu-grant-root/)
 
@@ -24,7 +26,9 @@ groups     #잘 등록되었나 확인
 su - <계정명> # 계정전환
 ```
 
-만약 정말 외부접속부터 root계정과 똑같이 쓰고싶다면(sudo사용안해도됨, 권한부여)
+만약 정말 외부접속부터 root계정과 똑같이 쓰고싶다면
+
+(sudo사용안해도됨, 권한부여)
 
 (추천하지않는다. 위험)
 
@@ -57,3 +61,8 @@ root:x:0: 를 root:x:0:<일반계정명> 으로 수정해주자.
 ```
 
 기존에는 sudo docker ps 로 실행 해야 했지만, 이제는 docker ps 로 바로 명령어가 실행되는 것을 확인 할 수 있다.
+
+
+
+# 권한 이슈 해결
+
