@@ -13,6 +13,8 @@ UNIX>Linux>ubuntu로 발전되어왔으며, 특히 Linux를 기반으로 ubuntu�
 
 [자세히](https://vaert.tistory.com/103)
 
+[자세히](https://aonenetworks.tistory.com/644)
+
 ```
 shutdown : 시스템 종료
 
@@ -57,7 +59,7 @@ more : 화면 단위로 보기좋게 내용 출력
 
 less : more 의 단점을 조금 보완한 명령어
 
-find : 특정한 파일을 찾는 명령어입니다.
+find : 특정한 파일을 찾는 명령어입니다.(아래 옵션 참조)
 
 grep : 특정 패턴을 이용해서 파일을 찾는 명령어
 
@@ -79,7 +81,6 @@ top : 리눅스 시스템의 운영상황을 실시간으로 전반적인 상황
 
 ps : 현재 실행중인 프로세스 목록과 상태를 보여준다
 
-출처: https://aonenetworks.tistory.com/644 [AoneNetwork_ IDC Service]
 
 ifconfig : Windows 의 ifconfig
 
@@ -233,4 +234,48 @@ uu #되돌아가기
 # cat으로 출력한 것을 ssh로 접속후에 ''안에명령어로 해당파일에 추가
 cat ~/.ssh/aws-eb.pub | ssh lostcatbox2@192.168.88.244 'cat >> .ssh/authorized_keys'
 ```
+
+# find
+
+[자세히](https://recipes4dev.tistory.com/156)
+
+| [현재 디렉토리에 있는 파일 및 디렉토리 리스트 표시](https://recipes4dev.tistory.com/156#31-현재-디렉토리에-있는-파일-및-디렉토리-리스트-표시) | `find`                   |
+| ------------------------------------------------------------ | ------------------------ |
+| [대상 디렉토리에 있는 파일 및 디렉토리 리스트 표시](https://recipes4dev.tistory.com/156#32-대상-디렉토리에-있는-파일-및-디렉토리-리스트-표시) | `find [PATH]`            |
+| [현재 디렉토리 아래 모든 파일 및 하위 디렉토리에서 파일 검색](https://recipes4dev.tistory.com/156#33-현재-디렉토리-아래-모든-파일-및-하위-디렉토리에서-파일-검색) | `find . -name [FILE]`    |
+| [전체 시스템(루트 디렉토리)에서 파일 검색](https://recipes4dev.tistory.com/156#34-전체-시스템루트-디렉토리에서-파일-검색) | `find / -name [FILE]`    |
+| [파일 이름이 특정 문자열로 시작하는 파일 검색](https://recipes4dev.tistory.com/156#35-파일-이름이-특정-문자열로-시작하는-파일-검색) | `find . -name "STR*"`    |
+| [파일 이름에 특정 문자열이 포함된 파일 검색](https://recipes4dev.tistory.com/156#36-파일-이름에-특정-문자열이-포함된-파일-검색) | `find . -name "**STR**"` |
+| [파일 이름이 특정 문자열로 끝나는 파일 검색](https://recipes4dev.tistory.com/156#37-파일-이름이-특정-문자열로-끝나는-파일-검색-파일-확장자로-검색) | `find . -name "*STR"`    |
+
+# grep
+
+[자세히](https://recipes4dev.tistory.com/157)
+
+기본적으로 정규 표현식으로 검색하므로 다양하게 활용가능
+
+`cat rhdiddl/rhdiddl22|grep "hello"` 보통 이렇게 `|` 다음에 쓰면서 활용성이 더 높아짐
+
+기본 `grep` 명령어 양식
+
+`$ grep [OPTION] [PATTERN] [FILE]`
+
+| grep 사용 예                                                 | 명령어 옵션                |
+| ------------------------------------------------------------ | -------------------------- |
+| [대상 파일에서 문자열 검색](https://recipes4dev.tistory.com/157#31-대상-파일에서-문자열-검색) | `grep "STR" [FILE]`        |
+| [현재 디렉토리 모든 파일에서 문자열 검색](https://recipes4dev.tistory.com/157#32-현재-디렉토리-모든-파일에서-문자열-검색) | `grep "STR" *`             |
+| [특정 확장자를 가진 모든 파일에서 문자열 검색](https://recipes4dev.tistory.com/157#33-특정-확장자를-가진-모든-파일에서-문자열-검색) | `grep "STR" *.ext`         |
+| [대소문자 구분하지 않고 문자열 검색](https://recipes4dev.tistory.com/157#34-대소문자-구분하지-않고-문자열-검색) | `grep -i "STR" [FILE]`     |
+| [매칭되는 PATTERN이 존재하지 않는 라인 선택](https://recipes4dev.tistory.com/157#35-매칭되는-pattern이-존재하지-않는-라인-선택) | `grep -v "STR" [FILE]`     |
+| [단어(Word) 단위로 문자열 검색](https://recipes4dev.tistory.com/157#36-단어word-단위로-문자열-검색) | `grep -w "STR" [FILE]`     |
+| [검색된 문자열이 포함된 라인 번호 출력](https://recipes4dev.tistory.com/157#37-검색된-문자열이-포함된-라인-번호-출력) | `grep -n "STR" [FILE]`     |
+| [하위 디렉토리를 포함한 모든 파일에서 문자열 검색](https://recipes4dev.tistory.com/157#38-하위-디렉토리를-포함한-모든-파일에서-문자열-검색) | `grep -r "STR" *`          |
+| [최대 검색 결과 갯수 제한](https://recipes4dev.tistory.com/157#39-최대-검색-결과-갯수-제한) | `grep -m 100 "STR" FILE`   |
+| [검색 결과 앞에 파일 이름 표시](https://recipes4dev.tistory.com/157#310-검색-결과-앞에-파일-이름-표시) | `grep -H "STR" *`          |
+| [문자열 A로 시작하여 문자열 B로 끝나는 패턴 찾기](https://recipes4dev.tistory.com/157#311-문자열-a로-시작하여-문자열-b로-끝나는-패턴-찾기) | `grep "A.*B" *`            |
+| [0-9 사이 숫자만 변경되는 패턴 찾기](https://recipes4dev.tistory.com/157#312-0-9-사이-숫자만-변경되는-패턴-찾기) | `grep "STR[0-9]" *`        |
+| [문자열 패턴 전체를 정규 표현식 메타 문자가 아닌 일반 문자로 검색하기](https://recipes4dev.tistory.com/157#313-문자열-패턴-전체를-정규-표현식-메타-문자가-아닌-일반-문자로-검색하기) | `grep -F "*[]?..." [FILE]` |
+| [정규 표현식 메타 문자를 일반 문자로 검색하기](https://recipes4dev.tistory.com/157#314-정규-표현식-메타-문자를-일반-문자로-검색하기) | `grep "\*" [FILE]`         |
+| [문자열 라인 처음 시작 패턴 검색하기](https://recipes4dev.tistory.com/157#315-문자열-라인의-처음-시작-패턴-검색하기) | `grep "^STR" [FILE]`       |
+| [문자열 라인 마지막 종료 패턴 검색하기](https://recipes4dev.tistory.com/157#316-문자열-라인-마지막-종료-패턴-검색하기) | `grep "$STR" [FILE]`       |
 
