@@ -2,7 +2,7 @@
 title: 환경변수 사용법
 date: 2020-02-13 18:02:48
 categories: [Linux]
-tags: [Basic, Linux]
+tags: [Basic, Linux, Ubuntu]
 ---
 
 # 환경 변수

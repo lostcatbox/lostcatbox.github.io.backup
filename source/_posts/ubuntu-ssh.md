@@ -1,13 +1,11 @@
 ---
-title: 우분투에서 ssh,ftp,sftp 설정
+title: 우분투 ssh,ftp,sftp 설정
 date: 2020-05-27 01:21:55
 categories: [Ubuntu]
 tags: [Ubuntu, Basic]
 ---
 
 # ssh 적용
-
-
 
 ```
 ssh agd@192.168.1.211

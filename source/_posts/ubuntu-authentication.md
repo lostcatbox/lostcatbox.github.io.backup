@@ -1,5 +1,5 @@
 ---
-title: ubuntu-authentication
+title: 우분투 유저, 권환 관련
 date: 2020-09-27 15:28:43
 categories: [Ubuntu]
 tags: [Ubuntu, Basic]
