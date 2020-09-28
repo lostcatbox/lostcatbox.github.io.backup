@@ -5,9 +5,13 @@ categories: [Ubuntu]
 tags: [Ubuntu, Basic]
 ---
 
+[포스팅할것](https://cragy0516.github.io/Expand-Hard-Disk-in-VMWare/)
+
 # ubuntu?
 
 UNIX>Linux>ubuntu로 발전되어왔으며, 특히 Linux를 기반으로 ubuntu와 같은 파생 os들이 많아졌다.
+
+
 
 # 자주 쓰는 명령어(세부옵션 제외)
 
