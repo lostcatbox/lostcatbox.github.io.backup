@@ -89,7 +89,7 @@ SNS는 소비자들의 관심사, 취향 등 정보의 보고
 
 
 
-## 3) [시장규모](http://www.dbguide.net/dbqna.db?cmd=loadmap_view&boardUid=173758&boardConfigUid=105&categoryUid=216&boardIdx=1&boardStep=1)
+## 3) 시장규모
 
 세계 빅데이터시장은 ’15년 1,220억달러에서 ’19년 1,870억달러로 연평균 11.3%의 높은 성장세를 보일 것으로 전망된다
 
