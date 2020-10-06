@@ -888,3 +888,112 @@ select '2016-08-25 03:30:00', cast('2016-08-25 03:30:00' as datetime) as char_to
 
 # 단일행 함수 잘 사용 하기(일반 함수)
 
+일반 함수는 그동안 우리가 배웠던 숫자, 문자, 날짜 등과 관련 없이 쓰일 수 있는 함수를 뜻합니다. 일반 함수도 여러 가지 많이 있겠지만, 포스팅에서는 가장 많이 쓰이는 일반 함수를 위주로 공부해보도록 하겠습니다.
+
+## ifnull 함수 사용하기
+
+oracle에서 NVL이라는 함수를 들어보셨을 겁니다. mysql에서는 같은 기능을 하는 함수가 ifnull입니다. **null인 데이터 값이 있을 때 null이라고 출력하지 않고 지정하는 다른 특정 값으로 출력하게 하는 함수**입니다.
+
+__ifnull(data, 'null 대신 들어갈 문자나 숫자, 또는 컬럼명')__
+
+> null의미
+>
+> 텅텅빈것, 0은 0이라는 데이터라도있다는것.
+>
+> 즉, null은  데이터가 없으니 비교 연산자로도 비교를 할 수 없으며, inner join을 해도 join 되지 않습니다. null 끼리도 연결이 되지 않는다는 것입니다.
+
+```sql
+create table kmong.dummy2 ( number varchar(100), text varchar(100), date varchar(100)) character set utf8;
+select * from kmong.dummy2;
+
+insert into kmong.dummy2(number, text, date) Values ('1', 'korea', null);
+insert into kmong.dummy2(number, text, date) Values ('2', 'USA', '2020-04-07 14:00:12');
+insert into kmong.dummy2(number, text, date) Values ('3', 'PHP', '2020-04-07 14:00:12');
+insert into kmong.dummy2(number, text, date) Values ('4', 'korea2', '');
+```
+
+이제 ifnull을 써보자
+
+```sql
+select number, text, date, ifnull(date, 0) from kmong.dummy2
+```
+
+![스크린샷 2020-10-06 오후 1.48.29](https://tva1.sinaimg.cn/large/007S8ZIlgy1gjfiob1tjfj30na07ujt2.jpg)
+
+null인 값이 0값으로 표기된것을 알수있다.
+
+```sql
+select number, text, date, ifnull(date, text) from kmong.dummy2
+```
+
+![스크린샷 2020-10-06 오후 1.51.03](https://tva1.sinaimg.cn/large/007S8ZIlgy1gjfiqxujd8j30mu08awg4.jpg)
+
+위와 같게 응용가능하므로 ifnull은 잘 알아두자
+
+## if 함수 사용 하기
+
+**if 함수는 ifnull을 대신할 수도 있습니다.**
+
+__if(조건, 조건 성립시 출력, 조건 미성립시 출력)__
+
+```sql
+select number, text, date, if(date is null, '해당없음', text) from kmong.dummy2
+```
+
+이런식으로도 if 사용가능
+
+```sql
+select name, dept, salary, if(salary >= 300, '고액연봉자', '일반연봉자') from class.salary;
+```
+
+## case 함수 사용 하기
+
+case 함수는 oracle과도 거의 같다고 보시면 됩니다. 어떤 칼럼 값이 **A 이면 '가', B 이면 '나', C 이면 '다'**.... 이런 식으로 여러 가지 경우를 고려해서 출력을 해야 할 때 사용할 수 있습니다.
+
+```sql
+select number
+       , text
+       , case when dept='A' then "경영지원부" 
+              when dept='B' then '회계팀' 
+              else '다른부서' end as dept
+       , dept from kmong.dummy3
+```
+
+> ```sql
+> create table kmong.dummy3 ( number varchar(100), text varchar(100), date varchar(100), dept varchar(100)) character set utf8;
+> select * from kmong.dummy3;
+> 
+> insert into kmong.dummy3(number, text, date, dept) Values ('1', 'korea', null, 'A');
+> insert into kmong.dummy3(number, text, date, dept) Values ('2', 'USA', '2020-04-07 14:00:12', 'B');
+> insert into kmong.dummy3(number, text, date, dept) Values ('3', 'PHP', '2020-04-07 14:00:12', 'C');
+> insert into kmong.dummy3(number, text, date, dept) Values ('4', 'korea2', '', 'A');
+> 
+> select number, text, date, if(date is null, '해당없음', text) from kmong.dummy3
+> ```
+
+![스크린샷 2020-10-06 오후 2.02.00](https://tva1.sinaimg.cn/large/007S8ZIlgy1gjfj2buv47j30mw07gjss.jpg)
+
+## ifnull, if, case를 복합적으로 사용하기
+
+**ifnull, if, case** 함수들을 한 SQL에서 복합적으로 사용하는 예제를 보겠습니다.
+
+```sql
+select number
+     , text
+     , date
+     , dept
+     , ifnull(date, '해당사항없음') as 'ifnull사용'              
+     , if(number>2, '고위등급', '낮은등급') as 'if 사용' 
+     , case when dept='A' then 'A등급'
+            when dept='B' then 'B등급'
+            else '그외등급' end as 'when 사용'
+from kmong.dummy3;
+       
+```
+
+![스크린샷 2020-10-06 오후 2.13.02](https://tva1.sinaimg.cn/large/007S8ZIlgy1gjfjdu6ce3j30ws07ataq.jpg)
+
+# 복수 행(window) 함수 잘 사용 하기(기본 사용법)
+
+https://stricky.tistory.com/240
+
