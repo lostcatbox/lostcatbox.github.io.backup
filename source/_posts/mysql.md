@@ -8,6 +8,8 @@ tags: [Mysql, DB, Basic]
 
 [원본 강의 및 출처](https://stricky.tistory.com/202)
 
+[다끝나면 읽어보기 mysql vs postgresql](https://valuefactory.tistory.com/497)
+
 # 왜?
 
 모든 데이터 처리(읽기, 쓰기 등)와 서버의 트래픽 관리에서는 반드시 DB의 설계가 안정성과 성능을 좌우할 수 있다.
@@ -995,5 +997,139 @@ from kmong.dummy3;
 
 # 복수 행(window) 함수 잘 사용 하기(기본 사용법)
 
-https://stricky.tistory.com/240
+SQL에서 사용되는 복수 행 함수는 단일 행 함수와는 다르게 한 번에 여러 데이터에 대한 결과를 출력하는 함수를 말합니다.
 
+복수 행 함수를 흔히 window 함수라고도 하고 그룹 함수라고도 지칭합니다. 어떤 정해진 것이 있다가 보다는 **복수 행, window, 그룹 이렇게 세 가지 명칭**을 잘 숙지하고 계시면 될 것 같습니다. 모두 같은 뜻이다
+
+복수 행 함수에 대한 강의를 시작하기 앞서서 null과 관련된 이야기를 하나 하고 넘어가도록 하겠습니다. 
+
+__모든 복수 행 함수 안에 칼럼명을 넣었을 때 해당 칼럼 값에 null 값이 있다면 이것은 제외하고 결과가 나오니 이에 대해서 헷갈리지 않으셨으면 좋겠습니다. 또한 쿼리를 작성할 때도 주의를 하셔야 합니다.__
+
+즉, `select avg(bonus) from class.salary;`를 실행시에 bonus 필드에 만약 400,100,400,<null>,<null> 값이 있다면 그 합에 평균이 300으로 결과가 출력된다. (즉, null은 제외한다!)
+
+하지만, 의도대로 5명에 대한 평균값을 구하고 싶었다면, 결과가 잘못된것이다.
+
+` select avg(infall(bonus, 0)) from class.salary;`를 해야한다. (null을 0으로 출력시키므로)
+
+## count 함수 사용 하기
+
+**count() 함수**는 입력되는 데이터의 총건수를 반환합니다.
+
+```sql
+select count(*) from kmong.dummy3;
+```
+
+출력은 `4`
+
+즉, 전체 칼럼을 대상으로 총 건수를 계산해서 반환하는 것이다.
+
+**count() 함수** 안에 특정 칼럼명을 넣는다면 앞서 말씀드린 바와 같이 해당 칼럼에서 null값을 제외한 데이터 총건수가 반환됩니다.
+
+## sum 함수 사용 하기
+
+**sum()** 함수는 입력된 데이터들의 합계 값을 구해서 반환하는 함수입니다.
+
+```sql
+select sum(number) from kmong.dummy3;
+```
+
+number  칼럼값의 총합이 반환되었다.
+
+## avg 함수 사용 하기
+
+**avg() 함수**는 입력된 데이터 값의 평균값을 반환하는 함수입니다.
+
+```sql
+select avg(number) from kmong.dummy3;
+```
+
+number  칼럼값의 평균이 반환되었다.
+
+## max, min 함수 사용 하기
+
+**max()와 min() 함수**는 예상하셨다시피 최댓값과 최솟값을 구하는 함수입니다.
+
+```sql
+select max(number), min(number) from kmong.dummy3;
+```
+
+출력 `4`|`1` 로 나옴
+
+## stddev 함수 사용 하기
+
+**stddev()** 함수는 표준편차를 구하는 함수입니다.
+
+```sql
+select stddev(number) from kmong.dummy3;
+```
+
+## variance 함수 사용 하기
+
+**variance() 함수**는 분산을 구하는 함수입니다.
+
+```sql
+select variance(number) from kmong.dummy3;
+```
+
+# 복수 행(window) 함수 잘 사용 하기(group by) 10편
+
+복수 행 함수를 group by 절을 이용해서 조금 더 세분화하는 내용을 다루어 보도록 하겠습니다.
+
+이번 포스팅에서 사용되는 예제를 다루기 위해서 아래와 같이 테이블을 생성 하고 데이터를 입력하겠습니다.
+
+```sql
+create table kmong.budget
+(
+        do varchar(100) null, 
+        city varchar(100) null, 
+        budget_value int null, 
+        population int null 
+) character set utf8;
+INSERT INTO kmong.budget (do, city, budget_value, population) VALUES ('서울특별시', '서울특별시', 23324, 345); 
+INSERT INTO kmong.budget (do, city, budget_value, population) VALUES ('부산광역시', '부산광역시', 34323, 5345); 
+INSERT INTO kmong.budget (do, city, budget_value, population) VALUES ('경상남도', '창원시', 4331, 435); 
+INSERT INTO kmong.budget (do, city, budget_value, population) VALUES ('경상남도', '양산시', 25436, 2134); 
+INSERT INTO kmong.budget (do, city, budget_value, population) VALUES ('경상남도', '밀양시', 62341, 6523); 
+INSERT INTO kmong.budget (do, city, budget_value, population) VALUES ('경기도', '부천시', 3242, 345); 
+INSERT INTO kmong.budget (do, city, budget_value, population) VALUES ('경기도', '시흥시', 32454, 546); 
+INSERT INTO kmong.budget (do, city, budget_value, population) VALUES ('경기도', '수원시', 3234, 345); 
+INSERT INTO kmong.budget (do, city, budget_value, population) VALUES ('충청남도', '공주시', 2425, 436); 
+INSERT INTO kmong.budget (do, city, budget_value, population) VALUES ('충청남도', '논산시', 5534, 4567); 
+INSERT INTO kmong.budget (do, city, budget_value, population) VALUES ('강원도', '속초시', 6542, 3542); 
+INSERT INTO kmong.budget (do, city, budget_value, population) VALUES ('강원도', '강릉시', 23423, 4355); 
+INSERT INTO kmong.budget (do, city, budget_value, population) VALUES ('강원도', '태백시', 5465, 45); 
+INSERT INTO kmong.budget (do, city, budget_value, population) VALUES ('전라북도', '전주시', 456, 645); 
+INSERT INTO kmong.budget (do, city, budget_value, population) VALUES ('전라북도', '군산시', 3243, 234);
+```
+
+그럼 이젠 위 데이터를 가지고 group by 절과 함께 어떻게 복수 행 함수를 사용하는지를 함께 공부해 보도록 하겠습니다.
+
+## group by 절을 이용해 평균 및 합계 구하기
+
+```sql
+select do, avg(budget_value) as 예산평균, sum(budget_value) as 예산합계 from kmong.budget
+group by do;
+```
+
+![스크린샷 2020-10-06 오후 8.42.57](https://tva1.sinaimg.cn/large/007S8ZIlgy1gjfunndio6j30fk09gjs8.jpg)
+
+초보자 분들을 위해서 위 내용에 설명을 조금 덧 붙이자면, 원 데이터를 먼저 살펴보시면 do라는 칼럼에 "경기도"로 데이터가 들어가 있는 city는 부천시, 시흥시, 수원시가 있습니다. 이 "경기도" 라는 데이터를 한 그룹으로 묶어서 3개의 시에 대한 **예산의 평균 값과, 예산의 합계를 출력한 SQL** 입니다. 이와 마찬가지로 do 라는 컬럼 안에 있는 같은 데이터끼리 묶에서 위와 같이 강원도, 경기도, 경상남도, 부산광역시, 서울특별시, 전라북도, 충청남도의 각각의 예산 평균, 합계 값이 구해져서 나오게 된 것입니다.
+
+
+
+## group by 절 사용 시 주의할 점
+
+group by 절을 사용 할 때 주의하실 점이 몇 개 있습니다. group by 절에는 단순히 칼럼 명을 그대로 써도 좋지만 함수를 이용해서 group by를 할 수도 있습니다. 이때 select 절에도 group by 절에서 쓴 함수 그대로를 써줘야 group by 가 정상적으로 작동한다는 점 이 있습니다.
+
+예를 들어 보겠습니다. 위와 같이 예산 평균, 합계를 구하는데, 수도권과 광역시 두 개의 그룹으로 나누어 보려고 합니다. 편의상 do 칼럼 값 중 "서울특별시", "경기도"를 수도권으로 하고 기타 지역들은 지방으로 나누어 두 그룹의 결과를 아래 SQL을 이용해서 출력해보겠습니다.
+
+```sql
+select if(do in ('서울특별시','경기도'), '수도권', '비수도권') as 지역구분, sum(budget_value) as 예산합계, avg(budget_value) as 예산평균 from kmong.budget
+group by if(do in ('서울특별시','경기도'), '수도권', '비수도권');
+```
+
+__이런 식으로 꼭!! group by 절과 select 절에 그룹핑하는 대상의 형태를 똑같이 작성을 해주셔야 정확한 결과를 가지고 올 수 있다는 것을 명심하여야 합니다.__
+
+# mysql join (정의 및 종류)
+
+https://stricky.tistory.com/243
