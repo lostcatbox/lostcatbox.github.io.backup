@@ -1,6 +1,4 @@
 ---
-
-
 title: Mysql 기본 공부
 date: 2020-10-02 15:19:38
 categories: [DB]
@@ -1597,17 +1595,159 @@ righ outer join을 한다면, 교수진은 ` null`값이 존재하지 않으므�
 
 # ub query 서브 쿼리
 
-서브 쿼리 (sub query) 란 SQL내에서 또 다른 select 절을 사용 하는 문법을 이야기합니다.
+서브 쿼리(sub query) 란 SQL내에서 또 다른 select 절을 사용 하는 문법을 이야기합니다.
 
 ![스크린샷 2020-10-07 오후 1.57.30](https://tva1.sinaimg.cn/large/007S8ZIlgy1gjgojzks7tj30ri07qabc.jpg)
 
 서브 쿼리를 사용해서 SQL에서 데이터를 폭넓게 사용할 수 있는 이점이 있습니다. 또한 복잡한 쿼리를 조금더 단순화 하여 사용 할 수 있는 장점이 있습니다.
 
-하지만, 조인을 이용해서 풀 수 있는 문제를 서브 쿼리를 이용해서 푼다면 SQL의 성능에 악영향을 미칠 수 있습니다. 그래서 서브 쿼리는 양날의 검처럼 조심히, 최대한 어쩔 수 없는 상황에서만 사용할 수 있도록 해야 합니다.
+__하지만, 조인을 이용해서 풀 수 있는 문제를 서브 쿼리를 이용해서 푼다면 SQL의 성능에 악영향을 미칠 수 있습니다. 그래서 서브 쿼리는 양날의 검처럼 조심히, 최대한 어쩔 수 없는 상황에서만 사용할 수 있도록 해야 합니다.__
+
+## 서브 쿼리 종류
+
+이 서브 쿼리를 메인 쿼리의 select 절에 사용하느냐, from 절에 사용하느냐, where절에 사용하느냐에 따라서 서브 쿼리도 종류가 구분됩니다.
+
+| 사용 위치 | 명칭                              |
+| --------- | --------------------------------- |
+| select 절 | 스칼라 서브쿼리 (Scalar Subquery) |
+| from 절   | 인라인 뷰 (Inline view)           |
+| where 절  | 중첩 서브쿼리 or 서브쿼리         |
+
+저는 그 개념에 대해서 자세하게 한번 설명을 드려보고 싶어요. 사실 아는 사람이야 select, from, where 절에 서브 쿼리를 사용하는 방법이나 개념을 잘 알고 계시겠지만, 처음 접하는 사람들은 그게 아니거든요.
+
+## 스칼라 서브쿼리 (Scalar Subquery)
+
+select절에서 사용하는 스칼라 서브 쿼리는 대부분 아래 그림과 같은 형태를 띠게 됩니다.
+
+![스크린샷 2020-10-07 오후 2.22.41](https://tva1.sinaimg.cn/large/007S8ZIlgy1gjgpa76ak1j30tq0a042x.jpg)
+
+select로 시작하고, 다시 "(" 괄호를 열어서 select 절이 들어가게 됩니다. 이 괄호 안에 select...로 시작하는 SQL을 스칼라 서브 쿼리라고 부르는데, 스칼라 서브 쿼리의 where절에 메인 쿼리의 칼럼 값이 들어가게 됩니다. 그리고 그 값으로 스칼라 서브 쿼리에서 검색된 값이 출력 값으로 나오게 되는 것입니다.
+
+여기서 주의하실 점은 쿼리 결과가 하나의 행으로만 나와야 한다는 것입니다. 두 개 이상의 복수 행이 나오게 되면 위 SQL은 실행되지 않습니다.
+
+![스크린샷 2020-10-07 오후 2.26.55](https://tva1.sinaimg.cn/large/007S8ZIlgy1gjgpelgbcoj30xr0u0ahn.jpg)
+
+이 두 테이블을 이용해서 학생 이름과 학생별 학과명을 출력하는 SQL을 스칼라 서브 쿼리를 통해서 작성해보았습니다.
+
+```sql
+select name as 학생이름, 
+       (select major_title 
+        from kmong.major b 
+        where b.major_id = a.major_id) as 학과명 
+from kmong.student a;
+```
+
+위 스칼라 서브 쿼리를 사용한 SQL을 해석해드리자면 학생 테이블(student)에 있는 major_id 값을 학과 테이블(major)에서 검색하여 학과명을 가지고 와서 메인 SQL에서 출력하게 만든 것입니다.
+
+![스크린샷 2020-10-07 오후 2.31.43](https://tva1.sinaimg.cn/large/007S8ZIlgy1gjgpjlbwhlj30cw08uwfz.jpg)
+
+여기서 학과 테이블에 major_id를 넣고 검색하면 당연히 학과는 하나의 행만 나옵니다. 그래서 위 SQL은 오류없이 실행이 되었던것 이죠. 그렇다면 반대로 학과 테이블을 메인테이블로 두고 학생 테이블에서 major_id를 검색 하면 어떻게 될까요?
+
+```sql
+select  major_title as 과이름,
+       (select name
+        from kmong.student b 
+        where b.major_id = a.major_id) as 학생이름
+from kmong.major a;
+```
+
+![스크린샷 2020-10-07 오후 2.38.02](https://tva1.sinaimg.cn/large/007S8ZIlgy1gjgpq5y3h8j30dg042wep.jpg)
+
+위와 같이 서브 쿼리에서 하나의 행보다 많은 결과가 리턴되었다. 즉, 학생 테이블에는 특정 major_id를 조건절로 넣으면 하나 이상의 행이 리턴되는 것이다.
+
+따라서 반드시 서브 쿼리에서는 하나의 행만 반환되야함.
+
+## 인라인 뷰 (Inline view)
+
+인라인 뷰는 from절에 사용되는 서브 쿼리입니다. 형태는 아래와 같습니다.
+
+![스크린샷 2020-10-07 오후 2.40.18](https://tva1.sinaimg.cn/large/007S8ZIlgy1gjgpsi1nq7j30ru0a6tdq.jpg)
+
+from 절에 다른 테이블을 기입하는 것과 마찬가지로 스칼라 서브 쿼리와 마찬가지로 "(" 괄호를 열고 그 안에 select 절을 넣으시면 됩니다.
+
+인라인 뷰는 그냥 하나의 테이블이라고 생각하고 사용하시면 됩니다. 괄호 안에 넣고 쓴다는 게 다를 뿐, 인라인 뷰를 이용해서 join도 하고 where절에 조건도 걸고 하실 수 있습니다.
+
+위에서 스칼라 서브 쿼리를 사용해서 학생별 소속 학과를 출력하는 SQL을 작성해봤었는데, 이번엔 똑같은 결과를 인라인뷰를 이용해서 출력하도록 하겠습니다.
+
+```sql
+select a.name as 학생이름,
+       b.major_title as 학과명
+from kmong.student a, (select major_title, major_id 
+        from kmong.major) b 
+where a.major_id = b.major_id;
+```
+
+결과는 위에 스칼라 서브쿼리 결과와 같음.
+
+여기서 주의하실 점은 인라인 뷰의 select 절에 있는 칼럼명만 메인 쿼리에서 select 절로 표현하거나, where 절에서 조건절로 사용하거나, join 할 때 key 값으로 사용할 수 있다는 점입니다. 인라인 뷰의 select 절에 없는 칼럼은 메인 쿼리 그 어디에서도 사용할 수 없습니다.
+
+## 서브 쿼리(=중첩 서브쿼리, 좁은 말로 서브쿼리)
+
+where절에서도 서브 쿼리를 사용할 수 있습니다.
+
+where절에서 사용할 때는 단일행 서브 쿼리와 복수행 서브 쿼리로 나눠질 수 있습니다. 뭐 간단합니다. 쿼리 결과가 하나의 행으로 나오느냐, 두건 이상 복수행으로 나오느냐의 차이입니다. 이때 where절 내 비교 연산자 사용에 주의하셔야 하는데요,
+
+**단일행 결과가 나오는 서브 쿼리의 경우에는 아래와 같이 비교 연산자를 사용**하실 수 있습니다.
+
+| **연산자** | **의미**    |
+| ---------- | ----------- |
+| **=**      | 같다        |
+| **<>**     | 같지 않다   |
+| **>**      | 크다        |
+| **>=**     | 크거나 같다 |
+| **<**      | 작다        |
+| **<=**     | 작거나 같다 |
+
+그럼 복수행 결과가 나오는 서브 쿼리를 사용할 때는 어떤 연산자를 쓸 수 있을까요?
+
+| **연산자**      | **의미**                         |
+| --------------- | -------------------------------- |
+| **IN (NOT IN)** | 모두 포함함                      |
+| **EXIST**       | 서브쿼리의 값이 있을 경우 반환함 |
+| **NOT EXIST**   | 서브쿼리의 값이 없는 경우 반환함 |
+
+### 서브 쿼리 사용 예제
+
+학생들 중 소속 학과가 '컴퓨터공학과'인 학생들 목록을 출력하는 서브 쿼리를 이용한 SQL을 작성해보겠습니다.
+
+__서브 쿼리 예제는 단일행 서브 쿼리의 예제__
+
+```sql
+select name as 학생이름 
+from kmong.student 
+where major_id = (select major.major_id from kmong.major where major_title = '컴퓨터공학과');
+```
+
+결과는 컴퓨터공학과 학생이름들만 나열됨
+
+__복수행 서브쿼리의 예제(컴공, 국문학과)__
+
+```sql
+select name as 학생이름 
+from kmong.student 
+where major_id in (select major.major_id from kmong.major where major_title in ('컴퓨터공학과','국문학과'));
+```
 
 
 
-https://stricky.tistory.com/265
+## join으로 표현하기
+
+**스칼라 서브 쿼리와 인라인 뷰에서 예를 들었던 학생별 학과명 출력하는 SQL을 join으로 한번 표현**해보겠습니다.
+
+이건 왜 하는 거냐면, 서브 쿼리보단 조인을 사용하는것이 대부분 SQL에서 더욱 좋은 성능을 나타내기 때문 입니다. 단, 오라클의 경우 스칼라 서브쿼리 캐싱 기능으로 nested loop와 비슷하거나 오히려 조금 더 빠를 수도 있으며, 전반적으로 비슷합니다. 하지만 대용량 hash join의 경우 스칼라 서브 쿼리는 조인보다 빠를 수 없습니다.
+
+그럼, 조인을 해서 학생별 학과명 출력을 하는 SQL을 보실게요
+
+```sql
+select a.name as 학생이름, b.major_title as 학과명 
+from kmong.student a, kmong.major b 
+where a.major_id = b.major_id;
+```
+
+스칼라 서브 쿼리와 인라인 뷰 예시와 같은 결과값 얻음.
 
 
 
+# mysql insert 사용 방법
+
+https://stricky.tistory.com/268
