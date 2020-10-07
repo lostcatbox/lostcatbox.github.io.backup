@@ -1,5 +1,6 @@
 ---
 
+
 title: Mysql 기본 공부
 date: 2020-10-02 15:19:38
 categories: [DB]
@@ -1132,4 +1133,481 @@ __이런 식으로 꼭!! group by 절과 select 절에 그룹핑하는 대상의
 
 # mysql join (정의 및 종류)
 
-https://stricky.tistory.com/243
+## join 수업용 데이터 생성
+
+__테이블 생성__
+
+```sql
+create table kmong.student (
+        student_id int(10) comment '학생번호', 
+        major_id int(10) comment '학과ID', 
+        bl_prfs_id int(10) comment '담당교수ID', 
+        name varchar(20) comment '학생이름', 
+        tel varchar(15) comment '학생연락처' 
+) character set utf8;
+create table kmong.professor (
+        prfs_id int(10) comment '교수ID', 
+        bl_major_id int(10) comment '소속학과ID', 
+        name varchar(20) comment '교수이름', 
+        tel varchar(15) comment '교수연락처' 
+) character set utf8; 
+create table kmong.major (
+        major_id int(10) comment '학과ID', 
+        major_title varchar(30) comment '학과명', 
+        major_prfs_cnt int(5) comment '학과소속교수수', 
+        major_student_cnt int(5) comment '학과소속학생수', 
+        tel varchar(15) comment '학과사무실연락처' 
+) character set utf8;
+```
+
+__데이터 삽입__
+
+```sql
+INSERT INTO kmong.student (student_id, major_id, bl_prfs_id, name, tel) VALUES (1001, 9901, 7029901, '한지호', '01098447362'); 
+INSERT INTO kmong.student (student_id, major_id, bl_prfs_id, name, tel) VALUES (1002, 9902, 7029902, '김은숙', '01023456787'); 
+INSERT INTO kmong.student (student_id, major_id, bl_prfs_id, name, tel) VALUES (1003, 9903, 7039903, '강경호', '01092938476'); 
+INSERT INTO kmong.student (student_id, major_id, bl_prfs_id, name, tel) VALUES (1004, 9904, 7049904, '민현민', '01088786623'); 
+INSERT INTO kmong.student (student_id, major_id, bl_prfs_id, name, tel) VALUES (1005, 9905, 7059905, '조승우', '01092877795'); 
+INSERT INTO kmong.student (student_id, major_id, bl_prfs_id, name, tel) VALUES (1006, 9901, 7069901, '이남철', '01045671234'); 
+INSERT INTO kmong.student (student_id, major_id, bl_prfs_id, name, tel) VALUES (1007, 9902, 7079902, '이강철', '01021213434'); 
+INSERT INTO kmong.student (student_id, major_id, bl_prfs_id, name, tel) VALUES (1008, 9903, 7089903, '조민수', '01098937262'); 
+INSERT INTO kmong.student (student_id, major_id, bl_prfs_id, name, tel) VALUES (1009, 9904, 7099904, '박찬경', '01029884432'); 
+INSERT INTO kmong.student (student_id, major_id, bl_prfs_id, name, tel) VALUES (1010, 9905, 7109905, '이도경', '01029385647'); 
+INSERT INTO kmong.student (student_id, major_id, bl_prfs_id, name, tel) VALUES (1011, 9901, 7019901, '이만호', '01099996453'); 
+INSERT INTO kmong.student (student_id, major_id, bl_prfs_id, name, tel) VALUES (1012, 9902, 7029902, '김효민', '01092887666'); 
+INSERT INTO kmong.student (student_id, major_id, bl_prfs_id, name, tel) VALUES (1013, 9903, 7039903, '최효성', '01098999933'); 
+INSERT INTO kmong.student (student_id, major_id, bl_prfs_id, name, tel) VALUES (1014, 9904, 7049904, '우민국', '01087651112'); 
+INSERT INTO kmong.student (student_id, major_id, bl_prfs_id, name, tel) VALUES (1015, 9905, 7059905, '지대한', '01093934848'); 
+INSERT INTO kmong.student (student_id, major_id, bl_prfs_id, name, tel) VALUES (1016, 9901, 7069901, '한나름', '01023329882'); 
+INSERT INTO kmong.student (student_id, major_id, bl_prfs_id, name, tel) VALUES (1017, 9902, 7079902, '유육경', '01099881111'); 
+INSERT INTO kmong.student (student_id, major_id, bl_prfs_id, name, tel) VALUES (1018, 9903, 7089903, '조민경', '01023311120'); 
+INSERT INTO kmong.student (student_id, major_id, bl_prfs_id, name, tel) VALUES (1019, 9904, 7099904, '경지수', '01029100293'); 
+INSERT INTO kmong.student (student_id, major_id, bl_prfs_id, name, tel) VALUES (1020, 9905, 7109905, '오종환', '01098882226'); 
+INSERT INTO kmong.student (student_id, major_id, bl_prfs_id, name, tel) VALUES (1021, 9901, 7019901, '조형민', '01098909876'); 
+INSERT INTO kmong.student (student_id, major_id, bl_prfs_id, name, tel) VALUES (1022, 9902, 7029902, '이수강', '01099992222'); 
+INSERT INTO kmong.student (student_id, major_id, bl_prfs_id, name, tel) VALUES (1023, 9903, 7039903, '서민호', '01092997654'); 
+INSERT INTO kmong.student (student_id, major_id, bl_prfs_id, name, tel) VALUES (1024, 9904, 7049904, '박효숙', '01022293332'); 
+INSERT INTO kmong.student (student_id, major_id, bl_prfs_id, name, tel) VALUES (1025, 9905, 7059905, '남궁옥경', '01099938475'); 
+INSERT INTO kmong.student (student_id, major_id, bl_prfs_id, name, tel) VALUES (1026, 9901, 7069901, '피경남', '01029222233'); 
+INSERT INTO kmong.student (student_id, major_id, bl_prfs_id, name, tel) VALUES (1027, 9902, 7079902, '고주경', '01099226655'); 
+INSERT INTO kmong.student (student_id, major_id, bl_prfs_id, name, tel) VALUES (1028, 9903, 7089903, '하지만', '01022228965'); 
+INSERT INTO kmong.student (student_id, major_id, bl_prfs_id, name, tel) VALUES (1029, 9904, 7099904, '기지효', '01012090912'); 
+INSERT INTO kmong.student (student_id, major_id, bl_prfs_id, name, tel) VALUES (1030, 9905, 7109905, '박민호', '01074746363'); 
+INSERT INTO kmong.professor (prfs_id, bl_major_id, name, tel) VALUES (7019901, 9901, '김보경', '023445678'); 
+INSERT INTO kmong.professor (prfs_id, bl_major_id, name, tel) VALUES (7029902, 9902, '조숙', '023446789'); 
+INSERT INTO kmong.professor (prfs_id, bl_major_id, name, tel) VALUES (7039903, 9903, '이호', '023449584'); 
+INSERT INTO kmong.professor (prfs_id, bl_major_id, name, tel) VALUES (7049904, 9904, '박철남', '023449588'); 
+INSERT INTO kmong.professor (prfs_id, bl_major_id, name, tel) VALUES (7059905, 9905, '이만기', '023443443'); 
+INSERT INTO kmong.professor (prfs_id, bl_major_id, name, tel) VALUES (7069901, 9901, '강조교', '023449994'); 
+INSERT INTO kmong.professor (prfs_id, bl_major_id, name, tel) VALUES (7079902, 9902, '이희숙', '023443321'); 
+INSERT INTO kmong.professor (prfs_id, bl_major_id, name, tel) VALUES (7089903, 9903, '소머리', '023440123'); 
+INSERT INTO kmong.professor (prfs_id, bl_major_id, name, tel) VALUES (7099904, 9904, '두수위', '023443327'); 
+INSERT INTO kmong.professor (prfs_id, bl_major_id, name, tel) VALUES (7109905, 9905, '지만래', '023449995'); 
+INSERT INTO kmong.major (major_id, major_title, major_prfs_cnt, major_student_cnt, tel) VALUES (9901, '컴퓨터공학과', 7, 123, '023454321'); 
+INSERT INTO kmong.major (major_id, major_title, major_prfs_cnt, major_student_cnt, tel) VALUES (9902, '아동보육학과', 8, 345, '023456676'); 
+INSERT INTO kmong.major (major_id, major_title, major_prfs_cnt, major_student_cnt, tel) VALUES (9903, '국문학과', 6, 213, '023456567'); 
+INSERT INTO kmong.major (major_id, major_title, major_prfs_cnt, major_student_cnt, tel) VALUES (9904, '경제학과', 5, 432, '023456987'); 
+INSERT INTO kmong.major (major_id, major_title, major_prfs_cnt, major_student_cnt, tel) VALUES (9905, '사회복지학과', 9, 312, '023454534');
+```
+
+## join 이란 무엇인가?
+
+우리가 흔히 아는 oracle, mysql, mariadb, ms-sql, postgres 등등은 모두 RDBMS입니다. DBMS라는 말은 많이 들어보셨을 겁니다.
+
+맞습니다! 바로 DataBase Management System의 약자로써 데이터베이스를 관리하는 시스템이라는 뜻입니다. 그렇다면 **RDBMS**는요? **Relational DataBase Management System**의 약어로써 관계형 데이터베이스를 관리하는 시스템이라는 말이 되겠죠.
+
+여기서 관계형이란, 말 그대로 데이터베이스 내에 있는 테이블이나 스키마들이 서로 관계를 가지고 있다는 뜻입니다. 그렇다면 이러한 관계를 이용해서 우리는 SQL을 작성하기도 해야 할 텐데요, 이럴 때 사용하는 게 바로 join이 됩니다.
+
+join을 사용해서 여러 테이블이나 스키마에 분산되어 있는 데이터를 하나의 view로 출력하게 하는 것입니다.
+
+![스크린샷 2020-10-07 오전 11.01.06](https://tva1.sinaimg.cn/large/007S8ZIlgy1gjgjgfnilhj31160f644d.jpg)
+
+위 그림과 같이 student 테이블과 major 테이블에 각각 따로 들어가 있는 데이터를 오른쪽에 join 로직을 거치면 하나의 테이블처럼 데이터를 볼 수 있게 됩니다. 위 그림에서는 2개의 테이블만 join을 했지만 3,4개 그 이상 join이 가능합니다. 추후 포스팅에서 2개를 초과하는 테이블의 join을 쉽게 하는 방법도 알려 드리도록 하겠습니다.
+
+##  join의 종류는 무엇이 있을까?
+
+DBMS에서 join을 하는 데 있어서 몇 가지 방법이 존재합니다. 각 join들의 특징을 잘 알고 계셔야지 자신이 원하는 결과를 출력하는데 유리합니다. 아래, 각 join의 종류별로 간단한 설명을 드리겠습니다.
+
+> - inner join = 서로 매칭되는 것만 엮어 조회한다.
+>
+>   (Equi join ,Non Equi join 가 속한다.)
+>
+> - outer join =  매칭 뿐만 아니라 미매칭 데이터도 함께 조회한다.
+>
+>   (Left Outer Join, Right Outer Join, Full Outer Join가 속한다)
+
+### 카티션곱 join
+
+카티션곱 join이란 테이블들을 join 할 때 join 조건을 기술하지 않고 하는 join을 말합니다. 카티션곱 join의 결과는 두 테이블의 row 건수를 서로 곱한 것만큼의 결과를 출력합니다. 흔히 업무에서는 잘 사용되지 않으나, 데이터를 많이 불려야 하거나, 특정한 조건 안에서 필요할 때가 있습니다.
+
+![스크린샷 2020-10-07 오전 11.06.06](https://tva1.sinaimg.cn/large/007S8ZIlgy1gjgjlnc1orj311g0rs7go.jpg)
+
+### Equi join
+
+두 테이블을 서로 join 한다고 하면, 양쪽 테이블의 어떤 칼럼에 같은 값이 존재할 때 이것을 **Equal 연산자(=)를 이용하여 양쪽에 다 존재하는 값만 결과로 출력하는 join**입니다. 가장 보편적인 join 방법입니다. 
+
+__inner join(이너 조인) 이라고도 불립니다.__
+
+![스크린샷 2020-10-07 오전 11.06.32](https://tva1.sinaimg.cn/large/007S8ZIlgy1gjgjm4aoufj31120o2qcr.jpg)
+
+### Non Equi join
+
+Equi join과 반대 개념입니다. 두 테이블을 서로 join 할 때, __서로 다른 값을 가지거나, 한쪽 데이터가 다른 쪽 테이블의 데이터 범위 내에 있는 것만 출력__을 원할 때 쓰는 join 방법입니다. 
+
+__Non Equi join 역시 inner join(이너 조인)에 속합니다.__
+
+![스크린샷 2020-10-07 오전 11.06.58](https://tva1.sinaimg.cn/large/007S8ZIlgy1gjgjmjcc14j31160mudva.jpg)
+
+### Outer join
+
+Outer join은 left outer join, right outer join, full outer join으로 구분됩니다. left outer join, right outer join의 경우 어느 한쪽의 데이터를 모두 출력 한 뒤에 조건에 맞는 데이터만 다른 쪽에 출력을 하는 것을 말합니다. 조건에 맞지 않은 데이터 옆에는 null이 표시됩니다.
+
+![스크린샷 2020-10-07 오전 11.07.26](https://tva1.sinaimg.cn/large/007S8ZIlgy1gjgjn0qda6j31180ng4dp.jpg)
+
+### Self join
+
+Self join은 한 테이블이 자기 자신과 join을 다시 하는 경우를 말합니다. 아주 일반적인 경우는 아니지만 꼭 필요한 경우가 있습니다. 일반적인 사용법은 다른 join과 같습니다.
+
+
+
+# Cartesian Product 카티션 곱 ansi SQL 문법
+
+**mysql SQL문법**과 함께 **Ansi SQL 문법**도 같이 소개해 드리도록 하겠습니다.
+
+Ansi SQL이란 앞에서도 안내를 한번 드리긴 했는데, 간단하게 다시 한번 말씀드리자면, 각각의 RDBMS가 서로 조금씩 다른 SQL문법을 사용하는데, 모든 RDBMS에서 사용될 수 있는 공통 문법이라고 생각하시면 쉽게 이해하실 수 있습니다.
+
+## Cartesian Product, 카티션곱 의 정의
+
+카티션 곱은 RDBMS에서 사용되는 join의 한 기법 중 하나입니다. where 절이나 on 절에 join 조건을 주지 않고 join을 수행하게 되면 카티션 곱이 수행됩니다.
+
+Ansi SQL에서는 cross join 이라고도 합니다. 카티션 곱 join이 일어나게 되면 from 절에서 참조한 테이블들의 행 개수를 각각 모두 곱한 값만큼의 결과가 출력됩니다.
+
+![스크린샷 2020-10-07 오전 11.31.19](https://tva1.sinaimg.cn/large/007S8ZIlgy1gjgkbwjabrj310y0eoqad.jpg)
+
+## 카티션곱 활용방법
+
+카티션곱은 사실 RDBMS의 개념과 상충하는 개념이 됩니다. RDBMS는 각각의 테이블이 키를 가지고 있고, 해당 키를 이용해서 다른 테이블과 관계를 형성하는 개념을 가지고 있는데, 이 카티션곱 join은 키를 이용하지 않고 그냥 모든 데이터를 1:1로 연결하는 join 방법이기 때문이죠.
+
+저도 실무에서 일을 하면서 카티션곱 조인을 사용할 경우가 자주 없었습니다만, 간혹 꼭 필요할 때가 있습니다. 
+
+1) 데이터를 대량으로 복제해야 할 때
+
+2) 특정 데이터 튜플만 복제되어야 할 때
+
+3) 연결고리가 없는 두 테이블의 데이터를 무작위로 합쳐야 할 때
+
+##  카티션곱 SQL 작성방법
+
+```sql
+select * from kmong.student; #5건
+
+select * from kmong.professor; #10건
+```
+
+카티션 곱으로 조인하면 50건이 출력되어야함
+
+카티션 곱으로 조인해보자
+
+__mysql문법__
+
+```sql
+select m.major_id,
+       m.major_title,
+       p.prfs_id,
+       p.name
+from kmong.major m, kmong.professor p;
+```
+
+__ansi SQL 문법__
+
+```sql
+select m.major_id,
+       m.major_title,
+       p.prfs_id,
+       p.name
+from kmong.major m cross join kmong.professor p;
+```
+
+mysql문법을 사용할 때는 major 테이블과 professor 테이블 사이에 ", "를 넣어서 구분했지만 ansi SQL에서는 "cross join"이라는 명령어를 사용했습니다.
+
+__참고로 각 테이블 명 뒤에 붙어있는 m과 p는 테이블의 alias 명입니다.__ (as써도 가능하더라...)
+
+select, where 절에서 칼럼명을 사용해야 하는 경우 어떤 테이블의 컬럼명인지를 알수 있도록 테이블 명을 컬럼명 앞에 붙여야 하는데, 그때마다 테이블 명을 다 쓰기엔 너무 길기 때문에 간단하게 alias 명을 대신 사용을 합니다. 
+
+# inner join with ansi SQL
+
+**inner join**, 가장 일반적인 조인에 대해서 이야기합니다.
+
+특별한 이야기가 없이 join을 이야기한다면 이 **inner join**을 이야기하시는 게 맞을 겁니다.
+
+
+
+## inner join의 정의
+
+A, B 두 테이블이 있을 때 서로 연결되는 key가 있다고 가정하고, 해당 키의 값이 값은 데이터를 가지고 와서 출력하는 것을 의미합니다.
+
+만약 교수 테이블, 학과 테이블이 있을 때 교수들의 소속 학과를 함께 출력하는 경우, 이 inner join을 이용해서 join을 해서 출력해야 합니다.
+
+**inner join은 EQUI join 이라고도 하고, 그냥 join 이라고도 하며, 등가 조인 이라고도 표현**할 수 있습니다.
+
+## inner join 사용 예제
+
+우선, **교수 테이블과, 학과 테이블** 데이터를 한번 확인해보겠습니다.
+
+```sql
+select * from kmong.professor;
+select * from kmong.major;
+```
+
+위 테이블을 보면 교수 테이블에 교수들의 이름이 있고, 학과 테이블에 학과 이름이 있습니다. 그리고 교수 테이블을 보면 bl_major_id라는 소속 학과 아이디가 있습니다. 이 소속 학과 아이디는 학과 테이블의 major_id와 매핑이 됩니다.
+
+__이것을 FK, Foreign Key라고 합니다. 두 테이블의 연결하는 key가 되는 것입니다. 이 FK를 join 시에 조건으로 넣어주시면 됩니다.__
+
+그럼 두 테이블을 inner join 하여 교수 이름과, 학과명이 출력되도록 하는 예제를 보겠습니다.
+
+## inner join SQL 작성방법
+
+__mysql__
+
+```sql
+select p.name as 교수이름,
+       m.major_title as 학과명
+from kmong.professor p, kmong.major m
+where p.bl_major_id = m.major_id;
+```
+
+__ansi sql__
+
+```sql
+select p.name as 교수이름,
+       m.major_title as 학과명
+from class.professor p 
+       join class.major m 
+               on p.bl_major_id = m.major_id; 
+               
+select p.name as 교수이름, 
+       m.major_title as 학과명
+from class.professor p 
+       cross join class.major m 
+               on p.bl_major_id = m.major_id;
+               
+select p.name as 교수이름, 
+       m.major_title as 학과명 
+from class.professor p 
+       inner join class.major m 
+               on p.bl_major_id = m.major_id;
+```
+
+3가지 모두 같은 방법이며, inner join을 활용하는게 가독성 높아짐
+
+## inner join으로 3개의 테이블을 join 하는 예제
+
+이번에는 inner join으로 3개의 테이블을 join 하여 출력하는 예제를 함께 해보겠습니다.
+
+학생, 교수, 학과 테이블을 두고, 어떤 학생이 어떤 담당교수와 소속 학과가 어디인지 출력하는 SQL을 작성해보겠습니다.
+
+참고로, 하나와 하나의 테이블을 join 할 때 FK을 각각 테이블에 공통적으로 존재하는 키를 쓴다고 했는데, 그럼 3개를 join 할 때는 어떻게 Key를 연결해야 할지 헷갈리시는 분들이 많은데 아래 그림으로 설명하겠습니다.
+
+![스크린샷 2020-10-07 오후 12.34.40](https://tva1.sinaimg.cn/large/007S8ZIlgy1gjgm5s4t9yj311w0oaaco.jpg)
+
+예를 들어 **테이블 1과 테이블2를 조인할때 공통으로 들어있는 Key를 찾아 연결** 하고, **그것을 테이블 3과 join 한다고 생각**하면 쉽습니다. 테이블1 과 테이블2의 join 한 데이터를 하나의 테이블로 생각하고, 테이블3과 비교했을 때 공통의 키를 찾아서 다시 1:1 join을 하다고 생각하면 되는 것 이죠.
+
+그럼 다시 문제로 돌아가서, **학생, 교수, 학과 테이블을 한 번에 inner join을 하여 각 학생별 담당교수와 소속 학과까지 출력하는 SQL문 예제**를 보겠습니다.
+
+__mysql__
+
+```sql
+select s.name as 학생이름, 
+       p.name as 교수이름, 
+       m.major_title as 학과명 
+from kmong.student s, kmong.major m, kmong.professor p 
+where s.bl_prfs_id = p.prfs_id and p.bl_major_id = m.major_id;
+```
+
+__ansi sql__
+
+```sql
+select s.name as 학생이름,
+       p.name as 교수이름, 
+       m.major_title as 학과명 
+from kmong.student s 
+       inner join kmong.major m 
+       inner join kmong.professor p
+               on p.bl_major_id = m.major_id
+                   and s.bl_prfs_id = p.prfs_id ;
+```
+
+# 비등가 join with ansi SQL
+
+## 비등가 join의 정의
+
+비등가 join은 만약 **A, B 두 테이블을 join 할 때 값이 서로 같지는 않지만 join 조건에서 지정한 어느 범위에 일치할 때 서로 데이터를 join 해 주는 것을 이야기**합니다. 
+
+예를 들어서 어떤 마트에서 사은행사를 하는데, 그동안 쌓였던 포인트를 선물로 바꿔 준다고 합시다. **선물에는 각 5, 10, 15... 포인트가 매겨져 있으며, 예를 들어 8포인트를 가지고 있는 고객이 있다면 10포인트의 선물은 가져갈 수 없으니 5포인트의 선물과 매칭이 되어야 하는 상황**이 생길 겁니다. 이렇게 해서 각 고객이 받을 수 있는 선물이 무엇인지를 비등가 join을 이용해서 출력해 낼 수 있습니다.
+
+## 비등가 join 사용 예제
+
+우선, 이 join을 실습하기 위해서 테이블을 만들고, 데이터를 입력하겠습니다.
+
+```sql
+create table kmong.customer (
+        name varchar(10), 
+        point int
+)character set utf8; 
+create table kmong.gift (
+        name varchar(20) null, 
+        point_s int null, 
+        point_e int null 
+)character set utf8; 
+
+INSERT INTO kmong.customer (name, point) VALUES ('조성모', 5); 
+INSERT INTO kmong.customer (name, point) VALUES ('이기찬', 12); 
+INSERT INTO kmong.customer (name, point) VALUES ('이소라', 14); 
+INSERT INTO kmong.customer (name, point) VALUES ('서태지', 18); 
+INSERT INTO kmong.customer (name, point) VALUES ('박효신', 21); 
+INSERT INTO kmong.customer (name, point) VALUES ('김정민', 16); 
+INSERT INTO kmong.customer (name, point) VALUES ('양파', 9); 
+INSERT INTO kmong.customer (name, point) VALUES ('강수지', 22); 
+INSERT INTO kmong.customer (name, point) VALUES ('강타', 24); 
+INSERT INTO kmong.gift (name, point_s, point_e) VALUES ('공기청정기', 11, 15); 
+INSERT INTO kmong.gift (name, point_s, point_e) VALUES ('아이폰11', 21, 25); 
+INSERT INTO kmong.gift (name, point_s, point_e) VALUES ('로봇청소기', 6, 10); 
+INSERT INTO kmong.gift (name, point_s, point_e) VALUES ('상품권', 1, 5); 
+INSERT INTO kmong.gift (name, point_s, point_e) VALUES ('스마트패드', 16, 20);
+```
+
+데이터를 보시면 만약 이기찬이라는 고객은 포인트를 12포인트 가지고 있으니, 선물 테이블에서 11포인트 ~ 15포인트 사이인 로봇청소기를 사은품으로 가져갈 수 있을 겁니다. 그리고 강타라는 고객은 24포인트로, 가장 고가의 선물인 아이폰 11을 가져갈 수 있겠네요.
+
+이렇게 연결을 하여 출력을 하겠다는 의미입니다.
+
+## 비등가 join SQL 작성방법
+
+우선 위에서 설명한 SQL을 mysql SQL로 작성을 먼저 해보도록 하겠습니다.
+
+__mysql__
+
+```sql
+select c.name as 고객명, c.point as 고객_point, g.name as 상품명 
+from kmong.customer c , kmong.gift g 
+where c.point between g.point_s and g.point_e;
+```
+
+select, from 절까지는 이전에 했던 일반적인 inner join과 같지만 where 절을 보면 between, and 가 보이실 겁니다.
+
+gift 테이블의 point_s에서부터 point_e 사이에 customer 테이블의 값이 해당한다면 두 테이블을 join 하라는 의미입니다
+
+__ansi sql__
+
+```sql
+select c.name as 고객명, c.point as 고객_point, g.name as 상품명 
+from kmong.customer c 
+         join kmong.gift g 
+                 on c.point between g.point_s and g.point_e;
+```
+
+결과값은 다음과 같다
+
+![스크린샷 2020-10-07 오후 1.12.27](https://tva1.sinaimg.cn/large/007S8ZIlgy1gjgn94uzd4j30c40b0q4n.jpg)
+
+# outer join SQL
+
+## outer join의 정의
+
+조건과 매치 안되도 출력됨.
+
+outer join은 RDBMS에서 join을 할 때 inner join을 빼면 가장 많이 사용하는 join 기법입니다.
+
+inner join의 경우 A 와 B 두 테이블을 join 할시에 양쪽에 key값을 기준으로 모두 존재하는 데이터만 출력이 되지만, outer join은 한쪽을 기준으로 하여 다른 쪽에 key값이 일치하는 게 없더라도 모두 출력을 하는 join 기법입니다.
+
+outer join의 종류에는 left outer join, right outer join, full outer join이 있는데 mysql에서는 full outer join을 지원하지 않고 있습니다.
+
+![스크린샷 2020-10-07 오후 1.29.00](https://tva1.sinaimg.cn/large/007S8ZIlgy1gjgnqeh2z1j311m0k4qgt.jpg)
+
+(참고로, inner join은 정확히 where 에 쓰는 조건에 해당하는 것만 출력, 즉 조건이 not B or 범위로 잡혀있어도 조건에도 출력됨.)(그림과 정확히 같지는 않다)
+
+> mysql에서는 full outer join이 필요할 때는 union으로 우회적으로 사용할 수 있습니다.
+>
+> ```sql
+> ## full outer join 을 union all로 구현하기## select * 
+> from A full outer join B 
+> on A.a = B.b; 
+> 
+> select * 
+> from A left outer join B 
+> on A.a = B.b union 
+> 
+> select * 
+> from B left outer join A 
+> on A.a = B.b;
+> ```
+
+필요시에 꼭 써야 하는 outer join이지만 필요 없을 땐 쓰지 않아야 합니다. __outer join은 모든 데이터를 다 가지고 올 때 full scan을 하기 때문에 DB에 무리를 가할 수 있기 때문입니다.__
+
+outer join을 하기 테스트하기 위해서 기존 class.student 테이블에 일부 데이터를 좀 더 추가하겠습니다
+
+```sql
+INSERT INTO kmong.student (student_id, major_id, bl_prfs_id, name, tel) VALUES (1031, 9901, null, '신채령', '01044755564'); 
+INSERT INTO kmong.student (student_id, major_id, bl_prfs_id, name, tel) VALUES (1032, 9902, null, '이만도', '01022287777'); 
+INSERT INTO kmong.student (student_id, major_id, bl_prfs_id, name, tel) VALUES (1033, 9903, null, '박만호', '01099972253'); 
+INSERT INTO kmong.student (student_id, major_id, bl_prfs_id, name, tel) VALUES (1034, 9904, null, '최이강', '01029386577'); 
+INSERT INTO kmong.student (student_id, major_id, bl_prfs_id, name, tel) VALUES (1035, 9905, null, '강이민', '01033334444'); 
+INSERT INTO kmong.student (student_id, major_id, bl_prfs_id, name, tel) VALUES (1036, 9901, null, '민형도', '01099973331'); 
+INSERT INTO kmong.student (student_id, major_id, bl_prfs_id, name, tel) VALUES (1037, 9902, null, '도지란', '01055567774');
+```
+
+
+
+##  outer join 사용 예제
+
+먼저 inner join 써보자  null을 가진 데이터와 join되므로 row수가 줄어든다.
+
+```sql
+select s.name,
+       p.name
+from kmong.student s,kmong.professor p
+where s.bl_prfs_id = p.prfs_id;
+```
+
+## outer join SQL 작성방법
+
+mysql은 outer join의 경우 ANSI SQL 형태로 작성을 해야 합니다.
+
+__ansi sql__
+
+```sql
+select s.name, s.bl_prfs_id, p.name, p.prfs_id 
+from kmong.student s 
+        left outer join kmong.professor p 
+                on s.bl_prfs_id = p.prfs_id;
+```
+
+다음은 outer join 결과다. 
+
+![스크린샷 2020-10-07 오후 1.52.01](https://tva1.sinaimg.cn/large/007S8ZIlgy1gjgoearex5j30u011vh9s.jpg)
+
+파란색 상자 안의 두 칼럼은 student 테이블에서, 노란 상자 안의 두 컬럼은 professor 테이블에서 가지고 온 데이터를 student 테이블의 bl_prfs_id와 professor 테이블의 prfs_id 두 칼럼을 키로 연결하여 left outer join을 한 건데, 결과를 보시면 아시겠지만, 아래 30번째 행부터는 오른쪽 professor 테이블에 데이터가 없습니다.
+
+물론 좌측의 student 테이블에 더 bl_profs_id는 31번 하아부터 데이터가 null로 표시되어 있지만 students 테이블의 name 칼럼에는 데이터가 표시되고 있으니, 데이터가 있다고 봐야겠죠.
+
+"한지호"라는 학생은 bl_prfs_id에 값이 있지만, 연결이 되지 않아 professor 테이블 데이터가 null로 표시되어 있습니다. "한지호" 학생은 bl_prfs_id에 저장된 id 값이 교수 테이블에 존재하지 않는 것을 의미하고, 나머지 "신 채령"부터 "도지란" 까지는 아예 bl_prfs_id 값이 없기 때문에 professor 테이블과 연결이 되지 않은 것입니다.
+
+이렇게 연결되지 않은 데이터까지 left outer join을 이용해서 출력해낼 수 있습니다.
+
+righ outer join을 한다면, 교수진은 ` null`값이 존재하지 않으므로 전부 결과로 출력된다.
+
+# ub query 서브 쿼리
+
+서브 쿼리 (sub query) 란 SQL내에서 또 다른 select 절을 사용 하는 문법을 이야기합니다.
+
+![스크린샷 2020-10-07 오후 1.57.30](https://tva1.sinaimg.cn/large/007S8ZIlgy1gjgojzks7tj30ri07qabc.jpg)
+
+서브 쿼리를 사용해서 SQL에서 데이터를 폭넓게 사용할 수 있는 이점이 있습니다. 또한 복잡한 쿼리를 조금더 단순화 하여 사용 할 수 있는 장점이 있습니다.
+
+하지만, 조인을 이용해서 풀 수 있는 문제를 서브 쿼리를 이용해서 푼다면 SQL의 성능에 악영향을 미칠 수 있습니다. 그래서 서브 쿼리는 양날의 검처럼 조심히, 최대한 어쩔 수 없는 상황에서만 사용할 수 있도록 해야 합니다.
+
+
+
+https://stricky.tistory.com/265
+
+
+
