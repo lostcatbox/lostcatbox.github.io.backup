@@ -1746,8 +1746,245 @@ where a.major_id = b.major_id;
 
 스칼라 서브 쿼리와 인라인 뷰 예시와 같은 결과값 얻음.
 
+> 지금까지 배운것을 느낌으로 정리해본다면
+>
+> - select문에 있는 서브 쿼리(스칼라 서브쿼리)는 출력할 필드에 값을 매치시키는데 이것을 메인 from문에서  A테이블의 필드를 스칼라 서브쿼리의 (select...from B테이블...where) where문에서 활용하는 것이다. 단점이라면 스칼라 서브쿼리를 통해 얻어지는값은 반드시 단일행이여야한다. 
+>
+>   ```sql
+>   select name as 학생이름,
+>          (select major_title
+>           from kmong.major b
+>           where b.major_id=a.major_id) as 학과
+>   from kmong.student a;
+>   ```
+>
+> - from문에 있는 서브 쿼리(인라인 뷰)는 메인 쿼리에 select, from where문을 활용하는데 from에서 필요한 B테이블을 불러들여와 활용하는것이였다. B테이블 부분을 활용하는것? 할때? 필요한것이라고생각된다. B테이블을 불러들여올때 where조건을 주면 활용도가 높을것같다. 아래예시는 컴퓨터공학과와 아동보육학과의 major_title, major_id만 가져와활용한것이다.
+>
+>   ```sql
+>   select a.name as 학생이름,
+>          b.major_title as 학과명
+>   from kmong.`student` a, (select major_title, major_id from kmong.major where major_title in ("컴퓨터공학과","아동보육학과") ) b
+>   where a.major_id = b.major_id;
+>   ```
+>
+> - where문에 있는 서브 쿼리(흔히 서브 쿼리, 중첩는 비교적 자유롭게 활용이 가능해보였다. 단일행 결과와 복수행 결과 둘다 활용이 가능하기 때문이다. 단일행 결과는 비교연산자 활용이 가능했고, 복수행 결과는 in,not in,exist,not exist 활용이 가능하였다.
+
 # mysql insert 사용 방법
 
+## insert란 무엇인가?
+
+select문은 이미 있는 데이터를 원하는 형태와 양만큼 출력을 하도록 하는 명령어입니다. 반면 insert는 말 그대로 새로운 데이터를 넣는 명령어입니다.
+
+기존에 없는 row, 튜플을 원하는 테이블에 데이터를 입력하는 것이죠. select는 여러 테이블을 조인해와서 출력을 할 수 있지만, insert는 그렇지 않습니다. 한 번에 하나의 테이블에만 데이터를 넣을 수 있어요. Database에 데이터를 넣는 행위, 그것이 바로 insert입니다. 물론 insert 말고도 Database에 데이터를 넣는 방법은 있습니다만, 가장 보편적이고, 일반적인 의미를 말씀드리는 겁니다.
+
+## insert를 하는 다양한 방법
+
+먼저 insert문을 테스트할 테이블을 하나 생성하도록 한다.
+
+```sql
+create table kmong.insert_test 
+( 
+        seq int(10) primary key , 
+        cont text, name varchar(15), 
+        tel_num int(11), 
+        input_date datetime 
+)character set utf8;
+```
+
+### 단일행 입력하기 (칼럼 미지정)
+
+`insert into [테이블명] values ([seq],[cont],[name],[tel_num],[input_date]);`
+
+데이터 insert를 할 때 insert 대상 테이블의 칼럼을 지정하지 않고 데이터를 insert 하는 방법입니다.
+
+```sql
+insert into kmong.insert_test values (1,'대한민국은 코로나를 잘 극복 하고 있습니다.', '홍길동', 01012345678, now());
+```
+
+위와 같이 입력을 하고 데이터가 잘 들어갔는지 select를 해보겠습니다.
+
+```sql
+select * from kmong.insert_test;
+```
+
+해당 table에 필드 순서에 맞춰서 value들이 들어갔습니다.
+
+**[테이블명]**에 class_insert_test라고 우리가 위에서 만든 테이블 명이 들어가 있습니다. insert를 하는 대상 테이블 명을 넣어주시면 됩니다.
+
+**[칼럼명]** 에서 특이한 것은 int나 float 등 숫자로 정의되어 있는 칼럼에 데이터를 넣을 때는 " ' "로 감싸지 않고 넣어도 되고(감싸서 넣어도 됩니다), text, varchar등 문자로 정의된 컬럼에 데이터를 넣을때는 " ' "로 데이터 양쪽을 감싸서 넣어야 하기 때문입니다.
+
+마지막 데이터 타입에 데이터를 넣을 때 위 커맨드에서는 " now() "라고 입력이 되어 있는데, 이것은 커맨드를 실행하는 시점의 시간을 넣으라는 의미입니다. " now() " 대신 " sysdate() "를 사용하셔도 되고, 어떤 지정된 날짜 및 시간을 넣고 싶으시면 \<date_format('20200201', '% y% m% d')\>이런 식으로 하면 된다.
+
+### 단일행 입력하기 (칼럼 지정)
+
+```sql
+insert into kmong.insert_test (seq, cont, name, tel_num, input_date) values (8,'대한민국은 코로나를 잘 극복 하고 있습니다.', '홍길동', 01012345678, now());
+```
+
+위 방법대로 하면 일부의 데이터만 넣을 수도 있습니다.(입력하지 않는  <null> 값으로 출력된다.)
+
+아래 커맨드를 보시겠습니다.
+
+```sql
+insert into kmong.insert_test (seq, cont, input_date) values (10,'대한민국은 코로나를 잘 극복 하고 있습니다.', now());
+```
+
+위와 같이 class.insert_test 테이블에 있는 seq, cont, name, tel_num, input_date 칼럼 중에 seq, cont, input_date칼럼에만 데이터를 넣는 커맨드입니다.
+
+### 복수행 입력하기
+
+하나의 insert 문으로 여러 행의 데이터를 입력하는 방법에 관해서 알아보겠습니다.
+
+아래 insert SQL문을 보시겠습니다
+
+```sql
+insert into kmong.insert_test values (13, '대한민국은 코로나를 잘 극복 하고 있습니다.', '홍길동', 01012345678, now()), (14, '대한민국은 코로나를 잘 극복 하고 있습니다.', '홍길동', 01012345678, now()), (15, '대한민국은 코로나를 잘 극복 하고 있습니다.', '홍길동', 01012345678, now()), (16, '대한민국은 코로나를 잘 극복 하고 있습니다.', '홍길동', 01012345678, now()), (17, '대한민국은 코로나를 잘 극복 하고 있습니다.', '홍길동', 01012345678, now());
+```
+
+### insert select 문 활용하기
+
+select 한 결과를 바로 insert문을 이용해서 데이터 입력을 하는 방법
+
+위 실습을 하기 위해서 하나의 테이블을 더 만들어 줍니다.
+
+```sql
+create table kmong.insert_test2 as select * from kmong.insert_test where 1=2;
+```
+
+위 커맨드는 생소하겠지만, 추후 차차 배울 내용 중 하나입니다. 간단하게 설명을 드리자면 우리가 실습을 하고 있던 kmong.insert_test 테이블과 똑같은 모습으로 kmong.insert_test2라는 테이블을 생성을 하는데, 마지막에 "where 1=2"가 보이실 겁니다. 여기에 "1=2"라고 조건을 넣어주면 데이터는 옮기지 않고 모양만 똑같이 만든다고 보시면 되고, "1=1"이라고 조건을 주거나 where절 자체를 안 넣으면 kmong.insert_test 테이블 안에 있는 데이터까지 kmong.insert_test2로 옮기겠다는 뜻이 됩니다.
+
+그리고 kmong.insert_test2에 아래와 같이 데이터를 일부 넣어 줍니다.
+
+```sql
+insert into kmong.insert_test2 values (21, '대한민국은 코로나를 잘 극복 하고 있습니다.', '홍길동', 01012345678, now()), (22, '대한민국은 코로나를 잘 극복 하고 있습니다.', '홍길동', 01012345678, now()), (23, '대한민국은 코로나를 잘 극복 하고 있습니다.', '홍길동', 01012345678, now()), (24, '대한민국은 코로나를 잘 극복 하고 있습니다.', '홍길동', 01012345678, now()), (25, '대한민국은 코로나를 잘 극복 하고 있습니다.', '홍길동', 01012345678, now()) ;
+```
+
+이렇게 하고, kmong.insert_test와 kmong.insert_test2 데이터를 확인합니다.
+
+__※class.insert_test의 데이터는 위 실습 내용과 달리 데이터가 더 들어 있을 겁니다. 제가 포스팅 작성하면서 더 실행을 해서 그렇습니다. 양해 바랍니다.__
+
+그럼, insert select 문을 활용해서 kmong.insert\_test2에 있는 5건의 데이터를 kmong.insert\_test로 입력해 보도록 하겠습니다.
+
+```sql
+insert into kmong.insert_test select * from kmong.insert_test2;
+```
+
+잘 옮겨준 것을 확인하자
+
+# mysql update sql 독학 강의
+
+## update란 무엇인가?
+
+insert는 DB에 row를 삽입, 즉 새로운 값을 넣는 행위를 말합니다. 어떤 테이블에 데이터가 22건이었다면 insert로 1 row를 추가한다면 그 테이블의 데이터가 23건이 됩니다. 
+
+update란 기존 데이터의 row 수는 변하지 않지만 row 내 특정 칼럼의 값이 바뀌는 작업을 말하는 겁니다.위 그림을 다시 보시면 2번 테이블 그림의 빨간 박스 안의 내용 중 name 칼럼에 "홍길동"이라는 값이 있습니다. 이 값을 "손흥민"으로 변경시켜 보겠습니다. 이렇게 값을 변경하는 행위, 명령을 update라고 합니다.
+
+## 기본 update문 사용방법
+
+`update <테이블명> set <컬럼명> = '손흥민' where <키값> = 26;`
+
+위에서 말한 대로 2번 테이블 그림의 빨간 박스 안의 내용 중 name 칼럼 값을 "홍길동"에서 "손흥민"으로 변경해보도록 하겠습니다.
+
+```sql
+update kmong.insert_test set name = '손흥민' where seq = 26;
+```
+
+> ```sql
+> update kmong.insert_test set name = '손흥민' #이것만 실행하면 name필드에 모든 값이 손흥민으로 바뀜, 조건문없앰
+> ```
+
+위 update 명령어를 보면 update 뒤에 업데이트 대상 <테이블명>을 쓰고, set이라는 명령어를 쓴 뒤에 변경할 <칼럼명>을 입력하고, = "변경할 값"을 입력해줍니다. 위 명령에서는 '손흥민'이라고 입력을 했습니다.
+
+그리고 where절이 조건절인데, 어느 행의 name값을 바꿀 건지를 입력하는 것입니다. 위 테이블의 Primary key 값이 들어 있는 칼럼은 seq 이기 때문에 seq가 26인 row의 name값을 '손흥민'으로 변경하라는 명령어가 완성되는 것입니다.
+
+```sql
+update kmong.insert_test set name = '박찬호' where seq in (11,12,13,14,15);
+```
+
+위 update 문은 seq가 11,12,13,14,15에 해당하는 row의 name 칼럼 값을 "박찬호"라고 변경하라는 의미입니다.
+
+## 2개 이상의 칼럼 값을 변경하는 update문 사용방법
+
+이번에는 같은 테이블의 cont와 name을 한꺼번에 update, 즉 변경하는 방법을 알아보겠습니다.
+
+```sql
+update kmong.insert_test set name = '전우치', cont = '여러분들 덕분입니다!' where seq in (11,12,13,14,15);
+```
+
+결과확인하면 동시에 name, cont값들 변경된것 확인가능
+
+# mysql delete sql
+
+## delete란 무엇인가?
+
+delete는 말 그대로 테이블에서 데이터를 삭제할 때 사용하는 DML 명령어입니다.
+
+앞서 공부했던 select, insert, update 모두 중요하지만 delete 역시 데이터베이스를 관리하는 데 있어서 꼭 필요한 명령어입니다.
+
+```sql
+delete from kmong.insert_test where seq = 10;
+```
+
+seq이 PK값이므로 하나만 삭제됨.
+
+## 기본 delete문 사용방법
+
+`delete from <테이블명> where <조건문> and <추가조건>...`
+
+이번에는 위 테이블에서 seq가 6보다 큰 7,8,9번, 3건의 데이터를 삭제하는 delete DML문을 작성해보도록 하겠습니다.
+
+```sql
+delete from kmong.insert_test where seq > 6;
+```
+
+## 테이블내 모든 데이터를 삭제하는 delete 문
+
+kmong.insert_test2 테이블내 데이터를 모두 삭제해보도록 하겠습니다.
+
+크게 두 가지 방법이 있습니다. 결과는 같습니다.
+
+```sql
+delete from kmong.insert_test2; 
+delete from kmong.insert_test2 where 1=1;
+```
+
+간단하죠? where절에 1=1이라고 쓴 거는 모든 조건을 참으로 인식하겠다는 겁니다.
+
+모든 데이터를 다 삭제하겠다는 의미인 것 이죠. select 문에서도 사용이 가능합니다.
+
+select로 class.insert_test2 테이블 데이터 모두 지워진것 확인가능
+
+그럼 만약 아래와 같이 SQL을 실행하면 어떻게 될까요?
+
+```sql
+delete from kmong.insert_test2 where 1=2;
+```
+
+where절에 1=2라고 입력을 했는데, 1은 2가 아니기 때문에 아무 데이터도 삭제가 되지 않습니다.
+
+참고하시기 바랍니다.
+
+## select 한 결과로 delete 하는 방법
+
+어떤 다른 테이블을 select 하여 조건을 불러와 또 다른 테이블의 데이터를 삭제할 수도 있습니다.
+
+먼저 가정은 kmong.insert_test에는 seq값이 1,2,3,4,5,6 있다고 가정하며, kmong.insert_test2에는  seq값이 4,5,6있다고 가정하자
+
+kmong.insert_test2 테이블에 있는 seq가 4,5,6인 데이터를 kmong.insert_test 테이블에서 삭제를 하는 delete 문을 작성해보겠습니다.
+
+```sql
+delete from kmong.insert_test where seq in (select seq from kmong.insert_test2);
+```
+
+위 SQL을 잠시 해설해드리자면, where 절에 있는 "where seq in (select seq from kmong.insert_test2" 구문을 잘 보시면 됩니다. kmong.insert_test2 테이블에는 seq가 4,5,6만 존재하기 때문에 kmong.insert_test 테이블에서 seq가 4,5,6인 것만 삭제가 되고, 나머지 1,2,3만 남은 상태가 되는 것이며, 확인하자.
 
 
-https://stricky.tistory.com/268
+
+# insert into on duplicate key MySQL merge
+
+
+
+https://stricky.tistory.com/286
+
+
+
