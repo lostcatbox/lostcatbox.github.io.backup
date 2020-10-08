@@ -1746,8 +1746,8 @@ where a.major_id = b.major_id;
 
 스칼라 서브 쿼리와 인라인 뷰 예시와 같은 결과값 얻음.
 
-
-
 # mysql insert 사용 방법
+
+
 
 https://stricky.tistory.com/268
