@@ -1982,9 +1982,121 @@ delete from kmong.insert_test where seq in (select seq from kmong.insert_test2);
 
 # insert into on duplicate key MySQL merge
 
+oracle에서는 merge문으로 부르지만, mysql에서는 해당 구문을 다른 방식으로 실행해야 합니다
+
+##  insert into on duplicate key 문이란?
+
+insert into on duplicate key란, 위에서도 말씀드렸다시피 **oracle에서의 merge문과 같은 기능**을 가지고 있습니다.
+
+merge는 key와 칼럼의 값을 입력한다.
+
+__어떤 데이터를 입력을 하는데, 대상 테이블에 해당 키에 해당하는 데이터가 없으면 insert문을 실행하여 입력__을 하고, __해당 키가 이미 대상 테이블에 있는 경우에는 칼럼의 값을 update 하여 값을 경신하겠다는 의미입니다.__
+
+![스크린샷 2020-10-09 오전 11.09.55](https://tva1.sinaimg.cn/large/007S8ZIlgy1gjiuy9tlcnj30zq0j8dna.jpg)
+
+이런 경우에 insert into on duplicate key로 입력을 하게 되면 case 1의 경우에서는 **<"6", "대한민국"> 데이터가 insert**가 되고, **case 2의 경우에는 이미 입력대상 테이블에 key값인 3이 있기 때문에 3에 "대한민국" 데이터가 update** 되게 됩니다.
 
 
-https://stricky.tistory.com/286
+
+## 테스트용 데이터 입력
+
+```sql
+create table kmong.insert_test ( 
+    seq int(10) not null primary key, 
+    cont text null, 
+    name varchar(15) null, 
+    tel_num int null, 
+    input_date datetime null 
+) character set utf8; 
+INSERT INTO kmong.insert_test (seq, cont, name, tel_num, input_date) VALUES (1, '대한민국은 코로나를 잘 극복 하고 있습니다.', '홍길동', 1012345678, '2020-05-15 14:35:10'); 
+INSERT INTO kmong.insert_test (seq, cont, name, tel_num, input_date) VALUES (2, '대한민국은 코로나를 잘 극복 하고 있습니다.', '홍길동', 1012345678, '2020-05-15 14:35:10');
+INSERT INTO kmong.insert_test (seq, cont, name, tel_num, input_date) VALUES (3, '대한민국은 코로나를 잘 극복 하고 있습니다.', '홍길동', 1012345678, '2020-05-15 14:35:10');
+INSERT INTO kmong.insert_test (seq, cont, name, tel_num, input_date) VALUES (4, '대한민국은 코로나를 잘 극복 하고 있습니다.', '홍길동', 1012345678, '2020-05-15 14:35:10'); 
+INSERT INTO kmong.insert_test (seq, cont, name, tel_num, input_date) VALUES (5, '대한민국은 코로나를 잘 극복 하고 있습니다.', '홍길동', 1012345678, '2020-05-15 14:35:10'); 
+
+
+create table kmong.insert_test2 ( 
+    seq int(10) not null, 
+    cont text null, 
+    name varchar(15) null, 
+    tel_num int null, 
+    input_date datetime null 
+) character set utf8; 
+INSERT INTO kmong.insert_test2 (seq, cont, name, tel_num, input_date) VALUES (4, '사회적 거리두기를 잘 실천 합시다!', '손흥민', 1012345678, '2020-02-01 12:32:22'); 
+INSERT INTO kmong.insert_test2 (seq, cont, name, tel_num, input_date) VALUES (5, '사회적 거리두기를 잘 실천 합시다!', '손흥민', 1012345678, '2020-02-01 12:32:22'); 
+INSERT INTO kmong.insert_test2 (seq, cont, name, tel_num, input_date) VALUES (6, '사회적 거리두기를 잘 실천 합시다!', '손흥민', 1012345678, '2020-02-01 12:32:22'); 
+INSERT INTO kmong.insert_test2 (seq, cont, name, tel_num, input_date) VALUES (7, '사회적 거리두기를 잘 실천 합시다!', '손흥민', 1012345678, '2020-02-01 12:32:22');
+```
+
+
+
+테이블 출력으로 확인하고 이젠 insert into on duplicate key 구문을 이용해서 \<insert_test2\>의 데이터를 \<insert_test\>으로 insert 하도록 하겠습니다. 
+
+`insert into on duplicate key` SQL문을 작성하고 실행하기 전에 미리 결과를 예상해보면, \<insert_test\> 테이블의 key 칼럼은 seq입니다. <insert_test2>에는 seq 칼럼에 4,5,6,7 값이 존재하는데 \<insert_test\> 테이블의 seq에는 1,2,3,4,5의 데이터가 있습니다.
+
+즉 \<insert_test2\>에서 __seq값이 4,5인 것은 \<insert_test\> 테이블로 `insert into on duplicate key` 될 때 insert가 아니라 update__가 될 것이며,__\<insert_test\> 테이블에 없는 seq값인 6,7은 insert__ 될 것으로 예상됩니다.
+
+만약 on duplicate key 문을 쓰지 않을경우 key값이 곂칠때 (`Duplicate entry '4' for key 'PRIMARY'`)오류가 뜨므로 꼭써줘야함. (key값이 겹치지 않는 insert 문이면 그냥 바로 되겠지!)
+
+## insert into on duplicate key 문 사용 예제
+
+```sql
+insert into kmong.insert_test 
+select * 
+from kmong.insert_test2 b
+on duplicate key update cont = b.cont,
+                        name = b.name,
+                        tel_num = b.tel_num,
+                        input_date = now();
+```
+
+간단하게 예제에 쓰인 문장을 해설해드리면, 우선 기본적으로 <insert_test> 테이블에 <insert_test2> 테이블의 데이터를 select 해서 넣는 구문입니다. 4번째 줄을 보면 on duplicate key update문이 있습니다. 이 구문의 뜻은 만약 key가 on duplicate 즉, 중복된다면 update 하라는 의미입니다. 무엇을 update 하느냐, 바로 뒤에 따라오는 내용들이 update 됩니다.
+
+```sql
+cont = b.cont,
+name = b.name,
+tel_num = b.tel_num,
+input_date = now();
+```
+
+\<insert_test\> 테이블의 cont 칼럼에 b.cont, 즉 \<insert_test2\> 테이블의 cont값을 update 하라는 의미가 되는 거죠, 나머지 name, tel_num, input_date 역시 마찬가지로 update 하게 됩니다.
+
+## insert into on duplicate key 문 사용 예제 2
+
+이번에는 insert into on duplicate key 문에 위와 같이 select 문을 사용하는 것이 아니라, 데이터를 넣는 경우의 예제를 작성해보겠습니다.
+
+```sql
+insert into kmong.insert_test values (8,'사회적 거리두기를 실천 합시다.', '손흥민', 1012345678, now()) 
+on duplicate key update cont = '사회적 거리두기를 실천 합시다.', 
+                        name = '손흥민', 
+                        tel_num = 00000000, 
+                        input_date = now();
+```
+
+위와 같이 insert into on duplicate key 문을 실행하게 되면 어떻게 될까요? key값인 seq칼럼의 데이터가 8입니다. 지금 시점에서 <insert_test> 테이블에는 seq가 8인 데이터가 없기 때문에 insert가 됩니다
+
+하지만 위에 코드를 한번더 쿼리를 보낸다면, seq=8의 손흥민 tel_num는 00000000으로 바뀐다.  duplicate key 였기때문이다.
+
+# MySQL DDL문 완전정복
+
+DBMS를 사용하고 관리를 하는 데 있어서 가장 중요한 것이 DDL문이라고도 할 수 있습니다.
+
+## DDL 문이란?
+
+우선 DDL 문장이 무엇이냐? 
+
+DB내에는 많은 오브젝트들이 있습니다. 이런 오브젝트들을 생성하고 변경하고 관리하는 문이 바로 DDL문입니다.
+
+DDL (Data Definition Language)에는 여러 가지가 있습니다.
+
+| **DDL 명령어** | **정의**                                                     |
+| -------------- | ------------------------------------------------------------ |
+| **CREATE**     | 새로운 오브젝트나 스키마등을 생성 할 때 사용하는 명령어      |
+| **ALTER**      | 이미 만들어져 있는 오브젝트의 내용을 변경 할 때 사용하는 명령어 |
+| **TRUNCATE**   | 테이블의 데이터를 전부 삭제하고 테이블이 차지하고 있던 공간을 반납 하는 명령어 |
+| **DROP**       | 테이블 자체를 삭제하는 명령어 입니다. 테이블을 비롯하여 인덱스도 함께 삭제 |
+
+그럼, 위 4개의 DDL 명령어에 대해서 하나씩 알아보도록 하겠습니다.
 
 
 
