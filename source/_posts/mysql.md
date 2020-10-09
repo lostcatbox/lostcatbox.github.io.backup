@@ -2098,5 +2098,494 @@ DDL (Data Definition Language)에는 여러 가지가 있습니다.
 
 그럼, 위 4개의 DDL 명령어에 대해서 하나씩 알아보도록 하겠습니다.
 
+## CREATE 문
+
+CREATE 문으로 대부분의 MySQL 오브젝트들을 생성할 수 있습니다.
+
+Table, Prodedule, Function, Index, User 등등.. 
+
+모든 오브젝트들에 대한 CREATE 문을 다 소개해드릴 순 없기 때문에 이 중에서 Table과 user를 생성하는 CREATE 문의 예제로 설명을 드리도록 하겠습니다.
+
+### CREATE TABLE
+
+```sql
+create table kmong.com_com_c ( 
+    CD_NM varchar(100) not null comment '코드명', 
+    KOR_CD_NM varchar(100) not null comment '한글코드명', 
+    COM_CD_TYP_CD varchar(3) not null comment '공통코드유형코드', 
+    UPR_CD_NM varchar(100) null comment '상위코드명', 
+    CD_TBL_NM varchar(100) null comment '코드테이블명', 
+    USE_YN varchar(1) not null comment '사용여부', 
+    RGST_DTM datetime not null comment '등록일시', 
+    RGSTR_ID varchar(30) not null comment '등록자ID', 
+    UPD_DTM datetime not null comment '수정일시', 
+    UPDR_ID varchar(30) not null comment '수정자ID', 
+    UPD_PRGM_ID varchar(50) not null comment '수정프로그램ID',
+    primary key (CD_NM)
+) comment '공통-공통코드 ' engine = InnoDB character set utf8;
+```
+
+위에서 예로 든 것은 공통 코드 테이블의 만드는 CREATE TABLE DDL 문입니다.
+
+우선 "create table..."으로 시작을 하고 "스키마명. 테이블명"을 써줍니다. 위 예제를 들어 설명을 하면 "test"라는 스키마에 "com_com_c"라는 테이블을 생성하겠다는 의미 이죠.
+
+그리고 "("를 열고 테이블 내 생성할 칼럼을 하나씩 써줍니다. 여기에서 가장 좌측에 "CD_NM, KOR_CD_NM" 등을 컬럼명이라고 하고 그 다음에 나오는 "varchar(100)"을 데이터타입이라고 부릅니다.
+
+이 두 내용을 필수적으로 들어가야 하는 내용입니다. 풀어서 설명하면 CD_NM이라는 칼럼을 만드는데 varchar타입의 문자열을 저장 할 수 있게끔 컬럼을 만들고 그 길이는 100byte로 하겠다는 의미 입니다. 그 뒤에 나오는것들은 안써도 되지만 좀 더 디테일한 컬럼 정보를 지정해줄 수 있습니다.
+
+뒤에 따라오는 "not null"이란 것은 이 칼럼은 null이 들어올 수 없다, 즉, 어떤 값이라도 꼭 있어야 한다는 의미입니다. 이렇게 테이블을 만들고 나서 insert 문을 통해서 해당 칼럼에 어떤 값도 넣지 않으면 insert시 에러가 나게 됩니다.
+
+반대로 not null이 아니라 null이라고 써두면 null을 허용한다는 의미가 되겠죠.
+
+그리고 마지막에 "comment '코드명'"이라고 되어 있는데, 이건 "CD_NM"에 '코드명'이라고 코멘트를 붙이겠다는 의미입니다. 이것을 논리 칼럼명이라고 할 수도 있고, column description 이라고도 표현할 수 있겠습니다.
+
+ 그리고 쭉~ 아래로 내려오면 ")" 괄호가 닫히기 전 바로 윗줄에 "primary key (CD_NM)"이라는 부분이 있습니다. "test.com_com_c" 테이블의 PK(Primary Key) 칼럼을 "CD_NM"으로 하겠다는 의미입니다.
+
+만약 두 개 이상 복수의 칼럼을 PK로 설정을 하고 싶다면 "primary key (CD_NM, other_column, the_other_column)" 이런 식으로 ", "로 구분하여 나열하면 됩니다.__단, PK로 설정하는 칼럼은 위에서 "not null"로 정의되어야 합니다.__
+
+이젠 ")" 괄호 밖으로 나와서 "comment '공통_공통 코드'"라고 되어 있는 구문을 보실 수 있으실 텐데, 이는 테이블의 논리명, 또는 코멘트를 이야기하는 것입니다. 
+
+마지막으로 "engine = InnoDB"이라는 것을 볼 수 있습니다. 이 구문은 MySQL에는 두 가지 테이블 스토리지 엔진이 존재하는데, "InnoDB"와 "MyISAM"이 그것입니다. 어떤 스토리지 엔진으로 테이블 데이터를 저장하겠느냐를 선택하는 것입니다. 이를 CREATE TABLE DDL 실행 시에 명시하지 않으면 첫 번째 스키마 내 초기 설정 스토리지 엔진 값, 두 번째 해당 MySQL의 초기 설정 스토리지 엔진 값으로 생성이 됩니다. 두 스토리지 엔진의 차이점에 대해서는 추후 다시 포스팅을 하도록 하겠습니다. 우선 이렇게 간단하게 테이블 생성문에 대해서 설명을 드렸습니다.
+
+## CREATE USER
+
+mariadb, mysql 에서 사용 할 수 있는 DB 계정별 권한 확인, 적용, 부여 안내드리도록 하겠습니다.
+
+```sql
+use mysql;    #mysql기본 DB로 이동후
+select host, user from user; #계정 목록을 조회
+```
+
+__계정 생성 방법__
+
+```sql
+create user 'user'@'127.0.0.1' identified by 'Password'; # localhost에서만 접속 허용 
+create user 'user'@'%' identified by 'Password'; # everywhere 접속 허용
+```
+
+__유저별 권한 부여__
+
+```sql
+grant all privileges on TableName.* to 'user'@'127.0.0.1'; 
+#localhost에서만 허용
+
+grant select on testDB.* to 'user'@'%';
+#everywhere 허용
+```
+
+> 참고로 모든 DB.table에 권한을 주고 싶다면 `*.*`를 써주면 된다.
+
+__유저별 권한 확인__
+
+```sql
+show grants for 'user'@'접속위치';
+```
+
+__유저별 권한 회수__
+
+```sql
+revoke all on db_name.table_name FROM 'user'@'접속위치'; 
+```
+
+__계정 삭제__
+
+```sql
+drop user 'user'@'접속위치';
+```
+
+##  ALTER 문
+
+ALTER 문 역시 ALTER 문을 통해서 MySQL DB 내 다양한 오브젝트들을 수정 및 변경할 수 있으나, 분량.. 관계상 테이블 내 칼럼들의 다양한 수정 및 변경 예문으로 대신하겠습니다.
+
+우선 다양한 ALTER 문의 예제를 보겠습니다.
+
+```sql
+# not null 옵션의 컬럼을 null로 변경 
+alter table kmong.gift modify createdAt datetime default current_timestamp() null;
+
+# sendType 컬럼명을 sendType2으로 변경 
+alter table kmong.gift change sendType sendType2 varchar(4) not null; 
+
+# 컬럼 코멘트를 변경 
+alter table kmong.gift modify fee decimal(20,8) null comment '컬럼코멘트'; 
+
+# 신규 컬럼을 추가 하는데, fee 컬럼 뒤로 위치 
+alter table kmong.gift add column_8 int null after fee; 
+
+#receive 컬럼의 데이터 타입을 변경 
+alter table kmong.gift modify receive int not null;
+```
+
+칼럼명을 바꿀수도 있고, 컬럼의 데이터타입을 변경할 수도 있으며, 컬럼 코멘트를 변경 할 수 있습니다. 그리고 신규 칼럼을 추가하거나 삭제할 때도 ALTER문이 사용됩니다.
+
+## TRUNCATE 문
+
+TRUNCATE 문은 테이블의 데이터 삭제와 함께 __해당 테이블이 쓰고 있던 디스크 공간을 반납__하게 됩니다. __TRUNCATE문 자체가 테이블을 DROP 했다가 다시 CREATE 하기 때문입니다. 이점이 delete와 가장 다른 점입니다.__
+
+전체 삭제할때만 쓰이며 복구불가능, 전체 drop후 다시 create라서 용량 줄어듬
+
+```sql
+truncate table kmong.gift; #전체 해당 테이블 데이터 삭제됨
+delete from kmong.gift;  #전체 해당 테이블 데이터 삭제됨
+```
+
+그리고 MySQL에서는 ORACLE과 달라 TRUNCATE시 인덱스가 DROP 되지 않습니다. 또, 기존에 AUTO_INCREMENT로 지정하여 값이 증가하던 칼럼이 초기화됩니다. 기본적으로 TRUNCATE 사용 시 주의할 점은 DELETE보다 전체 데이터를 삭제할 때는 더 빠르나 이후 데이터 복구가 불가능하다는 단점이 있습니다.
+
+## DROP 문
+
+DROP 문은 테이블 및 기타 MySQL 오브젝트들을 삭제하는 명령어입니다. 만약 이 명령어를 통해서 테이블을 삭제한다면 해당 테이블의 row들은 물론 생성되어 있던 인덱스와 함께 저장공간까지 모두 반납되게 됩니다.
+
+ 
+
+DROP 문의 사용 예제를 보시겠습니다.
+
+```sql
+drop table kmong.gift;
+```
+
+이 DDL명령을 실행하고 나면 테이블이 삭제됩니다.
+
+그러면 안 되겠지만, MySQL에서는 실수로 테이블을 DROP 했을 때는 BINLOG파일을 이용해서 해당 데이터를 살릴 수도 있습니다.
+
+자세한 내용은 추후 포스팅으로 찾아뵙겠습니다.
+
+DDL문은 항상 신중하# 게 두 번 세 번 확인 후 실행하는 습관을 들이셔야 합니다.
+
+# MySQL data dictionary
+
+> __뷰(View)?__ [자세히](https://coding-factory.tistory.com/224)
+>
+> **1.** 뷰는 사용자에게 접근이 허용된 자료만을 제한적으로 보여주기 위해 하나 이상의 기본 테이블로부터 유도된, 이름을 가지는 가상 테이블이다.
+>
+> **2.** 뷰는 저장장치 내에 물리적으로 존재하지 않지만 사용자에게 있는 것처럼 간주된다.
+>
+> **3.** 뷰는 데이터 보정작업, 처리과정 시험 등 임시적인 작업을 위한 용도로 활용된다.
+>
+> **4.** 뷰는 조인문의 사용 최소화로 사용상의 편의성을 최대화 한다.
+>
+> **뷰(View)사용시 장 단점** 
+>
+> **장점**
+>
+> **1.** 논리적 데이터 독립성을 제공한다.
+>
+> **2.** 동일 데이터에 대해 동시에 여러사용자의 상이한 응용이나 요구를 지원해 준다.
+>
+> **3.** 사용자의 데이터관리를 간단하게 해준다.
+>
+> **4.** 접근 제어를 통한 자동 보안이 제공된다.
+>
+> 
+>
+> **단점**
+>
+> **1.** 독립적인 인덱스를 가질 수 없다.
+>
+> **2.** ALTER VIEW문을 사용할 수 없다. 즉 뷰의 정의를 변경할 수 없다.
+>
+> **3.** 뷰로 구성된 내용에 대한 삽입, 삭제, 갱신, 연산에 제약이 따른다.
+
+## Data Dictionary 란?
+
+Data Dictionary란 무엇일까요? 우리말로는 데이터 사전이라고 하는데, Database에서 Data Dictionary란 지도가 될 수도 있고요, 목차가 될 수도 있구요, 요약 정보가 될 수도 있구요, 그냥 한마디로 하자면 MySQL Server내에 있는 데이터베이스 개체에 관한 정보가 모두 모아져 있는 곳입니다.
+
+이 DB에 어떤 user가 생성되어 있는지, 어떤 스키마(데이터베이스), 테이블, 테이블에는 어떤 칼럼이 있고, 테이블 별로 데이터가 얼마나 있는지, 다른 오브젝트들이 어떻게 어떤 스키마에 종속되어 있는지 기타 등등 유저가 입력하는 데이터를 제외한 모든 정보가 들어 있는 것이라고 생각하면 됩니다.
+
+MySQL에 있는 Data Dictionary는 크게 4가지가 있습니다. 
+
+__information_schema와 mysql, sys,performance_schema__
+
+performance_schema 는 데이터베이스내 성능 지표를 호가인 할 수 있는 스키마 입니다. 이는 MySQL 소스 코드 곳곳에 심어져 있는 instruments를 통해서 수집되고 있습니다.
+
+sys의 경우 역시 MySQL 5.7 버전부터 기본 제공되며, 이전 버전에서는 추가 설치로 사용하실 수 있습니다.
+
+여기는 어떻게 보면 개발자나 사용자 입장에서 위 두 스키마는 자주 사용하는 스키마는 아니기에 이번 포스팅에서는 자세한 설명은 생략하고, __information_schema와 mysql에 관해서 설명을 이어가도록 하겠습니다.__
+
+## information_schema
+
+위에서도 언급했다시피 information_schema는 Data Dictionary 또는 System Catalog라고도 합니다.
+
+여기에 있는 테이블 목록은 아래와 같습니다.
+
+```sql
+select TABLE_SCHEMA, TABLE_NAME from information_schema.TABLES where TABLE_SCHEMA = 'information_schema';
+```
+
+조회되는 모든 system view에 관해서 알필요는 없습니다
+
+여기에서 자주 쓰는 몇 가지 system view에 관해서 설명을 드리겠습니다
+
+### information_schema.SCHEMATA
+
+MySQL 내부에 있는 스키마(데이터베이스) 목록을 볼 수 있고, 스키마 별 캐릭터 셋을 확인할 수 있습니다.
+
+```sql
+select * from information_schema.SCHEMATA;
+```
+
+### information_schema.TABLES
+
+MySQL 내부에 생성되어 있는 SYSTEM VIEW 및 테이블에 관련된 정보를 볼 수 있습니다. 
+
+생성일자, 수정 일자, 테이블 로우수, 테이블 코멘트, 테이블 스토리지 엔진 타입 등의 정보를 한눈에 확인 가능합니다.
+
+```sql
+select * from information_schema.TABLES
+```
+
+###  information_schema.COLUMNS
+
+MySQL 내부에 생성되어 있는 칼럼 정보를 확인할 수 있습니다.
+
+칼럼명, 초기입력값, 컬럼순서, 데이터타입, 데이터 길이, 컬럼 코멘트 등 칼럼에 관련된 대부분의 정보를 여기서 확인할 수 있습니다.
+
+```sql
+select * from information_schema.COLUMNS;
+```
+
+###  information_schema.ROUTINES
+
+MySQL 내부에 생성되어 있는 Function과 Procedule에 관한 내용들이 저장되어 있습니다.
+
+각 프로그램별 입출력 데이터 정보와, 프로그램 소스 등의 정보가 저장되어 있습니다.
+
+```sql
+select * from information_schema.ROUTINES;
+```
+
+### information_schema.KEY_COLUMN_USAGE
+
+MySQL 내부에 생성된 테이블별 PK칼럼 또는 unique 제약조건들의 목록을 확인할 수 있습니다.
+
+```sql
+select * from information_schema.KEY_COLUMN_USAGE
+```
+
+### information_schema.PROCESSLIST
+
+현재 MySQL에 접속되어 있는 세션 정보들을 확인할 수 있습니다. 
+
+각 세션별 상태와, 어떤 user로 어디서 접속을 하고 있는지, 어떤 SQL을 실행하고 있는지 등의 정보를 확인할 수 있습니다.
+
+```sql
+select * from information_schema.PROCESSLIST
+```
+
+위에서 말씀드렸다시피 더 많은 내용들이 있지만 이 정도로만 정리를 하겠습니다. 더욱 자세한 내용을 확인하고 싶으신 분들은 아래 링크에 가셔서 공식 문서를 확인하시면 상세하고 방대한 양의 정보를 확인하실 수 있으실 겁니다.
+
+https://dev.mysql.com/doc/mysql-infoschema-excerpt/8.0/en/information-schema.html
+
+## mysql
+
+mysql 스키마에서 조회할 수 있는 정보 가운데 위에서 설명드린 information_schema를 통해 조회할 수 있는 내용들도 중복이 되어 있습니다.
+
+다른 부분도 많이 있으니 따로 생성이 되어 있겠죠.
+
+우선 mysql 스키마 내 테이블 목록은 아래와 같습니다.
+
+### mysql.user
+
+MySQL 내부에 생성된 user에 관한 정보가 들어 있습니다.
+
+user명과 함께 host(접속지) 정보, 그리고 password가 암호화되어 저장되어 있습니다.
+
+기본 권한을 어떻게 가지고 있는지도 확인이 가능합니다
+
+```sql
+select * from mysql.user;
+```
+
+### mysql.general_log
+
+MySQL에서 DB 로그를 Table 타입으로 저장할 때 그 로그가 쌓이는 테이블입니다.
+
+물론 설정을 하지 않았다면 이 테이블에는 아무런 정보가 없겠죠.
+
+SQL 실행 시간, host 및 user 정보, 상세 SQL이 저장되어 있어 필요한 데이터를 select 하여 확인할 수 있습니다.
+
+[DB로그 설정방법](https://stricky.tistory.com/289?category=1013545)
+
+```sql
+select * from mysql.general_log
+```
+
+### mysql.slow_log
+
+MySQL에서 실행되는 SQL 가운데 long_query_time 파라미터에 저장되어 있는 값 보다 오래 걸리는 SQL이 저장되는 테이블입니다. 성능분석을 할 때 용이한 테이블 입니다.
+
+```sql
+select * from mysql.slow_log
+```
+
+주로 일반 사용자들이 볼만한 테이블은 이 정도입니다.
+
+ 
+
+mysql schema와 관련하여 더 많은 정보를 보고 싶으신 분들은 아래 링크로 이동하시면 됩니다.
+
+https://dev.mysql.com/doc/refman/8.0/en/system-schema.html
 
 
+
+# Mysql 제약조건 알아보기
+
+Mysql에도 다른 DBMS들과 마찬가지로 제약조건이 있습니다.
+
+이번 강의 시간에는 Mysql에서 사용할 수 있는 제약조건들을 확인하고, 해당 제약 조건이 어떤 역할을 하는지, 그리고 어떻게 추가하고 변경, 삭제할 수 있는지 알아보도록 하겠습니다.
+
+## 제약조건 이란?
+
+제약조건이란 영어로 Constraint라고 합니다. DB내 테이블에 정해둔 어떤 규칙에 따라 올바른 데이터만 입력받고, 규칙에 어긋나거나 잘못된 데이터는 입력 및 변경이 되지 않도록 하는 기능을 하게 됩니다. 
+
+특정 컬럼에 중복 값이 들어오지 못하게 한다던지, 상위 테이블에 등록된 값만 하위 테이블에 입력이 되도록 한다던지, 어떤 범위를 벗어난 값이 들어오지 못하게 한다던지 하는 것을 말하는 것 이죠.
+
+이러한 제약조건의 역할로 인해 DB내 테이블이 가진 데이터의 정확성과 신뢰도가 올라갈 수 있습니다.
+
+## 제약조건의 종류
+
+Mysql내에서 지원하는 제약조건은 크게 6가지가 있습니다.
+
+`primary key` 
+
+`foreign key`
+
+`not null`
+
+`unique`
+
+`check`
+
+`default`
+
+제약조건은 테이블을 생성할때 DDL 문에 포함하여 생성할 수도 있고, 나중에 칼럼에 추가 및 삭제, 변경도 가능합니다.
+
+가장 좋은건 설계 단계에서 모든 것이 고려되어 설계하면 좋으나, 사실 그렇게 되긴 현실적으로 어려울 수도 있습니다.
+
+물론 __primary key 같은 경우야 설계단계에서 얼마든지 요건의 정의 될 수 있으나 나머지는 변경이 일어날 가능성이 높습니다.__
+
+__더불어 요즘은 실무에서 foreign key는 잘 적용하지 않는 추세 입니다.__ 그래도 알고는 있어야겠죠?
+
+다음 꼭지에서 각각의 제약조건에 대한 설명 및 사용 예제를 안내드리도록 하겠습니다.
+
+
+
+##  각 제약조건의 설명 및 예제
+
+### primary key
+
+primary key란 칼럼에 중복을 막고, null을 허용하지 않으며, 각 로우를 특정할 수 있는 구분키로 사용됩니다.
+
+즉, **not null + unique의 의미**를 가지고 있습니다
+
+__테이블 내 모든 데이터 간의 유일성을 보장하는 칼럼에 설정을 하게 되며, 테이블당 primary key는 하나만 생성이 가능합니다. 단, primary key를 구성하는 칼럼은 복수로 설정이 가능합니다.__ (즉, 복수 칼럼으로 PK를 지정할경우, 한 칼럼에는 같은 값존재가능, 하지만 복수로 조합할 경우가 pk역할함)
+
+```sql
+alter table schema_name.table_name add primary key (col1, col2, ....); 
+
+-- drop
+alter table schema_name.table_name drop primary key;
+```
+
+하나의 칼럼이 PK 예시
+
+![스크린샷 2020-10-09 오후 4.35.20](https://tva1.sinaimg.cn/large/007S8ZIlgy1gjj4cxf1c1j30uy0lonck.jpg)
+
+복수의 칼럼이 PK 예시
+
+![스크린샷 2020-10-09 오후 4.35.46](https://tva1.sinaimg.cn/large/007S8ZIlgy1gjj4d9yet0j310q0nyb0k.jpg)
+
+즉, mgmt_num에는 같은 값이 존재가능하지만  값은 값이 나올 때 seq의 값이 +1씩 증가하는 것을 볼수잇다. (즉, mgmt_num과 seq의 조합이 pk역할중)
+
+ mgmt_num과 seq 두 칼럼이 함께 primary key로 설정되어야 하나의 데이터 row를 특정할 수가 있습니다.
+
+### foreign key
+
+foreign key는 어떤 테이블의 칼럼 값은 다른 테이블의 칼럼 값을 참조하여야 한다는 제약 조건입니다.
+
+쉽게 설명하면 한 쇼핑몰의 주문 테이블이 있고, 고객 테이블이 있다면, 고객 테이블에 먼저 고객 정보가 저장이 되겠죠. 이때 등록되는 고객 ID값이 있는데, 나중에 주문테이블에 주문 정보가 들어올때 고객ID를 입력하여야 한다면, 주문테이블의 고객ID 컬럼에 들어오는 값은 고객테이블에 있는 고객ID 칼럼 중 한 값이 들어와야 한다는 것입니다.
+
+반대로 이야기하면 고객 테이블의 고객 ID에 존재하지 않는 고객ID값은 주문 테이블의 고객ID 칼럼에 그 값이 들어올 수 없다는 것입니다.상식적으로도 그게 맞겠죠. 고객이 아닌데, 주문을 할 수 없다면 말이죠.
+
+바로 이런 것이 foreign key입니다.
+
+```sql
+alter table order add constraint order_customer_id_fk foreign key (customer_id) references customer (customer_id); 
+
+-- drop
+alter table order drop key order_customer_id_fk;
+```
+
+![스크린샷 2020-10-09 오후 4.42.22](https://tva1.sinaimg.cn/large/007S8ZIlgy1gjj4k6sgmhj30t40ce7do.jpg)
+
+### not null
+
+not null은 말 그대로 해당 칼럼에는 null값이 들어올 수 없다고 제약조건을 명시하는것 입니다. 테이블내 컬럼중 어떤 일이 있어도 꼭 있어야 하는 정보가 담길 컬럼에 not null 제약 조건을 걸 수 있습니다.
+
+주문 테이블을예를 들어 설명하자면, 옵션널한 칼럼(주문 시 요청사항, 선물포장 여부, 영문 이름 등등)의 값은 비어 있을 수 있겠지만, 꼭 필요한 주소, 수령자 이름, 주문 상품 ID 등등 꼭 필요한 정보가 들어가는 칼럼에 해당 제약조건을 설정할 수 있습니다.
+
+```sql
+alter table schema_name.table_name modify col1 int not null; -- not null 해제
+alter table schema_name.table_name modify col1 int null;
+```
+
+__not null 제약조건을 반영할 때는 칼럼의 데이터 타입도 변경될 수 있으니 이점 유의하셔야 합니다__
+
+### unique
+
+unique 제약조건은 설정된 칼럼에는 중복된 값이 들어가지 못하게 설정하는 제약조건입니다.
+
+primary key와 혼동할 수도 있으나, primary key를 제외하고 테이블 내 다른 칼럼 중에 중복된 값이 들어오면 안 되는 경우에 설정할 수 있습니다.
+
+```sql
+alter table schema_name.table_name 
+        add constraint table_pk 
+                unique (col1, col2); 
+
+-- drop
+alter table schema_name.table_name drop key table_pk;
+```
+
+__위 사용 예제처럼 칼럼을 두 개를 하나의 unique 제약조건에 설정할 수도 있는데, 이렇게 되면 하나씩 각각 중복 체크하는 게 아니라, 설정한 두 칼럼의 값이 모두 같아야 제약조건에 걸리게 됩니다.__ unique각각 필드에 필요하다면 각각 따로해줘야함
+
+unique 제약조건을 잘못 설정하게 되면 해당 테이블에 insert가 안 되는 상황이 발생할 수도 있으니, 조심하셔야 합니다
+
+### check
+
+check는 어떤 칼럼 값이 check 제약 조건으로 지정된 값 이외 다른 값이 들어오지 못하도록 하는 제약조건입니다. 
+
+몇몇 개의 값만 들어오는 코드성 칼럼이나 여부, 유무 등의 Y, N 값만 들어와야 하는 칼럼, 성별 칼럼 등과 함께 어떤 범위 내의 값(온도 및 수량 등)만 들어오는 칼럼들에 설정을 하게 됩니다. 무결성을 보장하게 됩니다.
+
+```sql
+ALTER TABLE schema_name.table_name 
+        ADD CONSTRAINT CHK_PersonAge CHECK (col1 >=18); 
+-- drop
+ALTER TABLE schema_name.table_name 
+DROP CONSTRAINT CHK_PersonAge;
+```
+
+### default
+
+default는 어떻게 보면 제약조건이라고 부르기는 애매한 부분이 있습니다. 어떤 규칙을 가진다기 보단 초기값을 설정하는 것 이기 때문입니다.
+
+default 제약조건이 설정된 칼럼은 특별한 값을 입력하지 않아도 미리 지정한 값이 기본적으로 row가 생길 때 들어가는 제약조건입니다.
+
+특별한 경우나, 특정 이벤트가 발생할 때만 어떤 값이 변경되거나 입력되는 경우 해당 칼럼에 default 제약조건을 설정하여 기본값을 입력해두는 것입니다.
+
+```sql
+alter table customer alter column name set default 'N'; 
+
+-- drop
+alter table customer alter column name drop default;
+```
+
+
+
+https://stricky.tistory.com/308
+
+https://stricky.tistory.com/310
+
+https://stricky.tistory.com/323
+
+
+
+3개만 더하자!
