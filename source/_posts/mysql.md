@@ -2848,8 +2848,4 @@ FROM (SELECT  name,
                ON a.customer_id = c.customer_id        );
 ```
 
-
-
-
-
 (2020.10.10 포스팅 종료...)
