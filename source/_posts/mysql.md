@@ -2578,7 +2578,7 @@ alter table customer alter column name set default 'N';
 alter table customer alter column name drop default;
 ```
 
-# index 의 중요성과 이해
+# index의 중요성과 이해
 
 인덱스를 데이터베이스에서 사용하는 가장 큰 이유는 쿼리의 성능을 높이기 위해서 일 것입니다. 인덱스는 테이블 내 데이터를 정렬한 뒤 필요로 하는 데이터만 빨리 가지고 오기 위해서 사용을 하게 됩니다.
 
