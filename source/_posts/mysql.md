@@ -2807,7 +2807,7 @@ SHOW INDEX FROM <Table name>;
 
 from 절에 들어가는 (,) (괄호) 안에 있는 select문을 다시 한번 상기 시켜 보세요. 이것을 inline view 라고 이야기하는데, 말그대로 inline, SQL문 안에 있는 view 라는 뜻 입니다.
 
-맞습니다. view(뷰)를 위에서 가상의 테이블이라고 했는데, 말그대로 데이터는 없고, SQL만 저장되어있는 object를 말합니다. view를 select 하게 되면 view가 가지고 있는 SQL문이 실행이 되는것과 같습니다. 바로 아래 그림과 마찬가지로 말이죠!
+맞습니다. __view(뷰)를 위에서 가상의 테이블이라고 했는데, 말그대로 데이터는 없고, SQL만 저장되어있는 object를 말합니다. view를 select 하게 되면 view가 가지고 있는 SQL문이 실행이 되는것과 같습니다.__ 바로 아래 그림과 마찬가지로 말이죠!
 
 ![스크린샷 2020-10-10 오후 3.20.47](https://tva1.sinaimg.cn/large/007S8ZIlgy1gjk7tk8x04j30zu0fejy1.jpg)
 
@@ -2841,8 +2841,13 @@ view 뷰는 기본적으로 일반 테이블과 같은 형태를 가지고 있�
 
 ```sql
 # 생성문
-CREATE VIEW 뷰이름 AS SELECT 구문;
+CREATE VIEW [view_name]AS \
+SELECT [field_name_1], [field_name_2] ... \
+FROM [table_name] \
+WHERE [조건];
 
+
+출처: https://kkamikoon.tistory.com/172 [컴퓨터를 다루다]
 #삭제문
 DROP VIEW 뷰이름;
 ```
