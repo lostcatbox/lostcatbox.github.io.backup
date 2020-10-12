@@ -1657,6 +1657,8 @@ from kmong.major a;
 
 따라서 반드시 서브 쿼리에서는 하나의 행만 반환되야함.
 
+> 그리고 기준은 메인쿼리 from에 있는 것이다. 
+
 ## 인라인 뷰 (Inline view)
 
 인라인 뷰는 from절에 사용되는 서브 쿼리입니다. 형태는 아래와 같습니다.
@@ -1829,7 +1831,7 @@ insert into kmong.insert_test (seq, cont, name, tel_num, input_date) values (8,'
 insert into kmong.insert_test (seq, cont, input_date) values (10,'대한민국은 코로나를 잘 극복 하고 있습니다.', now());
 ```
 
-위와 같이 class.insert_test 테이블에 있는 seq, cont, name, tel_num, input_date 칼럼 중에 seq, cont, input_date칼럼에만 데이터를 넣는 커맨드입니다.
+위와 같이 kmong.insert_test 테이블에 있는 seq, cont, name, tel_num, input_date 칼럼 중에 seq, cont, input_date칼럼에만 데이터를 넣는 커맨드입니다.
 
 ### 복수행 입력하기
 
@@ -1860,8 +1862,6 @@ insert into kmong.insert_test2 values (21, '대한민국은 코로나를 잘 극
 ```
 
 이렇게 하고, kmong.insert_test와 kmong.insert_test2 데이터를 확인합니다.
-
-__※class.insert_test의 데이터는 위 실습 내용과 달리 데이터가 더 들어 있을 겁니다. 제가 포스팅 작성하면서 더 실행을 해서 그렇습니다. 양해 바랍니다.__
 
 그럼, insert select 문을 활용해서 kmong.insert\_test2에 있는 5건의 데이터를 kmong.insert\_test로 입력해 보도록 하겠습니다.
 
@@ -1952,7 +1952,7 @@ delete from kmong.insert_test2 where 1=1;
 
 모든 데이터를 다 삭제하겠다는 의미인 것 이죠. select 문에서도 사용이 가능합니다.
 
-select로 class.insert_test2 테이블 데이터 모두 지워진것 확인가능
+select로 kmong.insert_test2 테이블 데이터 모두 지워진것 확인가능
 
 그럼 만약 아래와 같이 SQL을 실행하면 어떻게 될까요?
 
@@ -2516,6 +2516,45 @@ alter table order drop key order_customer_id_fk;
 ```
 
 ![스크린샷 2020-10-09 오후 4.42.22](https://tva1.sinaimg.cn/large/007S8ZIlgy1gjj4k6sgmhj30t40ce7do.jpg)
+
+> 다른 예제[참조](https://www.joinc.co.kr/w/man/12/mysql/foreignkey)
+>
+> 좀더 쉽게 Foreign Key(외래 키) 는 1:N관계에서 N 쪽의 테이블에서 선언되어야한다. 글과 댓글 관계이다. 
+>
+> ```sql
+> create table kmong.user (
+>     id int not null auto_increment, 
+>     name varchar(10),
+>     phone_number int(12), 
+>     cat varchar(10),
+>     primary key(id)
+> ) character set utf8;
+> 
+> create table kmong.preference (
+>     preference_id int not null auto_increment,
+>     userid int,
+>     theme int(10),
+>     fontsize int(2),
+>     primary key (preference_id),
+>     foreign key (userid) references user(id) on delete CASCADE
+> );
+> 
+> insert into user set name="고양이1";
+> insert into user set name="고양이2";
+> insert into user set name="고양이3";
+> select * from preference;
+> insert into preference set userid=1, fontsize=10;
+> insert into preference (userid, fontsize) values (2,7);
+> select * from bookmark
+> ```
+>
+> 위에 insert문법 set와 set사용하지 않은것 참고하자! 유용할것같다.
+>
+> `auto_increment` 은 자동으로 숫자 1부터 증가한다.
+>
+> 위처럼 foreign key를 설정하면 반드시 userid를 입력해야한다. userid는 무조건 user.id와 값이 같이 움직인다... 반약 user.id가 삭제되면 `on delete CASCADE` 이므로 외래키로 하는 모든 값이 삭제된다. 
+>
+> MySQL은 단일 DELETE 쿼리에 대해서 하위 테이블의 데이터를 자동으로 삭제 할 수 있도록 외래키에 대해서 **ON DELETE CASCADE**설정을 할 수 있다.
 
 ### not null
 
