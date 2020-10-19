@@ -2739,9 +2739,9 @@ B-Tree 인덱스의 구조상 인덱스 내 키가 변경될 때는 delete and i
 
 `col_name <> 'Y'`
 
-`col_name NOT IN (1, 2, 3)``
+` col_name NOT IN (1, 2, 3) `
 
-`col_name NOT BETWEEN 1 AND 10``
+` col_name NOT BETWEEN 1 AND 10`
 
 `col_name IS NOT NULL (Mysql 에서는 가능)` 
 
@@ -2794,6 +2794,30 @@ ALTER TABLE tablename ADD UNIQUE INDEX indexname (column1, column2);
 # 생성된 인덱스 확인 SQL 예제
 SHOW INDEX FROM <Table name>;
 ```
+
+> 정리하자면 다음과 같다
+>
+> 먼저 mysql에서는 B-Tree 인덱스를 가장 많이 사용하고, B-Tree인덱스는 Root, Leaf, branch 노드로 구성되어있다. B-Tree의 특성은 칼럼의 데이터 변형하지 않고, 인덱스 내부에서 정렬된 상태로 유지된다.
+>
+> 만약 B-Tree에 새로운 entry가 추가되야한다면 > 키값을 이용해 인덱스 내에 적당한 위치를 찾고 > 위치 결정되면 __해당 row(=record)의 키값과 주소 정보__를 B-Tree 인덱스에 Leaf Node에 저장한다.
+>
+> __위에 인덱스를 사용할 수없는 SQL조건절도 잘 생각하자__
+>
+> 또한
+>
+> mysql에서는 문자열은 index만들지 못한다
+>
+> (애초에 성능까지 구려지는데 왜 쓸까? 간단한 A,B는 할수있을까?)
+>
+> ```sql
+> select * from budget;
+> 
+> alter table kmong.budget add index index_insert_test(budget_value, population);
+> ```
+>
+> 또한 alter를 쓰는것을 보면 확실히  각 table에 속성을 추가한다고 보면될거같다. 즉, 클러스터, 단일, 복합, 리커버는 물리적으로 용량을 더 차지할수도있지만(클러스터x), 이는 각 속성으로 개념으로 취급한다
+>
+> 마지막으로 인덱싱의 비용을 잘 생각하자. 분명 조회에서는 이점이있지만, create, delete, update가 일어날때는 테이블과 인덱스(1.5배더걸림)이 변경되어야하므로 아주 느릴수도있다.
 
 # view 뷰에 대한 이해
 
