@@ -9,6 +9,8 @@ tags: [Mysql, DB, Basic]
 
 [다끝나면 읽어보기 mysql vs postgresql](https://valuefactory.tistory.com/497)
 
+[쿼리 연습](https://junetudie.tistory.com/11)
+
 # 왜?
 
 모든 데이터 처리(읽기, 쓰기 등)와 서버의 트래픽 관리에서는 반드시 DB의 설계가 안정성과 성능을 좌우할 수 있다.
@@ -2919,5 +2921,3 @@ FROM (SELECT  name,
 (2020.10.10 포스팅 종료...)
 
 (2020.10 3주차~4주차는 대학교 시험기간 + 간단하게 인덱싱과 DB명령어들 처리 능숙해지기)
-
-(이번주 금요일부터 복귀)
