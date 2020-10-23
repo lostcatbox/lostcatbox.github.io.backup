@@ -15,6 +15,8 @@ DB에서 조회능력을 최대한으로 이끌어낼 수 있는 방법중 하�
 
 조회할때 인덱싱을 어떤방식으로 해놔야 좀더 빠르게 조회할수있을까? 생각해보자
 
+DB 캐시 서버는 DB로 요청하는 쿼리 수를 줄일수있고, 인덱스는 쿼리 성능 자체를 높일수있다(물론 조회성능)
+
 # 인덱스란?
 
 인덱스는 __지정한 칼럼들을 기준으로 메모리 영역에 일종의 목차를 생성하는 것__이다. insert, update, delete의 성능이 희생된다. (일어나면 인덱스까지 모두 반영하므로) 
@@ -57,6 +59,60 @@ __카디널리티가 높은걸 첫번째 인덱스 잡자__
 하지만 `where 두번째칼럼="테스트"` 실행되면 효과을 볼수없다.(즉, 비즈니스 로직을 잘 생각해야한다.)
 
 
+
+# 명령
+
+__Index 생성하기__
+
+```sql
+ALTER TABLE  테이블명 ADD INDEX(필드명(크기)); #기존의 테이블에 인덱스를 추가
+
+CREATE TABLE 테이블 명 ( 
+    필드명 데이터타입(데이터크기), 
+    INDEX(필드명(크기)
+); # 테이블 생성시 index생성하기
+```
+
+__성능차이__
+
+```sql
+SELECT * FROM test WHERE keyword LIKE '가%' ; 
+
+SELECT * FROM test_index WHERE keyword LIKE '가%' ; 
+```
+
+# 실습
+
+[실습데이터 적용법](https://futurists.tistory.com/19)
+
+필자는 도커로 올렸기 때문에 volume필수였고 exec -it으로 접근해서 직접  실습 sql파일을 import했다
+
+__전체 table name과 rows 갯수를 보는 방법__
+
+```sql
+select table_name, table_rows from information_schema.tables where table_schema = "employees";
+```
+
+__데이터 구조 그림__
+
+![스크린샷 2020-10-23 오후 4.12.52](https://tva1.sinaimg.cn/large/0081Kckwgy1gjzadr596dj30vg0u0k0z.jpg)
+
+(위 그림은 PK, FK고려해야한다. 1:N이 표현되어있다.)
+
+employees에 last_name 필드를 지정한 index를 생성후 속도와 index 제거후 last_name과의 select 속도를 비교하였다
+
+```sql
+alter table employees add index employees_insert_test(last_name(10));
+
+select * from employees where last_name = 'Facello';
+
+show index from employees;
+alter table employees drop index employees_insert_test;
+
+select * from employees where last_name = 'Facello';
+```
+
+전자가 59.8ms 후자가 280ms였다. 여러번 실행을 해도  index가 있는 쪽이 휠씬 빨랐다.
 
 
 
