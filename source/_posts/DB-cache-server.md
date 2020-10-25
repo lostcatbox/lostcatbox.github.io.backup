@@ -9,9 +9,9 @@ tags: [Mysql, DB]
 
 [자세히 포스팅되어있는곳](https://nangkyeong.tistory.com/entry/%EC%9D%B4%EA%B2%83%EC%9D%B4-MySQL%EC%9D%B4%EB%8B%A4%EB%A1%9C-%EC%A0%95%EB%A6%AC%ED%95%B4%EB%B3%B4%EB%8A%94-%EC%9D%B8%EB%8D%B1%EC%8A%A4-%EA%B0%9C%EB%85%90)
 
-[mysql lnnoDB의 메모리 캐시 서버로 변신(???)](https://gywn.net/2019/09/mysql-innodb-as-cache-server-config/)
+[mysql lnnoDB의 메모리 캐시 서버로 변신(이걸로 꼭 실습해보기)](https://gywn.net/2019/09/mysql-innodb-as-cache-server-config/)
 
-
+[redis와 mem 비교글 자세히](https://deveric.tistory.com/65)
 
 # 왜?
 
@@ -20,6 +20,27 @@ tags: [Mysql, DB]
 하지만 구성해보고싶었다. DB를 캐싱한다는 것은 속도를 높일 수 있는 수단이 될수있기 때문이다. 그냥 해보고싶어서 하는거다! 
 
 (추후에 체감하면 수정예정)
+
+# 캐시
+
+- CPU 성능을 높이기 위한 L1, L2, L3 캐시를 사용하는 CPU 캐시, 
+- 디스크의 내용을 RAM에 저장하는 DISK 캐시
+- web 브라우저의 캐시나 iOS, Android와 같은 미들웨어, 애플리케이션에서 사용하는 단말 애플리케이션 단위의 캐시
+- DB나 웹 서버, 대용량 서버에서 사용하는 분산 캐시 등으로 크게 나눌 수 있을 것이다. 분산 환경 또는 서버 환경에서 개발하면서 만들고 경험했던 캐시 시스템을 소개하고, 분산 캐시의 대표 주자인 Redis와 Memcached 등이 만들어지게 되는 배경을 살펴보고자 한다.
+
+# Redis와 Memcached 스펙 비교
+
+|                   | **Redis**                                              | **Memcached**                                                |
+| ----------------- | ------------------------------------------------------ | ------------------------------------------------------------ |
+| **저장소**        | In Memory Storage                                      |                                                              |
+| **저장 방식**     | Key-Value                                              |                                                              |
+| **데이터 타입**   | String, Set, Sorted Set, Hash, List                    | String                                                       |
+| **데이터 저장**   | Memory, Disk                                           | Only Memory                                                  |
+| **메모리 재사용** | 메모리 재사용 하지 않음(명시적으로만 데이터 삭제 가능) | 메모리 부족시 LRU 알고리즘을 이용하여 데이터 삭제 후 메모리 재사용 |
+| **스레드**        | Single Thread                                          | Multi Thread                                                 |
+| **캐싱 용량**     | Key, Value 모두 512MB                                  | Key name 250 byte, Value 1MB                                 |
+
+ 
 
 # RDBMS의 문제점
 

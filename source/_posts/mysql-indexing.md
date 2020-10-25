@@ -9,6 +9,8 @@ tags: [Mysql, DB, Basic]
 
 [자세히](https://asfirstalways.tistory.com/333)
 
+[아주 고급 자세히](http://junil-hwang.com/blog/db-indexing/)
+
 # 왜?
 
 DB에서 조회능력을 최대한으로 이끌어낼 수 있는 방법중 하나가 인덱싱이다.

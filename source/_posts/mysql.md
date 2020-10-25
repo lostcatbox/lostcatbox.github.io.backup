@@ -9,7 +9,7 @@ tags: [Mysql, DB, Basic]
 
 [다끝나면 읽어보기 mysql vs postgresql](https://valuefactory.tistory.com/497)
 
-[쿼리 연습](https://junetudie.tistory.com/11)
+[포스팅 모두하면 쉬운 쿼리 연습](https://junetudie.tistory.com/11)
 
 # 왜?
 
@@ -2921,3 +2921,129 @@ FROM (SELECT  name,
 (2020.10.10 포스팅 종료...)
 
 (2020.10 3주차~4주차는 대학교 시험기간 + 간단하게 인덱싱과 DB명령어들 처리 능숙해지기)
+
+> __쿼리 연습중에 햇갈린것들__
+>
+> ```sql
+> select * from EMP
+> where mgr is Null; #컬럼이 NULL인지 판단하기 위해선, IS NULL, IS NOT NULL 문장을 사용한다
+> 
+> select deptno, avg(sal) from EMP
+> group by DEPTNO;   #group by문은 종류별로 구별해서 복수행 함수 돌리고싶을때 쓰면될듯
+> ```
+>
+> ```sql
+> # GROUP BY 구문을 사용하면서 이 결과에 조건을 줄 때 WHERE 조건문을 사용할 수 없다. 따라서 위 쿼리는 에러를 발생한다. GROUP BY 구문을 사용하면서 조건을 주기 위해서는 대신 HAVING 구문을 사용한다. HAVING 구문에서는 그룹화의 기준이 되는 컬럼과 그룹함수만이 사용 할 수 있다는 점에 주의한다. 위 쿼리문에서 그룹화의 기준이 되는 컬럼이 DEPTNO이므로, DEPTNO는 HAVING 구문에 사용할 수 있다.
+> 
+> SELECT DEPTNO,AVG(SAL)
+> FROM EMP
+> GROUP BY DEPTNO
+> HAVING AVG(SAL) >= 2000;
+> ```
+>
+> ```sql
+> # 월급여가 1000이상인 사원만을 대상으로 위에 조건 포함해서 구한다면,where로 각 행에 대해 조건주고, group by조건은 having에 쓰면된다. 즉, WHERE 절은 테이블에서 데이터를 가져올 때 그 테이블에서 특정 조건에 부합하는 레코드만을 가져올 때 사용하고, HAVING 절은 GROUP BY 구문을 사용하여 구한 레코드 중에서 원하는 조건에 맞는 레코드만을 가져올 때 사용한다.
+> 
+> select deptno, avg(sal) from EMP
+> where sal>=1000
+> group by deptno
+> having avg(sal)>=2000;
+> ```
+>
+> ```sql
+> #오름차순 내림차순으로 정렬출력 ORDER BY 정렬의 기준이 되는 컬럼 ASC 또는 DESC; 여기서 ASC는 오름차순을 의미한다. ASC는 생략할 수 있다. DESC는 내림차순을 의미한다.
+> 
+> SELECT EMPNO,ENAME,SAL
+> FROM EMP
+> ORDER BY SAL DESC,ENAME ASC;
+> ```
+>
+> ```sql
+> #조인을 하는데 회장은 상사가 없엇 null값이다. 하지만 표시하고 싶다면 아우터 조인 이용
+> 
+> SELECT E.ENAME,M.ENAME
+> FROM EMP E LEFT JOIN EMP M ON E.MGR = M.EMPNO;
+> ```
+>
+> ```sql
+> #ALLEN과 같은 부서에 근무하는 사원의 이름, 부서번호를 조회하시오. 즉, 다른사람임으로 join하고 그다음 찾아내면됨.
+> 
+> SELECT C.ENAME,C.DEPTNO
+> FROM EMP E,EMP C
+> WHERE E.EMPNO <> C.EMPNO
+> AND E.DEPTNO = C.DEPTNO
+> AND E.ENAME = 'ALLEN'
+> ORDER BY C.ENAME;
+> 
+> SELECT C.ENAME,C.DEPTNO
+> FROM EMP E INNER JOIN EMP C ON E.DEPTNO = C.DEPTNO 
+> WHERE E.EMPNO <> C.EMPNO
+> AND E.ENAME = 'ALLEN'
+> ORDER BY C.ENAME;
+> 
+> 
+> # 이름에 A 가 들어가는 사원의 이름,부서명을 조회하시오.
+> 
+> SELECT E.ENAME,D.DNAME
+> FROM EMP E,DEPT D
+> WHERE E.DEPTNO = D.DEPTNO
+> AND E.ENAME LIKE '%A%';
+> 
+> 
+> # 이름, 직급, 월급여, 월급여등급을 조회하시오.
+> 
+> SELECT E.ENAME,E.JOB,E.SAL,S.GRADE
+> FROM EMP E,SALGRADE S
+> WHERE E.SAL BETWEEN S.LOSAL AND S.HISAL;
+> 
+> 
+> ```
+>
+> ```sql
+> #서브쿼리
+> 서브 쿼리는 SELECT 문 안에서 ()로 둘러싸인 SELECT 문을 말하며 쿼리문의 결과를 메인 쿼리로 전달하기 위해 사용된다.
+> 
+> 
+> # 사원명 'JONES'가 속한 부서명을 조회하시오.
+> 
+> SELECT DNAME 
+> FROM DEPT
+> WHERE DEPTNO = (SELECT DEPTNO FROM EMP WHERE ENAME = 'JONES');
+> 부서번호를 알아내기 위한 쿼리가 서브 쿼리로 사용되고, 이 서브쿼리는 단 하나의 결과값을 얻기 때문에 단일 행 서브 쿼리라 한다.
+> 
+> 
+> # 10번 부서에서 근무하는 사원의 이름과 10번 부서의 부서명을 조회하시오.
+> 
+> SELECT E.ENAME,D.DNAME
+> FROM EMP E,DEPT D
+> WHERE E.DEPTNO = D.DEPTNO
+> AND D.DEPTNO = 10;
+> SELECT E.ENAME,D.DNAME
+> FROM EMP E,
+> (
+>     SELECT DEPTNO,DNAME
+>     FROM DEPT
+>     WHERE DEPTNO = 10
+> ) D
+> WHERE E.DEPTNO = D.DEPTNO;
+> 
+> 
+> # 평균 월급여보다 더 많은 월급여를 받은 사원의 사원번호,이름,월급여 조회하시오.
+> 
+> SELECT EMPNO,ENAME,SAL
+> FROM EMP
+> WHERE SAL > (SELECT AVG(SAL)
+>           FROM EMP)
+> ORDER BY SAL DESC;
+> 
+> 
+> # 부서번호가 10인 사원중에서 최대급여를 받는 사원과 동일한 급여를 받는 사원의 사원번호, 이름을 조회하시오.
+> 
+> SELECT EMPNO,ENAME
+> FROM EMP
+> WHERE SAL = (SELECT MAX(SAL) 
+>          FROM EMP 
+>          WHERE DEPTNO = 10);
+> ```
+
+(2020.10.15 포스팅 수정완료)
