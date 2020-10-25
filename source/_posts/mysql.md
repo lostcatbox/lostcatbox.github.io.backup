@@ -9,7 +9,7 @@ tags: [Mysql, DB, Basic]
 
 [다끝나면 읽어보기 mysql vs postgresql](https://valuefactory.tistory.com/497)
 
-[포스팅 모두하면 쉬운 쿼리 연습](https://junetudie.tistory.com/11)
+
 
 # 왜?
 
@@ -2923,6 +2923,8 @@ FROM (SELECT  name,
 (2020.10 3주차~4주차는 대학교 시험기간 + 간단하게 인덱싱과 DB명령어들 처리 능숙해지기)
 
 > __쿼리 연습중에 햇갈린것들__
+>
+> [포스팅 모두하면 쉬운 쿼리 연습](https://junetudie.tistory.com/11)
 >
 > ```sql
 > select * from EMP
