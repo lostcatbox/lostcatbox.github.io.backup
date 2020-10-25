@@ -75,3 +75,54 @@ __주로 데이터베이스에서 캐시용으로 NoSQL 류의 Redis나 Memcache
 물론 캐싱이 만능은 아닐 것이다. __비용도 비용이지만, 제대로 사용하지 못하면, 최신으로 업데이트되지 않은 “틀린” 데이터를 클라이언트에게 제공할 수도 있고 비용이 최적화되지 않을 수도 있다.__
 가장 중요한 건 기존의 시스템에 정확히 어떤 부분에서 성능이 저하되는지를 주안점으로 두고 그에 대한 대처를 가장 효율적으로 하는 것이 좋지 않을까 싶다.
 
+# Memcached plugin
+
+MySQL 5.6부터 들어왔던 것 같은데.. **InnoDB의 데이터를 memcached 프로토콜을 통해서 접근할 수 있다는 것**을 의미합니다. 플러그인을 통하여 구동되기 때문에.. 캐시와 디비의 몸통은 하나이며, InnoDB 데이터에 직접 접근할 수 있기도 하지만, 캐시 공간을 별도로 두어.. 캐시처럼 사용할 수도 있어요. (옵션을 주면, set 오퍼레이션이 binlog에 남는다고 하던데.. 해보지는 않음 ㅋㅋ)
+
+![스크린샷 2020-10-25 오후 6.34.27](https://tva1.sinaimg.cn/large/0081Kckwgy1gk1pps8bgbj313t0u016e.jpg)
+
+ 데이터베이스의 테이블 데이터를.. memcached 프로토콜로 직접적으로 access할 수 있다면 어떨까요? 메모리 위주로 데이터 처리가 이루어질 때.. 가장 많은 리소스를 차지하는 부분은 바로 **쿼리 파싱과 옵티마이징 단계**입니다. 만약 **PK 조회 위주의 서비스이며.. 이것들이 자주 변하지 않는 데이터**.. 이를테면 “서비스토큰”이라든지, “사용자정보” 같은 타입이라면..?
+
+심지어 이 데이터는 이미 InnoDB 라는 안정적인 데이터베이스 파일로 존재하기 때문에.. 예기치 않은 정전이 발생했을지라도, 사라지지 않습니다. 물론, 파일의 데이터를 메모리로 올리는 웜업 시간이 어느정도 소요될테지만.. 최근의 DB의 스토리지들이 SSD 기반으로 많이들 구성되어가는 추세에서, 웜업 시간이 큰 문제는 될 것 같지는 않네요.
+
+MySQL InnoDB memcached plugin을 여러 방식으로 설정하여 사용할 수 있겠지만, 오늘 이야기할 내용은, memcache 프로토콜만 사용할 뿐, 실제 액세스하는 영역은 DB 데이터 그 자체임을 우선 밝히고 다음으로 넘어가도록 하겠습니다.
+
+ # 구성해보기
+
+오라클 문서([innodb-memcached-setup](https://dev.mysql.com/doc/refman/8.0/en/innodb-memcached-setup.html))를 참고할 수도 있겠습니다만, 오늘 이 자리에서는 memcached 플러그인을 단순히 memcache 프로토콜을 쓰기 위한 용도 기준으로만 구성해보도록 하겠습니다.
+
+우선, InnoDB 플러그인 구성을 위해 아래와 같이 memcached 관련된 스키마를 구성합니다. 🙂 여기서 $MYSQL_HOME는 MySQL이 설치된 홈디렉토리를 의미하며, 각자 시스템 구성 환경에 따라 다르겠죠.
+
+```sql
+create database innodb_memcached_config character set utf8;
+show databases;
+use innodb_memcached_config;
+
+CREATE DATABASE memcache_test character set utf8;
+CREATE TABLE `memcache_test`.`token` (
+    `id` varchar(32) NOT NULL,
+    `token` varchar(128) NOT NULL,
+     PRIMARY KEY (`id`)
+);
+
+
+use memcache_test;
+select count(*) from token;
+select * from token;
+insert ignore into token 
+select md5(rand()), concat(uuid(), md5(rand())) from dual;
+insert ignore into token 
+
+select md5(rand()), concat(uuid(), md5(rand())) from token;
+```
+
+```
+use innodb_memcache;
+update cache_policies set 
+get_policy = 'innodb_only', 
+set_policy = 'disabled', 
+delete_policy='disabled', 
+flush_policy = 'disabled';
+```
+
+https://gywn.net/2019/09/mysql-innodb-as-cache-server-config/
