@@ -13,6 +13,16 @@ tags: [Mysql, DB]
 
 [redis와 mem 비교글 자세히](https://deveric.tistory.com/65)
 
+[spring이용하여 redis 캐시 서버 만들기](https://anomie7.tistory.com/43)
+
+[django cache,..ㅎㄷㄷ](https://dingrr.com/blog/post/django-seo-%EB%8D%94-%EB%B9%A0%EB%A5%B4%EA%B2%8C-cache%EC%99%80-%EC%95%95%EC%B6%95)
+
+[도커에 redis설치](https://emflant.tistory.com/235)
+
+[redis 캐시 설명](https://brunch.co.kr/@jehovah/20)
+
+[redis 캐시 설명 2](https://webisfree.com/2017-10-26/redis-%EB%A0%88%EB%94%94%EC%8A%A4%EB%A5%BC-%EC%82%AC%EC%9A%A9%ED%95%9C-%EB%8D%B0%EC%9D%B4%ED%84%B0%EB%B2%A0%EC%9D%B4%EC%8A%A4-%EC%BA%90%EC%8B%B1%EC%84%9C%EB%B2%84-%EC%9A%B4%EC%98%81%ED%95%98%EA%B8%B0)
+
 # 왜?
 
 솔직히 말하자면, 실제로 큰 데이터를 다뤄본적이 없기에 지금 필요이유를 체감한 적은 없다.
@@ -64,7 +74,7 @@ __주로 데이터베이스에서 캐시용으로 NoSQL 류의 Redis나 Memcache
 
 # 데이터 캐싱이 적용된 시스템에서 CRUD
 
-
+website가 가장 먼저 바라보는것은 캐시 서버이다. 따라서 캐시 서버의 해당값이 있냐, 없냐로 조건이 나뉜다. 그 이후 로직을 생각해보자.
 
 ![스크린샷 2020-10-23 오후 2.36.14](https://tva1.sinaimg.cn/large/0081Kckwgy1gjz7l9xxjbj30wd0u0naa.jpg)
 
@@ -75,6 +85,22 @@ __주로 데이터베이스에서 캐시용으로 NoSQL 류의 Redis나 Memcache
 물론 캐싱이 만능은 아닐 것이다. __비용도 비용이지만, 제대로 사용하지 못하면, 최신으로 업데이트되지 않은 “틀린” 데이터를 클라이언트에게 제공할 수도 있고 비용이 최적화되지 않을 수도 있다.__
 가장 중요한 건 기존의 시스템에 정확히 어떤 부분에서 성능이 저하되는지를 주안점으로 두고 그에 대한 대처를 가장 효율적으로 하는 것이 좋지 않을까 싶다.
 
+> Read 요청시- 방문자, 사용자의 새로운 데이터 서버에 요청- Redis 서버에서 요청 데이터가 있는지 확인
+> \- 데이터가 존재하는 경우 만료여부 확인 후 이 정보를 반환
+> \- 정보를 반환한 경우 시간을 현재로 업데이트 후 종료
+> \- 데이터가 만료되었거나 없는 경우 삭제 후 주 서버에 요청
+> \- 주 서버에서 받은 데이터를 캐싱, 데이터베이스에 저장
+> \- 이 값을 방문자에게 반환 후 종료
+>
+>
+> CUD Create, Update, Delete 요청시이 경우 앞의 과정과는 조금 다르다. 그 이유는 **데이터에 변화가 생겼으므로 해당하는 값의 데이터는 캐싱 값이 아닌 현재 실시간 정보를 보내주는 것이 효과적이기 때문**이다. 캐싱 만료시간이 아무리 짧게 설정되어도 없는 데이터를 사용자가 보게되는 일으도록 해야할 것이다. 그러기 위해 필요한 조치는 비교적 간단하다. CUD 요청시 아래와 같이 처리한다.
+>
+> \- 방문자가 CUD를 서버에 요청
+> \- CUD 요청을 주서버에 반영하여 업데이트
+> \- 변경된 데이터 값을 캐싱데이터인 Redis에서 찾아 삭제 후 종료
+>
+> 여기서 가장 중요한 점은 캐싱을 제공하는 경우 단순하게 정보를 제공하는 주분만 고려하는 것이 아니라 다양한 상황에 대처해야한다는 점이다. 이 중 한 가지가 위와같이 CUD처럼 데이터에 중요한 변경사항이 있는 경우 기존의 캐싱 데이터를 삭제처리하는 과정이다.
+
 # Memcached plugin
 
 MySQL 5.6부터 들어왔던 것 같은데.. **InnoDB의 데이터를 memcached 프로토콜을 통해서 접근할 수 있다는 것**을 의미합니다. 플러그인을 통하여 구동되기 때문에.. 캐시와 디비의 몸통은 하나이며, InnoDB 데이터에 직접 접근할 수 있기도 하지만, 캐시 공간을 별도로 두어.. 캐시처럼 사용할 수도 있어요. (옵션을 주면, set 오퍼레이션이 binlog에 남는다고 하던데.. 해보지는 않음 ㅋㅋ)
@@ -83,46 +109,81 @@ MySQL 5.6부터 들어왔던 것 같은데.. **InnoDB의 데이터를 memcached 
 
  데이터베이스의 테이블 데이터를.. memcached 프로토콜로 직접적으로 access할 수 있다면 어떨까요? 메모리 위주로 데이터 처리가 이루어질 때.. 가장 많은 리소스를 차지하는 부분은 바로 **쿼리 파싱과 옵티마이징 단계**입니다. 만약 **PK 조회 위주의 서비스이며.. 이것들이 자주 변하지 않는 데이터**.. 이를테면 “서비스토큰”이라든지, “사용자정보” 같은 타입이라면..?
 
-심지어 이 데이터는 이미 InnoDB 라는 안정적인 데이터베이스 파일로 존재하기 때문에.. 예기치 않은 정전이 발생했을지라도, 사라지지 않습니다. 물론, 파일의 데이터를 메모리로 올리는 웜업 시간이 어느정도 소요될테지만.. 최근의 DB의 스토리지들이 SSD 기반으로 많이들 구성되어가는 추세에서, 웜업 시간이 큰 문제는 될 것 같지는 않네요.
+심지어 이 데이터는 이미 InnoDB 라는 안정적인 데이터베이스 파일로 존재하기 때문에.. 예기치 않은 정전이 발생했을지라도, 사라지지 않습니다.
 
-MySQL InnoDB memcached plugin을 여러 방식으로 설정하여 사용할 수 있겠지만, 오늘 이야기할 내용은, memcache 프로토콜만 사용할 뿐, 실제 액세스하는 영역은 DB 데이터 그 자체임을 우선 밝히고 다음으로 넘어가도록 하겠습니다.
+# Redis
 
- # 구성해보기
+[꼭읽기](https://brunch.co.kr/@jehovah/20)
 
-오라클 문서([innodb-memcached-setup](https://dev.mysql.com/doc/refman/8.0/en/innodb-memcached-setup.html))를 참고할 수도 있겠습니다만, 오늘 이 자리에서는 memcached 플러그인을 단순히 memcache 프로토콜을 쓰기 위한 용도 기준으로만 구성해보도록 하겠습니다.
+ # 구성해보기(redis)
 
-우선, InnoDB 플러그인 구성을 위해 아래와 같이 memcached 관련된 스키마를 구성합니다. 🙂 여기서 $MYSQL_HOME는 MySQL이 설치된 홈디렉토리를 의미하며, 각자 시스템 구성 환경에 따라 다르겠죠.
+ 간단하게만 해볼 것이다.
 
-```sql
-create database innodb_memcached_config character set utf8;
-show databases;
-use innodb_memcached_config;
+__docker를 이용한다. (network구성,  volume 등을 신경써야한다.)__
 
-CREATE DATABASE memcache_test character set utf8;
-CREATE TABLE `memcache_test`.`token` (
-    `id` varchar(32) NOT NULL,
-    `token` varchar(128) NOT NULL,
-     PRIMARY KEY (`id`)
-);
+## redis 설치
 
-
-use memcache_test;
-select count(*) from token;
-select * from token;
-insert ignore into token 
-select md5(rand()), concat(uuid(), md5(rand())) from dual;
-insert ignore into token 
-
-select md5(rand()), concat(uuid(), md5(rand())) from token;
-```
+docker-compose를 이용할 것이며 cache로 이용할거면 docker에 network를 하나 생성해놓는게 유리할것이다
 
 ```
-use innodb_memcache;
-update cache_policies set 
-get_policy = 'innodb_only', 
-set_policy = 'disabled', 
-delete_policy='disabled', 
-flush_policy = 'disabled';
+# docker network 생성
+docker network create redis-cache-server
 ```
 
-https://gywn.net/2019/09/mysql-innodb-as-cache-server-config/
+다음은 docker-compose.yml 구성이다.
+
+```
+# docker-compose.yml
+
+version: "3.0"
+
+services:
+        redis1:
+                container_name: redis-cache
+                image: redis:alpine
+                command: redis-server --requirepass yourpassword --port 6379
+                restart: always
+                ports:
+                        - 6379:6379
+                volumes:
+                        - ./data:/data
+
+networks:
+        default:
+                external:
+                        name: redis-cache-server
+```
+
+6379외부 포트로 설정해주었고 `yourpassword` 를 수정해서 쓰면된다.
+
+또한 external로 docker-compose network망이 아닌 먼저 만들어져있는 망을 쓴 것에 주의하자. (추후에 mysql 컨테이너도 같은 network에 넣어줄것이다.)
+
+`docker-compose up -d` 실행해서 컨테이너를 올리자
+
+## redis 테스트
+
+`pip install redis` 한 후
+
+python으로 접속 확인해보자
+
+```python
+import redis
+
+# 레디스 클라이언트를 만든다
+# Redis<ConnectionPool<Connection>>
+r = redis.Redis(host="192.168.88.244", port=6379, password="yourpassword", 
+                decode_responses=True)
+
+print(r.ping())                     #// True
+print(r.set(name="야", value="호")) #// True
+print(r.get(name="야"))             #// 호
+```
+
+(개인 서버 내부망를 쓰고 VPN접속할것이므로 192.168.88.244 우분투 IP로 접속했다.)
+
+결과를 확인하자
+
+## redis cache로 사용해보기
+
+
+
