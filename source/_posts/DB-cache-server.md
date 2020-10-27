@@ -183,7 +183,109 @@ print(r.get(name="야"))             #// 호
 
 결과를 확인하자
 
-## redis cache로 사용해보기
+## mysql을 Python으로 조회하기
+
+[자세히](https://yurimkoo.github.io/python/2019/09/14/connect-db-with-python.html)
+
+일단 캐시 서버로 쓰기전에 간단하게  python으로 mysql과 연결해보겠다.
+
+```python
+import pymysql
+mysql_db = pymysql.connect(
+    user="root",
+    passwd="lostcatboxmysql",
+    host="192.168.88.244",
+    port=7676,
+    db="employees",
+    charset = "utf8"
+)
+
+cursor = mysql_db.cursor()
+sql = "select * from employees;"
+cursor.execute(sql)
+result = cursor.fetchall()
+```
+
+만약 where문을 쓰고 싶다면
+
+```sql
+cursor = mysql_db.cursor()
+sql = '''select * from employees where last_name=%s;'''
+cursor.execute(sql, ("Facello"))
+result = cursor.fetchall()
+```
+
+결과는 판다스로 출력한다.
+
+```Python
+import pandas as pd
+
+result = pd.DataFrame(result)
+result
+```
+
+## Redis cache로 사용해보기
+
+정말 간단하게 구현하였다
+
+request.py는 먼저 캐시로 요청하고 null이면 DB를 조회 요청 후 결과를 캐시에 업데이트하며, 다시 캐시로 조회를 한다. 그러면 무조건 hit가 되고 원하는 값을 받을 수 있다.
+
+```python
+#request.py
+import redis
+import pymysql
+import time
+
+# 레디스 클라이언트를 만든다
+# Redis<ConnectionPool<Connection>>
+r = redis.Redis(host="192.168.88.244", port=6379, password="password", 
+                decode_responses=True)
+                
+#pymysql로 mysql 연결
+mysql_db = pymysql.connect(
+    user="root",
+    passwd="password",
+    host="192.168.88.244",
+    port=7676,
+    db="employees",
+    charset = "utf8"
+)
+
+#여기부터 실제 로직
+result_list = []
+#id=int(input("emp_no 입력 (6자리)")) #직접입력귀찮아서;
+for emp_no in range(10200,10300):
+    id= int(emp_no)
+    first_time = time.time()
+    result = r.get(name=id)
+    print(id)
+
+    if not result:
+        print("캐시에서 가져오지 못함")
+        cursor = mysql_db.cursor()
+        sql = '''select emp_no,first_name from employees where emp_no=%s'''
+        cursor.execute(sql, (int(id)))
+        result = cursor.fetchone()
+        r.set(name=result[0], value=result[1])
 
 
+    else:
+        print("캐시에서 가져옴!")
+
+    result = r.get(name=id) #if문에 넣을수있지만 동일한 조건을 주기위함
+    last_time = time.time()
+    timetotime = last_time-first_time
+    print(timetotime, "초 걸림")
+    print(result)
+    result_list.append(timetotime)
+    
+print("완료")
+print(sum(result_list)/len(result_list))
+```
+
+![스크린샷 2020-10-27 오후 8.17.35](https://tva1.sinaimg.cn/large/0081Kckwgy1gk44394qbxj30my06kdgc.jpg)
+
+![스크린샷 2020-10-27 오후 8.17.15](https://tva1.sinaimg.cn/large/0081Kckwgy1gk44376vvqj30kl06174s.jpg)
+
+2배 더 빨랐다!
 
