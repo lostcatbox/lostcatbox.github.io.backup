@@ -70,7 +70,7 @@ __`sys.stdin.readline()`은 사용자의 입력을 받지만 개행 문자도 �
 
 `input()`과 가장 큰 차이점은 `input()` 은 **내장 함수**s로 취급되는 반면 `sys` 에 속하는 메소드들은 **file object**로 취급된다. __즉, 사용자의 입력만을 받는 buffer를 하나 만들어 그 buffer에서 읽어들이는 것이다.__
 
-`input()`은 더 이상 입력이 없는데도 수행될 경우 EOFerror를 뱉어내는 반면 `sys.stdin.readline()`은 빈 문자열을 반환한다.
+`input()`은 더 이상 입력이 없는데도 수행될 경우EOFerror를 뱉어내는 반면 `sys.stdin.readline()`은 빈 문자열을 반환한다.
 
 다음 예시를 해석해보자
 
