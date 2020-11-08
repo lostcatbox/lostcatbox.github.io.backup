@@ -76,21 +76,26 @@ lr = lambda: sys.stdin.readline()
 
 event_cnt = int(lr())
 
-
 for event in range(event_cnt):
-  day_cnt, team_cnt = map(int, lr().split())
-  day_pay = [int(x) for x in lr().split()]
-  
-  avgs = []
-  
-  for i in range(0, len(day_pay)-team_cnt):
-pay_sum = sum(day_pay[i:i+team_cnt])
 
-avgs.append(pay_sum/team_cnt)
-avgs.append((pay_sum+day_pay[i+team_cnt])/(team_cnt+1))
+    day_cnt, team_cnt = map(int, lr().split())
+    day_pay = [int(x) for x in lr().split()]
 
-  result = min(avgs)
+    avgs = []
 
-  print("%.11f"%result)
+    for i in range(day_cnt-team_cnt+1):
+        pay_sum = sum(day_pay[i:i+team_cnt])
+        avgs.append(pay_sum/team_cnt)
+
+        for t in range(day_cnt-i-team_cnt):
+            pay_sum+=day_pay[i+team_cnt+t]
+            avgs.append(pay_sum/(team_cnt+t+1))
+    result = min(avgs)
+    print("%.11f" % result)
 ```
 
+완벽히 풀었다.
+
+아이디어는 결국 같을수밖에없었다
+
+하지만 위에 문제점들을 해결할수있는 키를 생각했고 결론에 도달했다는 것에 의미를 갖는다.
