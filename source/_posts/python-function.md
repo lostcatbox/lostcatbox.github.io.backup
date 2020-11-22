@@ -99,3 +99,13 @@ for i in range(case):
 
 `sys.stdin.readline()` 하면 2 /n까지 모두 가져가지만 int()로 둘려쌓여있으니... case=2 였다. 
 
+# sorted()
+
+정렬할때 많이 쓰는것 sort와 차이보기
+
+만약 같은게 있을경우 원본의 순서와 동일한가?
+
+# reverse()
+
+
+
