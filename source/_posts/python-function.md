@@ -109,3 +109,14 @@ for i in range(case):
 
 
 
+
+
+# 함수아닌것들
+
+```python
+# root 쓰기
+2**0.5
+
+
+```
+
