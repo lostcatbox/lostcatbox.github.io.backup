@@ -1,8 +1,8 @@
 ---
-title: 코테 준비 오답노트
+title: 코딩테스트 오답노트
 date: 2020-10-30 17:53:00
-categories: [Codingtest]
-tags: [Codingtest]
+categories: [Coding]
+tags: [Coding, Python]
 ---
 
 # 원칙

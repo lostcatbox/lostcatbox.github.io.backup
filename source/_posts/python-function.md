@@ -1,5 +1,5 @@
 ---
-title: python 함수
+title: python 함수, 자료형, 그외
 date: 2020-11-04 15:16:41
 categories: [Python]
 tags: [Coding, Python, Basic]
