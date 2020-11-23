@@ -83,6 +83,20 @@ tags: [Codingtest]
 >
 > 당연히 처음보는 기술, 접근은 어렵지만 지속적사용이 실력 업
 
+# 구성
+
+## 첫 답안
+
+## 문제읽기
+
+## 재정의
+
+## 계획
+
+## 구현
+
+## 리뷰
+
 # 페스티벌 문제
 
 https://algospot.com/judge/problem/read/FESTIVAL
@@ -186,3 +200,90 @@ for event in range(event_cnt):
 
 [문제](https://programmers.co.kr/learn/courses/30/lessons/68644)
 
+## 첫 답안
+
+```python
+listx =[]
+def solution(numbers):
+    for x in range(len(numbers)):
+        num_x=numbers[x]
+        sum =0
+        for y in range(x+1,len(numbers)):
+            num_y=numbers[y]
+            sum = num_x+num_y
+            if not sum in listx:
+                listx.append(sum)
+    answer=sorted(listx)
+    
+    print(answer)
+    return answer
+```
+
+## 문제읽기
+
+numbers의 길이는 2이상 100이하이고, numbers의 모든 수는 0이상 100이하이다. 중복이 없이 2개를 뽑아 조합이 가능한 수를 나열한 리스트를 반환하면된다.
+
+## 재정의
+
+생략
+
+## 계획
+
+완전 탐색 이용, for문 안에 for문을 사용해서 모든 조합을 탐색하여, 조합을 set()에다가 넣는다면 중복방지를 구현할수있다. 순서가 없는 자료형이므로 인덱스, slice를 사용하지못한다. 마지막으로 sorted()로 감싸준다. 오름차순!
+
+## 구현
+
+```python
+def solution(numbers):
+    set_x=set()
+    for x in range(len(numbers)):
+        for y in range(x+1,len(numbers)):
+            set_x.add(numbers[x]+numbers[y]) #set에다 바로박음    
+    return sorted(list(set_x)) #마지막 리턴은 리스트여야하므로
+```
+
+## 리뷰
+
+다른 사람들을 보면 list_x=[]를 먼저 사용하고 마지막 최종 답을 return 할떄 sorted(list(set(list_x)))를 하였다. 이 문제말고 다른 문제들은 인덱스를 활용해야할수있으므로 바로 set을 활용하는거보다 리스트로 활용후 최종적으로 잠깐 set활용하는것이 더 나은 방법이다.
+
+> set을 사용한다고 해서 자동으로 오름차순으로 정렬되지 않습니다. Python의 set은 BBST가 아니라 HashSet의 형태
+
+# 크레인 인형뽑기 게임
+
+[문제](https://programmers.co.kr/learn/courses/30/lessons/64061)
+
+## 첫 답안
+
+```python
+def solution(board, moves):
+  
+    basket = []
+    count_number = 0
+    for crane in moves:
+        if crane:
+            for partofb in board:
+                if partofb[crane-1]:
+                    basket.append(partofb[crane-1])
+                    partofb[crane-1] = 0
+                    if len(basket)>1:
+                        if basket[-1] == basket[-2]:
+                            basket.pop()
+                            basket.pop()
+                            count_number+=2
+                    break
+                
+    answer = 0
+    return count_number
+```
+
+## 문제읽기
+
+
+
+## 재정의
+
+## 계획
+
+## 구현
+
+## 리뷰
