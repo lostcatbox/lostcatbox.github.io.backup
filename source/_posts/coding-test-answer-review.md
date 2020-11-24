@@ -256,34 +256,186 @@ def solution(numbers):
 
 ```python
 def solution(board, moves):
-  
-    basket = []
-    count_number = 0
+    basket=[]
+    count=0
     for crane in moves:
-        if crane:
-            for partofb in board:
-                if partofb[crane-1]:
-                    basket.append(partofb[crane-1])
-                    partofb[crane-1] = 0
-                    if len(basket)>1:
-                        if basket[-1] == basket[-2]:
-                            basket.pop()
-                            basket.pop()
-                            count_number+=2
-                    break
-                
-    answer = 0
-    return count_number
+        for i in board:
+            if not i[crane-1] ==0:
+                basket.append(i[crane-1])
+                i[crane-1]=0  #꺼낸후 0으로 초기화
+                break
+        if len(basket)>1:
+            if basket[-1]==basket[-2]:
+                count+=2
+                del basket[-1]
+                del basket[-1]
+            
+    return count
 ```
 
 ## 문제읽기
+
+NxN크기의 박스에서 바구니에 옮기는것.
+
+가장 아래칸부터 차곡차곡 쌓어있는 인형.
+
+바구니에서 두개의 인형이 겹치면 터지고 없어짐
+
+박스에 크레인이 내려가는 곳에 아무런 인형이 없다면 아무일도 일어나지않음
+
+__주어진 매개변수__
+
+board는 박스 내부, 숫자의 의미는 인형의 종류의미
+
+moves는 크레인 픽업 위치
+
+__예시__
+
+| board                                                        | moves             | result |
+| ------------------------------------------------------------ | ----------------- | ------ |
+| [[0,0,0,0,0],[0,0,1,0,3],[0,2,5,0,1],[4,2,4,4,2],[3,5,1,3,1]] | [1,5,3,5,1,2,1,4] | 4      |
 
 
 
 ## 재정의
 
+박스는 2차원배열로 생각하고, 크레인 좌표가 들어가며, 터트려 사라진 인형을 반환하면된다. 
+
+## 계획
+
+2차원배열에서 인형을 뽑고,  board는 첫번째 행부터 마지막행까지 행기준으로 나타내고있다. 크레인은 같은 열에 가장  위있는 것을 가져오면서 그것을 0으로 대체시킴. 
+
+바구니에 쌓이면서 같은것이 있으면 터지는 것을 구현해야함. 매번 담을 때 검사하면 변수없다.
+
+## 구현
+
+올바른 답안이였다.
+
+스택을 활용한 알고리즘이므로..
+
+`del list[i]`  보다는 `list.pop(i)` 를 선호하도록하자
+
+## 리뷰
+
+
+
+# 완주하지 못한 선수
+
+[문제](https://programmers.co.kr/learn/courses/30/lessons/42576)
+
+## 첫 답안
+
+```python
+def solution(participant, completion):
+    sort_participant = sorted(participant)
+    sort_completion = sorted(completion)
+    for i in range(len(sort_completion)):
+        if sort_participant[i] != sort_completion[i]:
+            return sort_participant[i]
+    return sort_participant[-1]
+```
+
+## 문제읽기
+
+## 재정의
+
+A 와 B리스트에서 겹치는 이름도 존재하며, A는  존재하고 B에는존재하지 않는 이름을 찾으면 된다
+
+## 계획
+
+ 정렬후에 만약  다른것이 나타난다면,리턴하면되지않을까?
+
+하나만다르기때문에  A를 기준으로 돌다가 인덱스가 A와 B가 틀리면 그 위치에 A를 반환하면될것이다
+
+## 구현
+
+```python
+import collections
+
+
+def solution(participant, completion):
+    answer = collections.Counter(participant) - collections.Counter(completion)
+    return list(answer.keys())[0]
+```
+
+## 리뷰
+
+collections.Counter 모듈을 써서 간단히 아래처럼  요소들을 count할수있었다.
+
+```python
+Counter({'leo': 1, 'kiki': 1, 'eden': 1})
+Counter({'eden': 1, 'kiki': 1})
+Counter({'leo': 1})
+```
+
+# 모의고사
+
+https://programmers.co.kr/learn/courses/30/lessons/42840
+
+## 첫 답안
+
+```python
+import math
+
+def solution(answers):
+    count_person1,count_person2, count_person3 =0,0,0
+    len_answers = len(answers)
+    person1_answers = [1,2,3,4,5]*math.ceil(len(answers)/5)
+    person2_answers = [2,1,2,3,2,4,2,5]*math.ceil(len(answers)/8)
+    person3_answers = [3,3,1,1,2,2,4,4,5,5]*math.ceil(len(answers)/10)
+    for x in range(len(answers)):
+        if person1_answers[x] == answers[x]:
+            count_person1 +=1
+    for x in range(len(answers)):
+        if person2_answers[x] == answers[x]:
+            count_person2 +=1
+            
+    for x in range(len(answers)):
+        if person3_answers[x] == answers[x]:
+            count_person3 +=1
+    count_result_list=[count_person1,count_person2,count_person3]
+    m = max(count_result_list)
+    result = [i+1 for i, j in enumerate(count_result_list) if j == m]
+    
+    return result
+```
+
+## 문제읽기
+
+## 재정의
+
+수포자는 패턴을 반복하고
+
+answer와 비교하여 몇개를 맞췄는지보고 높은 사람을 반환한다(1,2,3이라는 사람)
+
+동점이라면 오름차순 반환
+
 ## 계획
 
 ## 구현
 
+```python
+from itertools import cycle
+
+def solution(answers):
+    giveups = [
+        cycle([1,2,3,4,5]),
+        cycle([2,1,2,3,2,4,2,5]),
+        cycle([3,3,1,1,2,2,4,4,5,5]),
+    ]
+    scores = [0, 0, 0]
+    for num in answers:
+        for i in range(3):
+            if next(giveups[i]) == num:
+                scores[i] += 1
+    highest = max(scores)
+
+    return [i + 1 for i, v in enumerate(scores) if v == highest]
+```
+
+답안을 참조했다. cycle은 이터레이터를 반환한다. next()를 활용해서 계속 번호가 순환할수있다.
+
 ## 리뷰
+
+
+
