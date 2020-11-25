@@ -437,5 +437,82 @@ def solution(answers):
 
 ## 리뷰
 
+`from iterloop import cycle`에 꼭 주목하자
 
+패턴을 generator로 처리하여 가독성, 공간복잡도도 줄였다.
+
+문제의 접근방법에 대해서는 다르지 않았다.
+
+cycle을 사용하지 않고 더 간단한 방법은 나머지를 이용하는 방법으로 계속 참조하는것이다.
+
+```python
+def solution(answers):
+    pattern1 = [1,2,3,4,5]
+    pattern2 = [2,1,2,3,2,4,2,5]
+    pattern3 = [3,3,1,1,2,2,4,4,5,5]
+    score = [0, 0, 0]
+    result = []
+
+    for idx, answer in enumerate(answers):
+        if answer == pattern1[idx%len(pattern1)]:
+            score[0] += 1
+        if answer == pattern2[idx%len(pattern2)]:
+            score[1] += 1
+        if answer == pattern3[idx%len(pattern3)]:
+            score[2] += 1
+
+    for idx, s in enumerate(score):
+        if s == max(score):
+            result.append(idx+1)
+
+    return result
+```
+
+
+
+# K번째 수
+
+https://programmers.co.kr/learn/courses/30/lessons/42748
+
+## 첫 답안
+
+```python
+def solution(array, commands):
+    result=[]
+    for lists in commands: 
+        i,j,k = lists[0]-1, lists[1] ,lists[2] -1
+        result.append(sorted(array[i:j])[k])
+    
+    return result
+```
+
+> 위에 코드중 i,j,k 는 그냥 i,j,k = lists 만해도 모두 알맞게 들어간다~
+
+## 문제읽기
+
+## 재정의
+
+자르고, 정렬, 해당숫자!
+
+## 계획
+
+## 구현
+
+```python
+def solution(array, commands):
+    return list(map(lambda x:sorted(array[x[0]-1:x[1]])[x[2]-1], commands))
+```
+
+```python
+def solution(array, commands):
+    return [sorted(array[i-1:j])[k-1] for i,j,k in commands]
+```
+
+## 리뷰
+
+아래것은 내가 생각해서 짠것이다
+
+마찬가지로 접근방식은 동일했지만, map이용과 lambda 를 적절히 활용해서 좋은 코드를 만들었다
+
+# 체육복
 
