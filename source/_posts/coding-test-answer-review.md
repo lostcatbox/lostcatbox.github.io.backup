@@ -1,5 +1,5 @@
 ---
-title: 코딩테스트 오답노트
+title: [코테] 1렙 프로그래머스 리뷰노트
 date: 2020-10-30 17:53:00
 categories: [Coding]
 tags: [Coding, Python]
@@ -592,4 +592,128 @@ def solution(n, lost, reserve):
 `list(set(reserve) - set(lost))` 한정적이여도 이 방법도 생각해보자
 
 set()으로 중복을 없애고 빼주고 리스트화함
+
+# 2016년
+
+https://programmers.co.kr/learn/courses/30/lessons/12901
+
+## 첫 답안
+
+```python
+def solution(a, b):
+    monthlydate=[31,29,31,30,31,30,31,31,30,31,30,31]
+    remain_date = 0
+    if a>1:
+        for x in monthlydate[:a-1]:
+            remain_date+=x
+    remain_date+=b
+    y = remain_date%7
+    print(y)
+    answer = ["THU","FRI","SAT","SUN","MON","TUE","WED"][y]
+    return answer
+```
+
+## 재정의
+
+2016년 1월 1일은 금요일
+
+2016년  a월 b일은 무슨요일?
+
+없는날은 주어지지않는다
+
+## 계획
+
+데이터와 로직을 분리하자
+
+`["THU","FRI","SAT","SUN","MON","TUE","WED"]`
+
+`[31,29,31,30,31,30,31,31,30,31,30,31]`
+
+## 구현
+
+```python
+def solution(a, b):
+    dn=["THU","FRI","SAT","SUN","MON","TUE","WED"]
+    dtn=[31,29,31,30,31,30,31,31,30,31,30,31]
+    sum=0
+    for i in range(a-1):
+        sum+=dtn[i]
+    answer=dn[(sum+b)%7] 
+    return answer
+```
+
+## 리뷰
+
+로직은 똑같지만 좀더 간결하게 가능했다
+
+```python
+return dn[(sum(dtn[:a-1])+b)%7]
+```
+
+리스트 연속으로합할떄 for문 돌지말로 slice치고 sum()부는것 좋은아이디어!
+
+
+
+# 같은 숫자는 싫어
+
+https://programmers.co.kr/learn/courses/30/lessons/12906
+
+## 첫 답안
+
+```python
+def solution(arr):
+    result = [] 
+    first = arr[0]
+    result.append(first)
+    for x in range(1,len(arr)):
+        second=arr[x]
+        if first == second:
+            pass
+        else:
+            result.append(second)
+        first=arr[x]
+
+    return result
+```
+
+## 재정의
+
+배열 arr, 각 원소 0~9까지
+
+return 배열에서 중복숫자 제거후 숫자 배열순서는 유지
+
+## 계획
+
+set를 활용하면 위치  index가없기때문에 배열순서 유지못한다.
+
+for문을 돌면서 다음것과 같으면 건너뛰고 append()를 활용하면되지않을까?
+
+## 구현
+
+```python
+def solution(arr):
+    result=[]
+    for i in range(len(arr)):
+        if i ==len(arr)-1:
+            result.append(arr[i])
+            break
+        if not arr[i] == arr[i+1]:
+            result.append(arr[i])
+    return result
+```
+
+## 리뷰
+
+```python
+def solution(arr):
+    result=[]
+    for x in arr:
+        if not result[-1:]==[x]:
+            result.append(x)
+    return result
+```
+
+slice의 특성을 이용하자.. 와 대박 문자열 비어있어도 slice는 오류안내고 빈리스트 반환함.
+
+
 
