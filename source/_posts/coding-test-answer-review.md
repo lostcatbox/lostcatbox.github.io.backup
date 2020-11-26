@@ -87,8 +87,6 @@ tags: [Coding, Python]
 
 ## 첫 답안
 
-## 문제읽기
-
 ## 재정의
 
 ## 계획
@@ -219,13 +217,9 @@ def solution(numbers):
     return answer
 ```
 
-## 문제읽기
-
-numbers의 길이는 2이상 100이하이고, numbers의 모든 수는 0이상 100이하이다. 중복이 없이 2개를 뽑아 조합이 가능한 수를 나열한 리스트를 반환하면된다.
-
 ## 재정의
 
-생략
+numbers의 길이는 2이상 100이하이고, numbers의 모든 수는 0이상 100이하이다. 중복이 없이 2개를 뽑아 조합이 가능한 수를 나열한 리스트를 반환하면된다.
 
 ## 계획
 
@@ -273,7 +267,9 @@ def solution(board, moves):
     return count
 ```
 
-## 문제읽기
+## 재정의
+
+
 
 NxN크기의 박스에서 바구니에 옮기는것.
 
@@ -294,10 +290,6 @@ __예시__
 | board                                                        | moves             | result |
 | ------------------------------------------------------------ | ----------------- | ------ |
 | [[0,0,0,0,0],[0,0,1,0,3],[0,2,5,0,1],[4,2,4,4,2],[3,5,1,3,1]] | [1,5,3,5,1,2,1,4] | 4      |
-
-
-
-## 재정의
 
 박스는 2차원배열로 생각하고, 크레인 좌표가 들어가며, 터트려 사라진 인형을 반환하면된다. 
 
@@ -334,8 +326,6 @@ def solution(participant, completion):
             return sort_participant[i]
     return sort_participant[-1]
 ```
-
-## 문제읽기
 
 ## 재정의
 
@@ -399,8 +389,6 @@ def solution(answers):
     
     return result
 ```
-
-## 문제읽기
 
 ## 재정의
 
@@ -488,8 +476,6 @@ def solution(array, commands):
 
 > 위에 코드중 i,j,k 는 그냥 i,j,k = lists 만해도 모두 알맞게 들어간다~
 
-## 문제읽기
-
 ## 재정의
 
 자르고, 정렬, 해당숫자!
@@ -515,4 +501,95 @@ def solution(array, commands):
 마찬가지로 접근방식은 동일했지만, map이용과 lambda 를 적절히 활용해서 좋은 코드를 만들었다
 
 # 체육복
+
+https://programmers.co.kr/learn/courses/30/lessons/42862
+
+## 첫 답안
+
+```python
+def solution(n, lost, reserve):
+    saved_number = 0
+    xx = []
+    for x in lost:
+        if x in reserve:
+            reserve.pop(reserve.index(x))
+            
+            saved_number+=1
+        else:
+            xx.append(x)
+
+    for x in xx:
+        if x-1 in reserve:
+            reserve.pop(reserve.index(x-1))
+            saved_number+=1
+        elif x+1 in reserve:
+            reserve.pop(reserve.index(x+1))
+            saved_number+=1
+    
+    
+    answer = n - len(lost) + saved_number
+    return answer
+```
+
+## 재정의
+
+n 전체 학생수(1부터시작)
+
+lost 읽어버린 사람들(1명이상)
+
+reserve 여벌의 체육복의 학생
+
+바로 앞번호나 바로 뒷번호의 학생에게만 체육복을 발려줄수있다.
+
+return 최대한 많은 학생이 수업들을수있는 수
+
+혹시 reserve와 lost에 동시에있는 숫자는 제거해야한다
+
+## 계획
+
+remove를 사용하여 요소를 제거하면 혹시라도있을 중복도 해결가능
+
+## 구현
+
+```python
+def solution(n, lost, reserve):
+    count=0
+    up_reserve=[x for x in reserve if not x in lost]
+    up_lost=[x for x in lost if not x in reserve]
+    for number in up_lost:
+        if number-1 in up_reserve:
+            up_reserve.remove(number-1)
+            count+=1
+        
+        elif number+1 in up_reserve:
+            up_reserve.remove(number+1)
+            count+=1
+            
+    answer=n-len(up_lost)+count
+    return answer
+```
+
+## 리뷰
+
+나와 완전 비슷한것이 답안 이였다. 이럴때가 진짜 행복하다
+
+단지 reserve와 lost 위치를 바꿨다...더 줄일수있었다. 마지막 남은 lost 길이를 빼면되니까!
+
+```python
+def solution(n, lost, reserve):
+    _reserve = [r for r in reserve if r not in lost]
+    _lost = [l for l in lost if l not in reserve]
+    for r in _reserve:
+        f = r - 1
+        b = r + 1
+        if f in _lost:
+            _lost.remove(f)
+        elif b in _lost:
+            _lost.remove(b)
+    return n - len(_lost)
+```
+
+`list(set(reserve) - set(lost))` 한정적이여도 이 방법도 생각해보자
+
+set()으로 중복을 없애고 빼주고 리스트화함
 
