@@ -1,5 +1,5 @@
 ---
-title: [코테] 1렙 프로그래머스 리뷰노트
+title: (코테) 1렙 프로그래머스 리뷰노트
 date: 2020-10-30 17:53:00
 categories: [Coding]
 tags: [Coding, Python]
