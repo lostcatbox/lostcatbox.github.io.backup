@@ -33,7 +33,9 @@ tags: [Coding, Python]
 >    >
 >    >   (가장 단순한 알고리즘 만드는것)(시도후 개선)
 >    >
->    > - 예제의 문제 푸는 과정을 그대로 따라가서 수식화 가능?
+>    > - __예제의 문제 푸는 과정을 그대로 따라가서 수식화 가능?__
+>    >
+>    >   반드시 로직으로 끝까지 따라가보기
 >    >
 >    > - 문제를 단순화 못할까? 문제의 제약 조건없애보기, 다차원 1차원으로 줄여표현
 >    >
@@ -95,5 +97,129 @@ tags: [Coding, Python]
 
 ## 리뷰
 
+# 프린트
+
+https://programmers.co.kr/learn/courses/30/lessons/42587
+
+## 첫 답안
+
+```python
+def solution(priorities, location):
+    list_x=[(i,x) for i,x in enumerate(priorities)]
+    final_list =[]
+    
+    while list_x:
+        numbers=[n[1] for n in list_x]
+        if  list_x[0][1]<max(numbers):
+            list_x.append(list_x[0])
+            list_x.pop(0)
+        else:
+            final_list.append(list_x[0])
+            list_x.pop(0)
+                    
+    for i in range(len(final_list)):
+        if final_list[i][0]==location:
+            return i+1
+```
+
+## 재정의
+
+## 계획
+
+## 구현
+
+## 리뷰
+
+# 124 나라의 숫자
+
+https://programmers.co.kr/learn/courses/30/lessons/12899
+
+## 첫 답안
+
+3진법을 이용한다는것은 알았느데 결국 못품
+
+## 재정의
+
+## 계획
+
+## 구현
+
+```python
+def solution(num):
+    answer = ""
+    while num:
+        num, nam = divmod(num, 3)  #몫 나머지 반환
+        answer = "412"[nam] + answer
+        if not nam:
+            num -= 1
+            
+    return answer
+```
+
+## 리뷰
+
+[참조](https://itholic.github.io/kata-124-world/)
+
+3진법은 기본적으로 생각은 했지만 여기에서 0을 4로 바꾸고 자릿수하나를 줄인다! 라는 생각을하는것이 부족했다.
+
+# 주식가격
+
+https://programmers.co.kr/learn/courses/30/lessons/42584
+
+## 첫 답안
+
+```python
+# 19:14
+def solution(prices):
+    answer = []
+    for i in range(len(prices)):
+        count=0
+        for j in prices[i+1:]:
+            count+=1
+            if prices[i]>j:
+                break
+        answer.append(count)
+    return answer
+```
 
 
+
+## 재정의
+
+## 계획
+
+## 구현
+
+## 리뷰
+
+------
+
+각 시간대별 주식가격이 떨어지지 않은 기간이 몇 초인지를 구하는 문제다. 간단한 스택/큐 문제로 큐를 이용하면 쉽게 문제를 풀 수 있다.
+
+prices 리스트를 큐로 바꿔 pop해주고, 큐 리스트에 남아있는 요소들과 하나씩 비교 한다.
+
+이 때 가격이 떨어지지 않은 기간을 answer 리스트에 넣어줘야 하기 때문에 몇 초인지를 나타내는 변수에 값을 1씩 늘려준다. 가격이 떨어졌을 경우 반복문을 종료하고 최종적인 기간을 answer 리스트에 추가해주면 끝난다.
+
+아래는 코드 전문이다. 
+
+```python
+from collections import deque
+
+def solution(prices):
+    answer = []
+    
+    que_prices = deque(prices)
+    
+    while que_prices :
+        price = que_prices.popleft()
+        up_time = 0
+        for n in que_prices :
+            up_time += 1
+            if price > n :
+                break
+        answer.append(up_time)
+        
+    return answer
+```
+
+que_prices라는 큐를 만들어주고 popleft()를 이용하여 좌측요소를 빼주고 up_time은 가격이 떨어지지 않은 기간을 나타내는 변수다.
