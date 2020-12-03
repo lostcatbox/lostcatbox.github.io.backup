@@ -171,18 +171,18 @@ https://programmers.co.kr/learn/courses/30/lessons/42584
 ```python
 # 19:14
 def solution(prices):
-    answer = []
+    answer = [0]*len(prices)
     for i in range(len(prices)):
-        count=0
-        for j in prices[i+1:]:
-            count+=1
+        for j in prices[i+1:len(prices)]:
+            answer[i]+=1
             if prices[i]>j:
                 break
-        answer.append(count)
     return answer
 ```
 
+효율성이 큐보다 훨씬 나쁘다. 예제가 좀만 더 빡세면 통과못한 코드 O(N^2)
 
+리뷰 코드보다 3배더 느림
 
 ## 재정의
 
@@ -191,8 +191,6 @@ def solution(prices):
 ## 구현
 
 ## 리뷰
-
-------
 
 각 시간대별 주식가격이 떨어지지 않은 기간이 몇 초인지를 구하는 문제다. 간단한 스택/큐 문제로 큐를 이용하면 쉽게 문제를 풀 수 있다.
 
@@ -207,7 +205,6 @@ from collections import deque
 
 def solution(prices):
     answer = []
-    
     que_prices = deque(prices)
     
     while que_prices :
@@ -223,3 +220,38 @@ def solution(prices):
 ```
 
 que_prices라는 큐를 만들어주고 popleft()를 이용하여 좌측요소를 빼주고 up_time은 가격이 떨어지지 않은 기간을 나타내는 변수다.
+
+똑같은 O(N^2)이다
+
+## 속도 차이 이유
+
+slice는 costly operation이다. 왜냐면 기존 list를 복사하고, 새로 만들기 때문이다.
+
+deque는 the start of the list pointer and "forgets" the oldest item이다
+
+이것은 사소한차이지만 효율성 테스트에서는 엄청 차이가 심하다.
+
+> python에서 큐/스택을 활용해야하는 이유 (속도차이)
+>
+> python에서 `list.pop(0)` 실행시 맨앞에 있는 요소를 빼고 나머지를 모든 데이터를 한칸씩 앞으로 당기는 작업이 수반된다. 즉 시간복잡도가 O(N)이다.
+>
+> 하지만 `from collection import deque` 사용한다면 CPython으로 구현되어있기 때문에 퍼포먼스 차이가 심하게난다.
+
+> 추가적으로 중요한점은 python list는 동적 배열이라는것이다
+>
+> 필요에 따라 크기가 변하는 배열, 크기를 알아서 조절한다.
+>
+> ```python
+> def append(A, value):
+>    if A.capacity == A.n: #만약 A의 용량이 가득 차게 되면
+>       allocate a new list B with larger memory and
+>       update B.capacity and B.n
+>       #B라는 새로운 리스트를 생성한다(단, B's capacity > A's capacity)
+>       for i in range(n): 
+>          B[i] = A[i] #새로운 리스트 B에다가 A를 싹 옮긴다
+>       dispose A #용량이 넘 작은 옛날 리스트 A는 버린다
+>       A = B #B리스트의 이름을 A로 변경한다
+> ```
+>
+> resize된다면, 결국 O(N)이되어 수행시간이 늘어날수밖에없다.
+
