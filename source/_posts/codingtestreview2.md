@@ -261,10 +261,76 @@ https://programmers.co.kr/learn/courses/30/lessons/49993
 
 ## 첫 답안
 
+```python
+#50분 걸림
+def solution(skill, skill_trees):
+    count=0
+    for tree in skill_trees:
+        iter_skill=list(skill)
+        for spell in list(tree):
+                if spell in list(skill):
+                    if not spell == iter_skill.pop(0):
+                        break
+                        
+                if spell == list(tree)[-1]:
+                    count+=1
+                    print(tree)
+                    break
+    return count
+```
+
 ## 재정의
 
+skill에있는 순서대로 skill_tree가 나와야하며,  skill의 적혀있지않은 다른 알파벳들은 순서와 상관없다
+
+이떄 skill을 지킨 스킬트리 갯수 리턴
+
 ## 계획
+
+2가지 경우가 나올수있다고 생각했다
+
+skill트리에 해당하는 것이 나왔을때와 skill트리에 해당하지 않는것이 나왔을때를 생각했다.
+
+skill트리 나왔을때
+
+- 현재 해당해야하는 알파벳과 맞지 않으면 break
+
+skill트리 안나왔을때
+
+- 마지막 문자라면 앞에  break문이 안일어난것이니까 count+=1함
 
 ## 구현
 
 ## 리뷰
+
+남의 답지
+
+```python
+def solution(skill, skill_trees):
+    answer = 0
+
+    for skills in skill_trees:
+        skill_list = list(skill)
+
+        for s in skills:
+            if s in skill:
+                if s != skill_list.pop(0):
+                    break
+        else:
+            answer += 1
+
+    return answer
+```
+
+for else 문은 와...for가 끝까지 돌면 이터레이터 에러가뜨고 그럼 else문이 실행된다. 즉, 마지막까지 정상적으로  for문이 돌았다면 else문을 실행할수있는것이다. 중간에break걸린다면 else문은 실행되지않는다.
+
+아름답다
+
+__접근은 비슷했다__
+
+하지만 내 코드가 구려보인다.
+
+순서와 정확히 안맞으면 break걸고 나머지는 모두 answer+=1이라는 생각을 못했다.
+
+하지만 list.pop(0)는 전에 문제처럼 효율성문제는 항상 생각하자
+
