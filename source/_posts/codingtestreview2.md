@@ -255,3 +255,16 @@ deque는 the start of the list pointer and "forgets" the oldest item이다
 >
 > resize된다면, 결국 O(N)이되어 수행시간이 늘어날수밖에없다.
 
+# 스킬트리
+
+https://programmers.co.kr/learn/courses/30/lessons/49993
+
+## 첫 답안
+
+## 재정의
+
+## 계획
+
+## 구현
+
+## 리뷰
