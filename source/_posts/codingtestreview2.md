@@ -336,3 +336,33 @@ __접근은 비슷했다__
 
 좀더 빠르게풀기위해서는 모든 경우의 수를 써보자
 
+# 멀쩡한 사각형
+
+https://programmers.co.kr/learn/courses/30/lessons/62048
+
+## 첫 답안
+
+```python
+def solution(w,h):
+    sum=0
+    func_y = lambda x:x*h/w
+    for position_x in range(1,w):
+        sum+=int(func_y(position_x))
+
+    return sum*2
+```
+
+효율성 테스트를 통과하지 못하는 것이 종종 발생하였다.
+
+## 재정의
+
+## 계획
+
+## 구현
+
+## 리뷰
+
+남들은 최대 공약수를 이용하였다
+
+https://leedakyeong.tistory.com/entry/%ED%94%84%EB%A1%9C%EA%B7%B8%EB%9E%98%EB%A8%B8%EC%8A%A4-%EB%A9%80%EC%A9%A1%ED%95%9C-%EC%82%AC%EA%B0%81%ED%98%95-in-python
+
