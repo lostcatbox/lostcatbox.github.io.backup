@@ -106,6 +106,7 @@ https://programmers.co.kr/learn/courses/30/lessons/42587
 ## 첫 답안
 
 ```python
+# 5:45
 def solution(priorities, location):
     list_x=[(i,x) for i,x in enumerate(priorities)]
     final_list =[]
@@ -126,11 +127,57 @@ def solution(priorities, location):
 
 ## 재정의
 
+```
+1. 인쇄 대기목록의 가장 앞에 있는 문서(J)를 대기목록에서 꺼냅니다.
+2. 나머지 인쇄 대기목록에서 J보다 중요도가 높은 문서가 한 개라도 존재하면 J를 대기목록의 가장 마지막에 넣습니다.
+3. 그렇지 않으면 J를 인쇄합니다.
+```
+
+위에 규칙을 따라야한다. 
+
+묻는 것은 내가 인쇄를 요청한 문서가 몇 번째로 인쇄되는 지를 return한다.
+
+즉, 처음 목록 순서를 알고있고, 이를 1,2,3을 통해 최종 리스트를 만들면 된다.. 
+
+최종 리스트를 만들때  list_x는  deque로 하면 leftpop() 이 훨씬 빨라질수있다.
+
 ## 계획
 
 ## 구현
 
 ## 리뷰
+
+다른사람의 답안
+
+```python
+def solution(priorities, location):
+    queue =  [(i,p) for i,p in enumerate(priorities)]
+    answer = 0
+    while True:
+        cur = queue.pop(0)
+        if any(cur[1] < q[1] for q in queue):
+            queue.append(cur)
+        else:
+            answer += 1
+            if cur[0] == location:
+                return answer
+```
+
+> __any(iterableValue)__
+>
+> - 전달받은 자료형의 element중 하나라도 True일경우 True로 반환한다.
+>
+> - 내부로직
+>
+>   ```python
+>   def any(iterable):
+>     for element in iterable:
+>       if element:
+>         return True
+>     return False
+>   ```
+
+
 
 # 124 나라의 숫자
 
@@ -416,8 +463,6 @@ FIFO인 큐 문제로 보인다.
 큐/스택 문제이다.
 
 ## 계획
-
-
 
 ## 구현
 
