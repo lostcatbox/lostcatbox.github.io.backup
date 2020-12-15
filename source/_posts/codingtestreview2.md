@@ -368,3 +368,81 @@ def solution(w,h):
 
 https://leedakyeong.tistory.com/entry/%ED%94%84%EB%A1%9C%EA%B7%B8%EB%9E%98%EB%A8%B8%EC%8A%A4-%EB%A9%80%EC%A9%A1%ED%95%9C-%EC%82%AC%EA%B0%81%ED%98%95-in-python
 
+# 다리를 지나는 트럭
+
+https://programmers.co.kr/learn/courses/30/lessons/42583
+
+## 첫 답안
+
+```python
+#2:55
+from collections import deque
+
+def solution(bridge_length, weight, truck_weights):
+    loss_time =0
+    
+    depue_truck=deque(truck_weights)
+    bridge_list= deque()
+    while depue_truck:
+        count_time=0
+
+        if sum(bridge_list)<weight:
+            bridge_list.append(depue_truck.popleft())
+            loss_time+=1
+        count_time+=1
+
+        if count_time%bridge_length==0:
+            count_time=0
+            bridge_list.popleft()
+    
+    answer = len(truck_weights)*bridge_length+1-loss_time
+    return answer
+
+print(solution(100, 100, [10, 10, 10, 10, 10, 10, 10, 10, 10, 10]))
+```
+
+실패했다. 여러가지 문제점이보인다.
+
+아이디어는 다리위에 겹치는 것이 있으면 그 겹쳤던 횟수만큼 오리지널 값에서 빼면 답이 나오는것이였다. 하지만 겹치는 횟수를 잘못 생각하였다.
+
+## 재정의
+
+FIFO인 큐 문제로 보인다.
+
+큐 안에있는 총 트럭의 무게의 합은 항상 weight를 넘지 않아야하며, 한번들어오면 bridge_length초만큼 흘러야 큐를 나간다. 
+
+최소 시간을 구하는법?
+
+큐/스택 문제이다.
+
+## 계획
+
+
+
+## 구현
+
+## 리뷰
+
+[자세히](https://velog.io/@devjuun_s/%EB%8B%A4%EB%A6%AC%EB%A5%BC-%EC%A7%80%EB%82%98%EB%8A%94-%ED%8A%B8%EB%9F%AD-%ED%94%84%EB%A1%9C%EA%B7%B8%EB%9E%98%EB%A8%B8%EC%8A%A4)
+
+```python
+def solution(bridge_length, weight, truck_weights):
+    time = 0
+    q = [0] * bridge_length
+    
+    while q:
+        time += 1
+        q.pop(0)
+        if truck_weights:
+            if sum(q) + truck_weights[0] <= weight:
+                q.append(truck_weights.pop(0))
+            else:
+                q.append(0)
+    
+    return time
+```
+
+남의 답지이다. FIFO를 이런식으로 구현하였다. q= [0,0,0] 으로 시작했다면, while문에서 시간이 지날때마다 leftpop()을 하고, 만약 이상태에서 기존 다리위에 숫자와 truck_weights[0]의 숫자의 합이  weight보다 작을경우 q.append로 추가해주고, 아니라면 0을 추가해준다. 이런식으로 q는 시간에 따라 [0,0,0]>>[0,0,버스무게]>>[0,버스무게,0]>>[버스무게,0,0]>> 자연스레 흘러갈것이다.
+
+q에있는 모든것이 사라지면, 다 건넜다는것을 뜻
+
