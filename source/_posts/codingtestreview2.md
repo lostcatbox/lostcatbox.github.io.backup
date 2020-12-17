@@ -491,3 +491,70 @@ def solution(bridge_length, weight, truck_weights):
 
 q에있는 모든것이 사라지면, 다 건넜다는것을 뜻
 
+# 접두사 찾기 문제
+
+왠지모르게 하나가 계속 오류였다..
+
+```python
+def solution(strs):
+    answer = ""
+    for j in range(len(strs[0])):
+        for i in range(len(strs)):
+            if i==0:
+                befor_w=strs[i][j]
+            elif befor_w==strs[i][j]:
+                if i == len(strs)-1:
+                    answer= answer+strs[i][j]
+            else:
+                return answer
+    return answer
+```
+
+# 가장 높게 중고차 팔기
+
+이 문제는 만점나왔다
+
+prices는 리스트인데 중고차 가격이 나와있다. 단한번 매수, 매도할수있으며 최대이윤을 return 하면된다.
+
+```python
+def solution(prices):
+    min_n=prices[0]
+    max_n=prices[0]
+    highest_n=0
+
+    for x in prices:       
+        if x < min_n:
+            min_n=x
+            max_n=0
+
+        if x > max_n:
+            max_n=x
+            if highest_n<max_n-min_n:
+                highest_n=max_n-min_n
+    result=highest_n
+
+
+    return result
+```
+
+# 시간 12시에서 24시로 바꾸기+ N초후에 24시간표시?
+
+어떻게 접근해야할까?
+
+
+
+
+
+# (Mysql 쿼리문제) 찾기
+
+왜 안됫을까?
+
+
+
+```mysql
+SELECT date_format(CREATED_AT,'%m') as "월",count(*) as "결제 건수",sum(AMOUNT) as "사용 금액"
+from CARD_USAGES
+where CATEGORY=0 and "2018-06-01"<= CREATED_AT and CREATED_AT<="2018-12-31"
+group by date_format(CREATED_AT,'%m');
+```
+
