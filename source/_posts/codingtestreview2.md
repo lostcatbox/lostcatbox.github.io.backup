@@ -541,10 +541,6 @@ def solution(prices):
 
 어떻게 접근해야할까?
 
-
-
-
-
 # (Mysql 쿼리문제) 찾기
 
 왜 안됫을까?
