@@ -14,3 +14,6 @@ sudo certbot certonly -a webroot -m lostcatbox@gmail.com -w /home/lostcatbox2/pr
 해당 인증서로 접근
 
 cd /etc/letsencrypt/live/[도메인명]
+
+
+
