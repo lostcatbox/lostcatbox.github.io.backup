@@ -13,6 +13,21 @@ __표기방법:__
 
 # 함수
 
+## zip
+
+길이가 같은 자료형을 묶어주는 역할을 하는함수
+
+```python
+Number = [1,2,3,4]
+Name = ['hong','gil','dong','nim']
+Number_Name = list(zip(Number,name))
+print(Number_Name)
+
+>>>[(1 ,'hong'), (2 ,'gil'), (3 ,'dong'), (4 ,'nim')]
+```
+
+
+
 ## map
 
 map은 반복가능한 객체의 요소를 지정된 함수로 처리해주는 함수입니다. 

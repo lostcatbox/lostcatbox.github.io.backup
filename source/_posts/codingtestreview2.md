@@ -552,3 +552,90 @@ where CATEGORY=0 and "2018-06-01"<= CREATED_AT and CREATED_AT<="2018-12-31"
 group by date_format(CREATED_AT,'%m');
 ```
 
+# 기능 개발
+
+## 첫 답안
+
+```python
+# 기능 개발
+# 순서가 중요하고
+# 나와야하는것의 처리일보다 작은애들은 같이 나온다고 보면됨
+# 나와야하는것의 처리일보다 큰애들애서 다시 포인트
+
+#그럼 일단 남은 일수 계산 딱나눠떨어지지않는다면 +1데이하기
+#처리소요일수로 return 값 리스트만들기
+
+def solution(progresses,speeds):
+    answer=[]
+    fin_answer=[0]
+    u_progresses= [100-x for x in progresses]
+    for i,p in enumerate(u_progresses):
+        s=speeds[i]
+        if p%s==0:
+            answer.append(p//s)
+        else:
+            answer.append(p//s+1)
+
+    before=answer[0]
+    i=0
+    for a in answer:
+        if before>= a:
+            fin_answer[i]+=1
+        else:
+            i+=1
+            fin_answer.append(1)
+            before=a
+    return fin_answer
+
+
+print(solution([93,30,55],[1,30,5]))
+```
+
+## 재정의
+
+
+
+## 계획
+
+## 구현
+
+## 리뷰
+
+내가 부족했던것은 동시에 for문을 돌릴떄 쓰는 zip()이라는 함수가 필요했다 다만 두 자료형의 길이가 같이야한다.
+
+```python
+def solution(progresses, speeds):
+    Q=[]
+    for p, s in zip(progresses, speeds):
+        if len(Q)==0 or Q[-1][0]<-((p-100)//s):
+            Q.append([-((p-100)//s),1])
+        else:
+            Q[-1][1]+=1
+    return [q[1] for q in Q]
+```
+
+> `-((p-100)//s)` 를 쓴이유는 올림을 하기위해서다 몫을 추출핼때 음수는 내림해버림.
+
+좀더 현실적인 코드는 다음과같다 time+=1이 매우 인상적이다. 
+
+```python
+def solution(progresses, speeds):
+    print(progresses)
+    print(speeds)
+    answer = []
+    time = 0
+    count = 0
+    while len(progresses)> 0:
+        if (progresses[0] + time*speeds[0]) >= 100:
+            progresses.pop(0)
+            speeds.pop(0)
+            count += 1
+        else:
+            if count > 0:
+                answer.append(count)
+                count = 0
+            time += 1
+    answer.append(count)
+    return answer
+```
+
