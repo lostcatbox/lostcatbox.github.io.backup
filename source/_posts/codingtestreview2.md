@@ -639,3 +639,66 @@ def solution(progresses, speeds):
     return answer
 ```
 
+# 삼각 달팽이(???)
+
+https://programmers.co.kr/learn/courses/30/lessons/68645
+
+## 첫 답안
+
+풀지못했다
+
+각 리스트 별로 규칙성을 찾으려했다
+
+그래서 n=6이면 맨 바깥이 6,5,4 이며 나머지가 다시 같은 방식으로 3,2,1 이였다.
+
+## 재정의
+
+## 계획
+
+## 구현
+
+## 리뷰
+
+[자세히](https://m.post.naver.com/viewer/postView.nhn?volumeNo=29530578&memberNo=33264526)
+
+1. n*n 크기의 2d 리스트를 생성한다
+2. 이중 for 문을 돌며, 삼각형 모양의 이동을 아래와 같이 정의했다
+   - 나머지가 0인경우=y좌표 값만 1증가(아래로 이동)
+   - 나머지가 1인 경우=x좌표값만 1 증가(오른쪽으로 이동)
+   - 나머지가 2인 경우=y와 x좌표 모두 1감소(위로 이동)
+3. chain으로 2d 리스트를 flatten한뒤, 0인 값을 전부 제거한다.
+
+```python
+from itertools import chain
+def solution(n):
+    maps = [[0 for _ in range(n)] for _ in range(n)] #정사각형 모양의 배열임
+    y, x = -1, 0
+    number = 1
+    for i in range(n):
+        for j in range(i, n):
+            if i % 3 == 0:
+                y += 1
+            elif i % 3 == 1:
+                x += 1
+            elif i % 3 == 2:
+                y -= 1; x -= 1
+            maps[y][x] = number
+            number += 1
+    result = [i for i in chain(*maps) if i != 0] #0은 뺴주는과정도필요
+    return result
+```
+
+문제를 해석해보면 결국 3가지 일을 반복적으로 처리함을 알수있다.
+
+__일진행후 판단을 내려야할 부분의 로직을 짠다! 고 생각하면 다음에는 좀더 빠른접근이 가능할것이다__
+
+아래로, 우로 ,대각선 위로 이것에서 힌트를 얻었다면 좋았을 것같다
+
+> __chain(\*map)__
+>
+> chain은 이터레이터를 반환하는데, 매개변수들을 순서대로 경계없이 하나씩 반환하는 이터레이터
+>
+> *map을 언팩해서 전체리스트를 벗겨낸것을 반환한다.
+
+
+
