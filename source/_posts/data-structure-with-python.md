@@ -2,7 +2,7 @@
 title: 자료구조 공부 (파이썬활용)
 date: 2020-12-26 17:01:20
 categories: [Coding]
-tags:[Coding, Python,Basic]
+tags: [Coding, Python,Basic]
 ---
 
 # 왜?
@@ -60,7 +60,7 @@ que= deque()
 que.append(0)
 que.append(1)
 que.append(2)
-que.leftpop()
+que.popleft()
 print(que)
 ```
 
