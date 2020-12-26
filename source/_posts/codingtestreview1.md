@@ -95,106 +95,7 @@ tags: [Coding, Python]
 
 ## 리뷰
 
-# 페스티벌 문제
-
-https://algospot.com/judge/problem/read/FESTIVAL
-
-내 1차 코드
-
-```python
-# 이전 답지
-class Logic():
-    def __init__(self, for_count, L_score):
-        self.for_count = for_count
-        self.L_score = L_score
-
-    def function(self):
-        n = 0
-        result_list = []
-        while not self.for_count == 1:  # 4시작 l_score 3시작
-            target_list = rent_cost_list[n:n + self.L_score]
-            self.for_count -= 1
-            n += 1
-            print(target_list)
-            result_list.append(sum(target_list) / len(target_list))
-        return min(result_list)
-
-
-def check_answer(for_count, L_score):
-    before_result = Logic(for_count, L_score).function()  # 4,3
-    while True:  # 다음과정은 
-        for_count -= 1
-        L_score += 1
-        after_result = Logic(for_count, L_score).function()
-        if before_result < after_result:
-            print(before_result)
-            break
-        else:
-            before_result = after_result  # before을 after로 업데이트
-            pass
-
-
-case_count = int(input("전체 케이스"))
-
-rent_cost_list = []
-for x in range(case_count):
-    input_score = input("공연장으 대여할수있는 날N +L").split(" ")
-    N_score, L_score = int(input_score[0]), int(input_score[1])
-
-    # L이상의 공연을 진행해야함
-    input_list = input("날짜별로 대여 비용")
-    rent_cost_list2 = input_list.split(" ")
-    print(rent_cost_list2)
-    for x in rent_cost_list2:
-        y = int(x)
-        rent_cost_list.append(y)
-    print(rent_cost_list)
-
-    for_count = N_score - L_score + 1  # 돌아야하는 나눠서 횟수 
-
-    check_answer(for_count, L_score)
-```
-
-완전 잘못되었다. 접근법이 메모리를 너무 많이 잡아먹고, 비효율적이다
-
-다른접근법을 생각해보자면 시작점을 for문으로 돌면서 시작점으로부터 L만큼 합의 평균과과 그 다음값을 비교하면서 다음값보다 평균이 크다면 확장하는 방식으로 해결해야될거같다.
-
-```python
-import sys
-
-lr = lambda: sys.stdin.readline()
-
-event_cnt = int(lr())
-
-for event in range(event_cnt):
-
-    day_cnt, team_cnt = map(int, lr().split())
-    day_pay = [int(x) for x in lr().split()]
-
-    avgs = []
-
-    for i in range(day_cnt-team_cnt+1):
-        pay_sum = sum(day_pay[i:i+team_cnt])
-        avgs.append(pay_sum/team_cnt)
-
-        for t in range(day_cnt-i-team_cnt):
-            pay_sum+=day_pay[i+team_cnt+t]
-            avgs.append(pay_sum/(team_cnt+t+1))
-    result = min(avgs)
-    print("%.11f" % result)
-```
-
-완벽히 풀었다.
-
-아이디어는 결국 같을수밖에없었다
-
-하지만 위에 문제점들을 해결할수있는 키를 생각했고 결론에 도달했다는 것에 의미를 갖는다.
-
-모든 경우의 수를 계산할수있으면서, 효율적으로 코드를 업데이트하였다
-
-다음에는 좀더 깔끔한 코드를 짤수있게 노력하자.
-
-# 두 개 뽑아서 더하기
+# 두 개 뽑아서 더하기(P)
 
 [문제](https://programmers.co.kr/learn/courses/30/lessons/68644)
 
@@ -238,11 +139,11 @@ def solution(numbers):
 
 ## 리뷰
 
-다른 사람들을 보면 list_x=[]를 먼저 사용하고 마지막 최종 답을 return 할떄 sorted(list(set(list_x)))를 하였다. 이 문제말고 다른 문제들은 인덱스를 활용해야할수있으므로 바로 set을 활용하는거보다 리스트로 활용후 최종적으로 잠깐 set활용하는것이 더 나은 방법이다.
+다른 사람들을 보면 list_x=[]를 먼저 사용하고 마지막 최종 답을 return 할떄 sorted(list(set(list_x)))를 하였다. 이 문제말고 다른 문제들은 인덱스를 활용해야할수있으므로 바로 set을 활용하는거보다 리스트로 활용후 최종적으로 __잠깐 set활용하는것이 더 나은 방법이다.__
 
 > set을 사용한다고 해서 자동으로 오름차순으로 정렬되지 않습니다. Python의 set은 BBST가 아니라 HashSet의 형태
 
-# 크레인 인형뽑기 게임
+# 크레인 인형뽑기 게임(P)
 
 [문제](https://programmers.co.kr/learn/courses/30/lessons/64061)
 
@@ -308,6 +209,45 @@ __예시__
 `del list[i]`  보다는 `list.pop(i)` 를 선호하도록하자
 
 ## 리뷰
+
+2차 배열의 특성을 그대로 살려서 풀이를 바꿨다. 같은 원리지만 좀더 간결해졋다.
+
+```python
+#15:57
+# NxN크기의 정사각 격자., 격자아래칸부터 차곡차곡쌓여있다.
+#크레인 이 담으면 바구니에 담기고 같은게있으면 터짐없어짐
+# 크레인이 인형이 없는 위치에 가면 아무일도 일어나지 않는다
+
+#board는 게임 격자 인형들, moves는 크레인이 담을 위치
+# return 사라진 인형의 개수(터진것)
+
+## 가장중요한 로직은 배열에서 추출후 0으로만들고
+## 바구니에서는 내가 넣을것과 같은 종류가 맨위에있다면 제거
+
+
+def solution(board, moves):
+    basket=[]
+    count=0
+    for m in moves:
+        m-=1
+        for i in range(len(board)):
+            if board[i][m] !=0:
+                print(board[i][m])
+                basket.append(board[i][m])
+                board[i][m] =0
+
+
+                if len(basket)>1:
+                    if basket[-1]==basket[-2]:
+                        basket.pop()
+                        basket.pop()
+                        count+=1
+                break
+    
+    return count*2
+```
+
+
 
 
 
@@ -717,3 +657,103 @@ slice의 특성을 이용하자.. 와 대박 문자열 비어있어도 slice는 
 
 
 
+# 페스티벌 문제
+
+https://algospot.com/judge/problem/read/FESTIVAL
+
+내 1차 코드
+
+```python
+# 이전 답지
+class Logic():
+    def __init__(self, for_count, L_score):
+        self.for_count = for_count
+        self.L_score = L_score
+
+    def function(self):
+        n = 0
+        result_list = []
+        while not self.for_count == 1:  # 4시작 l_score 3시작
+            target_list = rent_cost_list[n:n + self.L_score]
+            self.for_count -= 1
+            n += 1
+            print(target_list)
+            result_list.append(sum(target_list) / len(target_list))
+        return min(result_list)
+
+
+def check_answer(for_count, L_score):
+    before_result = Logic(for_count, L_score).function()  # 4,3
+    while True:  # 다음과정은 
+        for_count -= 1
+        L_score += 1
+        after_result = Logic(for_count, L_score).function()
+        if before_result < after_result:
+            print(before_result)
+            break
+        else:
+            before_result = after_result  # before을 after로 업데이트
+            pass
+
+
+case_count = int(input("전체 케이스"))
+
+rent_cost_list = []
+for x in range(case_count):
+    input_score = input("공연장으 대여할수있는 날N +L").split(" ")
+    N_score, L_score = int(input_score[0]), int(input_score[1])
+
+    # L이상의 공연을 진행해야함
+    input_list = input("날짜별로 대여 비용")
+    rent_cost_list2 = input_list.split(" ")
+    print(rent_cost_list2)
+    for x in rent_cost_list2:
+        y = int(x)
+        rent_cost_list.append(y)
+    print(rent_cost_list)
+
+    for_count = N_score - L_score + 1  # 돌아야하는 나눠서 횟수 
+
+    check_answer(for_count, L_score)
+```
+
+완전 잘못되었다. 접근법이 메모리를 너무 많이 잡아먹고, 비효율적이다
+
+다른접근법을 생각해보자면 시작점을 for문으로 돌면서 시작점으로부터 L만큼 합의 평균과과 그 다음값을 비교하면서 다음값보다 평균이 크다면 확장하는 방식으로 해결해야될거같다.
+
+```python
+import sys
+
+lr = lambda: sys.stdin.readline()
+
+event_cnt = int(lr())
+
+for event in range(event_cnt):
+
+    day_cnt, team_cnt = map(int, lr().split())
+    day_pay = [int(x) for x in lr().split()]
+
+    avgs = []
+
+    for i in range(day_cnt-team_cnt+1):
+        pay_sum = sum(day_pay[i:i+team_cnt])
+        avgs.append(pay_sum/team_cnt)
+
+        for t in range(day_cnt-i-team_cnt):
+            pay_sum+=day_pay[i+team_cnt+t]
+            avgs.append(pay_sum/(team_cnt+t+1))
+    result = min(avgs)
+    print("%.11f" % result)
+```
+
+완벽히 풀었다.
+
+아이디어는 결국 같을수밖에없었다
+
+하지만 위에 문제점들을 해결할수있는 키를 생각했고 결론에 도달했다는 것에 의미를 갖는다.
+
+모든 경우의 수를 계산할수있으면서, 효율적으로 코드를 업데이트하였다
+
+다음에는 좀더 깔끔한 코드를 짤수있게 노력하자.
+
+# 
