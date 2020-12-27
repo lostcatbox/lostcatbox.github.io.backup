@@ -90,6 +90,10 @@ b,c = a  #b,c에 각각 10, 20이 들어간다
 
 ## filter()
 
+- filter(function, iterable)
+
+list 나 dictionary 같은 [iterable](https://bluese05.tistory.com/55) 한 데이터를 특정 조건에 일치하는 값만 추출해 낼때 사용하는 함수이다.
+
 filter에 인자로 사용되는 function은 처리되는 각각의 요소에 대해 Boolean 값을 반환합니다. True를 반환하면 그 요소는 남게 되고, False 를 반환하면 그 요소는 제거 됩니다.
 
 ```python

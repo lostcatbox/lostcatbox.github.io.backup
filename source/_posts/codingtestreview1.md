@@ -5,6 +5,12 @@ categories: [Coding]
 tags: [Coding, Python]
 ---
 
+# 문제풀이하면서 놓친부분들
+
+- 코드에 복붙을 하던도중 변경해야할 객체명을 고치지 않음
+
+  
+
 # 원칙
 
 첫 번째 풀고 답안지를 업로드하고 리뷰후
@@ -251,7 +257,7 @@ def solution(board, moves):
 
 
 
-# 완주하지 못한 선수
+# 완주하지 못한 선수(P)
 
 [문제](https://programmers.co.kr/learn/courses/30/lessons/42576)
 
@@ -298,7 +304,9 @@ Counter({'eden': 1, 'kiki': 1})
 Counter({'leo': 1})
 ```
 
-# 모의고사
+ 요소의 갯수를 알고싶을떄이용하자, 빼기도가능하다
+
+# 모의고사(R)
 
 https://programmers.co.kr/learn/courses/30/lessons/42840
 
@@ -313,13 +321,13 @@ def solution(answers):
     person1_answers = [1,2,3,4,5]*math.ceil(len(answers)/5)
     person2_answers = [2,1,2,3,2,4,2,5]*math.ceil(len(answers)/8)
     person3_answers = [3,3,1,1,2,2,4,4,5,5]*math.ceil(len(answers)/10)
+    
     for x in range(len(answers)):
         if person1_answers[x] == answers[x]:
             count_person1 +=1
     for x in range(len(answers)):
         if person2_answers[x] == answers[x]:
             count_person2 +=1
-            
     for x in range(len(answers)):
         if person3_answers[x] == answers[x]:
             count_person3 +=1
@@ -396,7 +404,9 @@ def solution(answers):
     return result
 ```
 
+cycle보다 위에 방법이 훨씬 현실적이다. 
 
+다시 풀기위해 Pass등급에서 Repeat등급으로 조정했음(2020.12.27)
 
 # K번째 수
 
@@ -756,4 +766,3 @@ for event in range(event_cnt):
 
 다음에는 좀더 깔끔한 코드를 짤수있게 노력하자.
 
-# 
