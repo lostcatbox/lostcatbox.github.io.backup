@@ -702,3 +702,102 @@ __일진행후 판단을 내려야할 부분의 로직을 짠다! 고 생각하�
 
 
 
+# 문자열 압축
+
+https://programmers.co.kr/learn/courses/30/lessons/60057
+
+## 첫 답안
+
+```python
+#12:55
+#(문자반복횟수)(해당문자), 1개는 1생략
+#자르다가 마지막에 나머지는 그냥 써주면된다.
+#반복단위는 전체길이/2 까지만 검증해주면된다.
+#return 압축 문자열의 len값 최소값!
+# "aabbaccc"	7
+# "ababcdcdababcdcd"	9
+# "abcabcdede"	8
+# "abcabcabcabcdededededede"	14
+# "xababcdcdababcdcd"	17
+
+def solution(s):
+    result=len(s)
+    for split_n in range(1,len(s)//2+1):  #반만해보면됨
+        list_x=[s[i:i+split_n] for i in range(0,len(s),split_n)]
+
+        same=1
+        count_s=[]
+        print(list_x)
+        for index in range(0,len(list_x)-1): #바로 직전까지 순환
+
+            if index==len(list_x)-2:
+                if list_x[index] == list_x[index+1]:
+                    same+=1
+                    count_s.append(same)
+                    count_s.append(list_x[index])
+                
+
+                else:
+                    count_s.append(same)
+                    count_s.append(list_x[index])
+                
+                    same=1
+                    count_s.append(same)
+                    count_s.append(list_x[index+1])
+                
+
+                break
+
+            if list_x[index] == list_x[index+1]:
+                same+=1
+
+            else:
+                count_s.append(same)
+                count_s.append(list_x[index])
+                same=1
+
+            
+        count_s = "".join([str(x) for x in count_s if x!=1])
+        if result>len(count_s):
+            result=len(count_s)
+
+    return result                       
+
+print(solution("xxxxxxxxxxyyy"))
+```
+
+디버깅 정말 다른사람 실수 못봤으면 오래걸렸을뻔했다
+
+처음에 짠코드들은 예제는 모두통과했는데 실전에서 문제가있었다.
+
+`print(solution("xxxxxxxxxxyyy"))` 에 관해서 간과한것이있었다. str으로 count_s을 바로 계산해버리니까 10이 넘어가는것에 대해 처리를 제대로 하지못하였다. 따라서 count_s를 리스트로 바꾸고 나중에 1만빼주고 str으로 바꿔줘서 해결하였다.
+
+## 재정의
+
+## 계획
+
+## 구현
+
+## 리뷰
+
+다음은 다른 사람이 짠 코드이다. 아름답다,.. zip() 쓸생각은했었는데.
+
+```python
+def compress(text, tok_len):
+    words = [text[i:i+tok_len] for i in range(0, len(text), tok_len)]
+    res = []
+    cur_word = words[0]
+    cur_cnt = 1
+    for a, b in zip(words, words[1:] + ['']):
+        if a == b:
+            cur_cnt += 1
+        else:
+            res.append([cur_word, cur_cnt])
+            cur_word = b
+            cur_cnt = 1
+    return sum(len(word) + (len(str(cnt)) if cnt > 1 else 0) for word, cnt in res)
+
+def solution(text):
+    return min(compress(text, tok_len) for tok_len in list(range(1, int(len(text)/2) + 1)) + [len(text)])
+```
+
