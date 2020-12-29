@@ -5,7 +5,13 @@ categories: [Network]
 tags: [Basic, Ssl,Network]
 ---
 
-```
+
+
+webroot이용 증명서 발급
+
+`sudo certbot certonly –webroot -w [접근 가능 경로] -d [도메인명]`
+
+```bash
 sudo certbot certonly -a webroot -m lostcatbox@gmail.com -w /home/lostcatbox2/proxy/data/certbot/www -d home.lostcatbox.com  #내가 설정한 www폴더와 인증
 ```
 
