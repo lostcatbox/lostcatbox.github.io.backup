@@ -1,8 +1,8 @@
 ---
 title: django-crontab 사용하기
 date: 2021-01-15 12:22:58
-categories:
-tags:
+categories: [Skill]
+tags: [Python, Djagno]
 ---
 
 # 왜?
