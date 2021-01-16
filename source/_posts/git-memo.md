@@ -34,6 +34,9 @@ git remote -v   #지금 현재 주소
 git remote show <리모트 저장소 이름>  #리모트 저장소의 구체적인 정보를 알수있다.
 git remote rename <원래 이름> <바꿀이름>   #리모트 저장소 이름 바꾸기
 git remote remove <리모트 저장소 이름> #리모트 삭제
+
+git config --global user.name <이름> #push했을때 내 정보를 입력해준다
+git config --global user.mail <메일 주소> #push했을때 내 정보를 입력해준다
 ```
 
 ## 리모트 저장소를 Pull 하거나 Fetch 하기
@@ -342,6 +345,10 @@ $ git branch
  * draft
    master
 ```
+
+# 
+
+
 
 # 오류
 
