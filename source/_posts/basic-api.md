@@ -1,5 +1,5 @@
 ---
-title: basic-api
+title: REST API란? (RESTful,REST)
 date: 2021-01-19 14:38:50
 categories: [Basic]
 tags: [API, Basic]
