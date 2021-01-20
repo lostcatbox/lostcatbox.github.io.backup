@@ -1,5 +1,5 @@
 ---
-title: django-serializer
+title: django-serializer 자세히 알아보기
 date: 2021-01-19 14:36:00
 categories: [DRF]
 tags: [Django, DRF, Serializer]
