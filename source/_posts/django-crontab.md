@@ -12,7 +12,7 @@ tags: [Python, Djagno]
 > 장고 서버 데몬 실행
 >
 > ```bash
-> nohup manage.py runserver 0.0.0.0:80 &
+> sudo nohup python3 manage.py runserver 0.0.0.0:80 &
 > ```
 >
 >   중단 방법
