@@ -2,7 +2,7 @@
 title: 개발자를 마무리하고, 부동산업계를 준비하다.
 date: 2021-05-30 00:50:41
 categories: [realestate]
-tags: [Finish, Restart]
+tags: [Finish, Restart, Realestate]
 ---
 
 # 개발자를 마치며...
