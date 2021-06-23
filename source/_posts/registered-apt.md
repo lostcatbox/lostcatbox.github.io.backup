@@ -1,5 +1,5 @@
 ---
-title: registered-apt
+title: 셀프 등기 하는법 (2021)
 date: 2021-06-18 19:37:11
 categories: [How]
 tags: [Apt, How]
